@@ -3,6 +3,43 @@
 #include <stdio.h>
 #include "cast.h"
 
+struct group *group_create(long gid)
+{
+  struct group *g;
+
+  g = (struct group *)malloc(sizeof (struct group));
+  g->id = gid;
+  INIT_LIST_HEAD(&g->device_head);
+  add_group(g);
+
+  printf("group %ld created\n", gid);
+  return g;
+}
+
+struct tag *tag_create(long gid, long tid)
+{
+  struct tag *t;
+  pthread_t thread;
+  long long tuid;
+
+  tuid = TAGUID(gid, tid);
+
+  t = (struct tag *)malloc(sizeof (struct tag));
+  t->tid = tid;
+  t->id = tuid;
+  t->name[0]=0;
+  t->device_list = NULL;
+  INIT_LIST_HEAD(&t->subscribe_head);
+  blocking_queue_init(&t->pack_queue);
+  add_tag(t);
+
+  /* create the tag's casting queue thread */
+  pthread_create(&thread, NULL, tag_run_casting, t);
+
+  printf("tag %ld:%ld created\n", gid, tid);
+  return t;
+}
+
 int dev_register(struct device *dev)
 {
   long gid, tid;
@@ -29,40 +66,28 @@ int dev_register(struct device *dev)
   g = get_group(gid);
   if (!g)
   {
-    g = (struct group *)malloc(sizeof (struct group));
-    g->id = gid;
-    INIT_LIST_HEAD(&g->device_head);
-    add_group(g);
-
-    printf("group %ld created\n", gid);
+    g = group_create(gid);
   }
 
   t = get_tag(tuid);
   if (!t)
   {
-    pthread_t thread;
-    t = (struct tag *)malloc(sizeof (struct tag));
-    t->tid = tid;
-    t->id = tuid;
-    t->name[0]=0;
+    t = tag_create(gid, tid);
+
     t->device_list = &dev->list;
-    INIT_LIST_HEAD(&t->subscribe_head);
-    blocking_queue_init(&t->pack_queue);
-    add_tag(t);
 
     /* for a new tag, this is when the device is inserted into the group link */
     group_add_device(g, dev);
-
-    /* create the tag's casting queue thread */
-    pthread_create(&thread, NULL, tag_run_casting, t);
-
-    printf("tag %ld:%ld created\n", gid, tid);
   }
   else
   {
-    if (!t->device_list)
+    if (!t->device_list) {
       t->device_list = &dev->list;
+      /* insert device into group */
+      group_add_device(g, dev);
+    }
     else
+      /* this will also insert device into group */
       tag_add_device(t, dev);
   }
 

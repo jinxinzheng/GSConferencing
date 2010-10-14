@@ -146,7 +146,8 @@ void *run_proceed_connection(void *arg)
         newdev->addr = c->addr;
         newdev->addr.sin_port = htons(atoi(port));
 
-        dev_register(newdev);
+        if (dev_register(newdev) != 0)
+          free(newdev);
       }
     }
     else if (strcmp(cmd, "sub") == 0)
@@ -166,8 +167,15 @@ void *run_proceed_connection(void *arg)
         tuid = TAGUID(gid, tid);
         t = get_tag(tuid);
 
-        if (d && t)
+        if (d) {
+          if (!t)
+            /* create an 'empty' tag that has no registered device.
+             * this ensures the subscription not lost if there are
+             * still not any device of the tag registered. */
+            t = tag_create(gid, tid);
+
           dev_subscribe(d, t);
+        }
       }
     }
 

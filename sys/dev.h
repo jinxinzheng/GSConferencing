@@ -45,6 +45,9 @@ struct tag {
   long long id;
   char name[64];
 
+  /* the socket used for casting */
+  int sock;
+
   /* tagged devices
    * this list is not stand-alone. it's partial of the group list.
    * so can't use a real head here, just use a link pointer. */

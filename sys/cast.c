@@ -38,21 +38,37 @@ int dev_cast_packet(struct device *dev, int packet_type, void *data, size_t len)
   tag_enque_packet(t, pack);
 }
 
-/* threads would be created for each tag */
+/* send a packet to all of the tag members */
+void tag_cast_pack(struct tag *t, struct packet *pack)
+{
+  struct device *d;
+  struct list_head *p, *h;
+  h = &t->subscribe_head;
+
+  list_for_each(p, h)
+  {
+    d = list_entry(p, struct device, subscribe);
+
+    /* don't send back to the original sender.
+     * this could help to reduce network load. */
+    if (d == pack->dev)
+      continue;
+
+    sendto_dev_udp(t->sock, pack->data, pack->len, d);
+  }
+}
+
+/* threads would be created for each tag
+ * and run forever */
 void *tag_run_casting(void *tag)
 {
   struct tag *t = (struct tag *)tag;
   struct packet *pack;
-  struct list_head *p, *h;
-  struct device *d;
-  int sock;
-
-  h = &t->subscribe_head;
 
   /* the udp socket. one created for each thread,
    * so the threads could send data simultaneously
    * without intefering with each other. */
-  if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+  if ((t->sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     return NULL;
 
   do {
@@ -60,17 +76,7 @@ void *tag_run_casting(void *tag)
     /* wait for the main thread data ready */
     pack = tag_deque_packet(t);
 
-    list_for_each(p, h)
-    {
-      d = list_entry(p, struct device, subscribe);
-
-      /* don't send back to the original sender.
-       * this could help to reduce network load. */
-      if (d == pack->dev)
-        continue;
-
-      sendto_dev_udp(sock, pack->data, pack->len, d);
-    }
+    tag_cast_pack(t, pack);
 
     ((char*)pack->data)[pack->len]=0;
     printf("cast packet from %d: %s\n", *(int *)pack->data, ((char*)pack->data) +sizeof(int));

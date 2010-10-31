@@ -11,10 +11,19 @@
 
 static int id=0;
 static int subscribe=0;
+static int verbose=0;
+static char *servIP = "127.0.0.1";
+static int servPort = 7650;
 
-int send_tcp(const void *buf, size_t len, struct sockaddr_in *addr)
+static struct sockaddr_in servAddr;
+
+/* connect to and send to the server.
+ * the response is stored in buf. */
+int send_tcp(void *buf, size_t len, struct sockaddr_in *addr)
 {
   int sock;
+  char tmp[2048];
+  int l;
 
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     fail("socket()");
@@ -26,12 +35,19 @@ int send_tcp(const void *buf, size_t len, struct sockaddr_in *addr)
     fail("send()");
 
   /* recv any reply here */
+  l=recv(sock, tmp, sizeof tmp, 0);
+  if (l > 0)
+    memcpy(buf, tmp, l);
+  else if(l==0)
+    fprintf(stderr, "(no repsponse)\n");
+  else
+    perror("recv()");
 
   close(sock);
-  return 0;
+  return l;
 }
 
-int run_send_udp(struct sockaddr_in *addr)
+int _send_udp(struct sockaddr_in *addr)
 {
   int sock;
   char buf[512], *p;
@@ -56,6 +72,12 @@ int run_send_udp(struct sockaddr_in *addr)
     usleep(100000); /*1ms*/
   }
 
+}
+
+void *run_send_udp(void *addr)
+{
+  _send_udp((struct sockaddr_in *)addr);
+  return NULL;
 }
 
 void *run_recv_udp(void *arg)
@@ -104,28 +126,61 @@ void *run_recv_udp(void *arg)
     i = *(int *)buf;
     p = buf+sizeof(int);
 
-    printf("(%d) recved %d:%s\n", id, i, p);
+    if (verbose)
+      fprintf(stderr,"(%d) recved %d:%s\n", id, i, p);
 
   }
   /* NOT REACHED */
 
 }
 
+void read_cmds()
+{
+  char buf[2048], *cmd, *p;
+  int l;
+
+  cmd = buf+16;
+
+  while (fgets(cmd, sizeof(buf)-16, stdin))
+  {
+    /*prepend id*/
+    if (atoi(cmd) != id)
+    {
+      memset(buf, ' ', 16);
+      l = sprintf(buf, "%d", id);
+      buf[l] = ' ';
+      cmd = buf;
+    }
+
+    p = strchr(cmd, '\n');
+    l = p-cmd; /* don't include the ending \0 */
+    l = send_tcp(cmd, l, &servAddr);
+    if (l>0) {
+      cmd[l]=0;
+      printf("%s\n", cmd);
+    }
+
+    cmd = buf+16;
+  }
+}
+
 int main(int argc, char *const argv[])
 {
   int opt;
 
-  int sock;
-  struct sockaddr_in servAddr; /* Echo server address */
-  char *servIP = "127.0.0.1";
-  int servPort = 7650;
-  char buf[1024];
+  char buf[2048];
   int len;
 
   pthread_t thread;
   int listenPort;
 
-  while ((opt = getopt(argc, argv, "a:i:s:")) != -1) {
+  /*while (fgets(buf, sizeof(buf), stdin))
+  {
+    printf(": %s\n", buf);
+  }
+  return 0;*/
+
+  while ((opt = getopt(argc, argv, "a:i:s:v")) != -1) {
     switch (opt) {
       case 'a':
         servIP = optarg;
@@ -136,6 +191,8 @@ int main(int argc, char *const argv[])
       case 's':
         subscribe = atoi(optarg);
         break;
+      case 'v':
+        verbose = 1;
       default:
         goto USE;
     }
@@ -161,7 +218,7 @@ int main(int argc, char *const argv[])
 
   len = sprintf(buf, "%d reg p%d\n", id, listenPort);
 
-  if (send_tcp(buf, len, &servAddr) != 0)
+  if (send_tcp(buf, len, &servAddr) <= 0)
     return 2;
 
   /* subscribe to tag */
@@ -175,9 +232,14 @@ int main(int argc, char *const argv[])
   }
 
   /* cast packets, no exit. */
-  run_send_udp(&servAddr);
+  pthread_create(&thread, NULL, run_send_udp, (void*)&servAddr);
+
+  /* this will not stop until eof of stdin */
+  read_cmds();
+
+  return 0;
 
 USE:
-  fprintf(stderr, "Usage: %s -i id [-s tag]\n", argv[0]);
+  fprintf(stderr, "Usage: %s -a addr -i id [-s tag]\n", argv[0]);
   return 1;
 }

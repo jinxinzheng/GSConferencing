@@ -1,11 +1,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "queue.h"
 #include "sys.h"
 #include "devctl.h"
 #include "cast.h"
+#include "cmd.h"
 
 #define die(s) do {perror(s); exit(1);} while(0)
 #define fail(s) do {perror(s); return -1;} while(0)
@@ -114,73 +116,80 @@ void *run_proceed_connection(void *arg)
   long did;
   char *cmd;
 
+  FILE *sf;
+
   for (;;)
   {
     c = deque_connection();
 
     /* proceed with the connected socket */
-    if ((len = recv(c->sock, buf, BUFLEN, 0)) <= 0) {
-      perror("recv()");
-      goto NEXT;
-    }
 
-    /* analyze and process packet data here */
-    buf[len] = 0;
-    p = strtok(buf, " \r\n");
-    did = atoi(p);
-    cmd = strtok(NULL, " \r\n");
+    sf = fdopen(c->sock, "r");
 
-    if (!cmd) goto NEXT;
-
-    if (strcmp(cmd, "reg") == 0)
+    /* read until the remote closes the connection */
+    while (fgets(buf, BUFLEN, sf))
     {
-      struct device *newdev;
+      struct cmd cmd;
+      if (parse_cmd(buf, &cmd) != 0)
+        continue;
 
-      p = strtok(NULL, " \r\n");
-      if (p && p[0]=='p')
+      did = cmd.device_id;
+
+      switch (cmd.cmd)
       {
-        char *port = p+1;
+        case CMD_DEV_REGISTER:
+        {
+          struct device *newdev;
 
-        newdev = (struct device *)malloc(sizeof (struct device));
-        newdev->id = did;
-        newdev->addr = c->addr;
-        newdev->addr.sin_port = htons(atoi(port));
+          p = cmd.args[0];
+          if (p && p[0]=='p')
+          {
+            char *port = p+1;
 
-        if (dev_register(newdev) != 0)
-          free(newdev);
-      }
-    }
-    else if (strcmp(cmd, "sub") == 0)
-    {
-      p = strtok(NULL, " \r\n");
+            newdev = (struct device *)malloc(sizeof (struct device));
+            newdev->id = did;
+            newdev->addr = c->addr;
+            newdev->addr.sin_port = htons(atoi(port));
 
-      if (p) {
-        struct device *d;
-        struct tag *t;
-        long tid, gid;
-        long long tuid;
-
-        d = get_device(did);
-
-        gid = d->group->id;
-        tid = atoi(p);
-        tuid = TAGUID(gid, tid);
-        t = get_tag(tuid);
-
-        if (d) {
-          if (!t)
-            /* create an 'empty' tag that has no registered device.
-             * this ensures the subscription not lost if there are
-             * still not any device of the tag registered. */
-            t = tag_create(gid, tid);
-
-          dev_subscribe(d, t);
+            if (dev_register(newdev) != 0)
+              free(newdev);
+          }
         }
+        break;
+        case CMD_SUBSCRIBE:
+        {
+          p = cmd.args[0];
+
+          if (p) {
+            struct device *d;
+            struct tag *t;
+            long tid, gid;
+            long long tuid;
+
+            d = get_device(did);
+
+            gid = d->group->id;
+            tid = atoi(p);
+            tuid = TAGUID(gid, tid);
+            t = get_tag(tuid);
+
+            if (d) {
+              if (!t)
+                /* create an 'empty' tag that has no registered device.
+                 * this ensures the subscription not lost if there are
+                 * still not any device of the tag registered. */
+                t = tag_create(gid, tid);
+
+              dev_subscribe(d, t);
+            }
+          }
+        }
+        break;
       }
     }
 
 NEXT:
-    close(c->sock);
+    fclose(sf);
     free(c);
   }
 

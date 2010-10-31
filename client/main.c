@@ -53,7 +53,7 @@ int run_send_udp(struct sockaddr_in *addr)
           addr, sizeof(*addr)) != len)
       perror("sendto() failed");
 
-    sleep(3);
+    usleep(100000); /*1ms*/
   }
 
 }
@@ -117,7 +117,7 @@ int main(int argc, char *const argv[])
 
   int sock;
   struct sockaddr_in servAddr; /* Echo server address */
-  char servIP[] = {"127.0.0.1"};
+  char *servIP = "127.0.0.1";
   int servPort = 7650;
   char buf[1024];
   int len;
@@ -125,8 +125,11 @@ int main(int argc, char *const argv[])
   pthread_t thread;
   int listenPort;
 
-  while ((opt = getopt(argc, argv, "i:s:")) != -1) {
+  while ((opt = getopt(argc, argv, "a:i:s:")) != -1) {
     switch (opt) {
+      case 'a':
+        servIP = optarg;
+        break;
       case 'i':
         id = atoi(optarg);
         break;

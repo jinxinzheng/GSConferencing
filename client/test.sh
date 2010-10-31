@@ -1,10 +1,12 @@
 #!/bin/sh
 
-./test-client -i 101 &
-./test-client -i 102 -s 9 &
-./test-client -i 103 -s 8 &
+addr=192.168.1.3
+
+./test-client -a $addr -i 101 &
+./test-client -a $addr -i 102 -s 9 &
+./test-client -a $addr -i 103 -s 8 &
 
 sleep 2
 
-./test-client -i 801 &
-./test-client -i 901 &
+./test-client -a $addr -i 801 &
+./test-client -a $addr -i 901 &

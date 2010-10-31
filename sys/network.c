@@ -110,11 +110,10 @@ void *run_proceed_connection(void *arg)
 {
   struct connection *c;
   char buf[BUFLEN];
-  int len;
+  int cmdl;
 
   char *p;
   long did;
-  char *cmd;
 
   FILE *sf;
 
@@ -127,9 +126,19 @@ void *run_proceed_connection(void *arg)
     sf = fdopen(c->sock, "r");
 
     /* read until the remote closes the connection */
-    while (fgets(buf, BUFLEN, sf))
+    while ((cmdl=recv(c->sock, buf, BUFLEN, 0)) > 0)
     {
       struct cmd cmd;
+      char rep[BUFLEN];
+
+      buf[cmdl]=0;
+      printf("recved cmd: %s\n", buf);
+
+      /* copy the command for reply use */
+      strcpy(rep, buf);
+      if (rep[cmdl-1] == '\n')
+        rep[--cmdl] = 0;
+
       if (parse_cmd(buf, &cmd) != 0)
         continue;
 
@@ -154,6 +163,7 @@ void *run_proceed_connection(void *arg)
             if (dev_register(newdev) != 0)
               free(newdev);
           }
+          strcpy(rep+cmdl, " OK\n");
         }
         break;
         case CMD_SUBSCRIBE:
@@ -183,13 +193,17 @@ void *run_proceed_connection(void *arg)
               dev_subscribe(d, t);
             }
           }
+          strcpy(rep+cmdl, " OK\n");
         }
         break;
       }
+
+      /* send response */
+      send(c->sock, rep, strlen(rep), 0);
     }
 
 NEXT:
-    fclose(sf);
+    close(c->sock);
     free(c);
   }
 

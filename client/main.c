@@ -12,6 +12,7 @@
 static int id=0;
 static int subscribe=0;
 static int verbose=0;
+static int udp_auto=0;
 static char *servIP = "127.0.0.1";
 static int servPort = 7650;
 
@@ -180,7 +181,7 @@ int main(int argc, char *const argv[])
   }
   return 0;*/
 
-  while ((opt = getopt(argc, argv, "a:i:s:v")) != -1) {
+  while ((opt = getopt(argc, argv, "a:i:s:vu")) != -1) {
     switch (opt) {
       case 'a':
         servIP = optarg;
@@ -193,6 +194,10 @@ int main(int argc, char *const argv[])
         break;
       case 'v':
         verbose = 1;
+        break;
+      case 'u':
+        udp_auto = 1;
+        break;
       default:
         goto USE;
     }
@@ -231,8 +236,9 @@ int main(int argc, char *const argv[])
       return 2;
   }
 
-  /* cast packets, no exit. */
-  pthread_create(&thread, NULL, run_send_udp, (void*)&servAddr);
+  /* auto cast packets */
+  if (udp_auto)
+    pthread_create(&thread, NULL, run_send_udp, (void*)&servAddr);
 
   /* this will not stop until eof of stdin */
   read_cmds();

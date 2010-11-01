@@ -25,7 +25,8 @@ do                                                \
 } while (0)
 
 #define find_by_id(hash, _id) ({                            \
-  typeof ((hash)[0]) p, *htable = &hash[hashfn(_id)];       \
+  typeof ((hash)[0]) p;                                     \
+  typeof ((hash)[0]) *htable = &(hash)[hashfn(_id)];        \
   for(p = *htable; p && !equal(p->id, (_id)); p = p->hash_next) ; \
   p;                                                        \
 })

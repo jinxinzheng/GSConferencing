@@ -3,6 +3,8 @@
 
 #include "dev.h"
 
+int init_groups();
+
 struct group *get_group(long gid);
 void add_group(struct group *g);
 

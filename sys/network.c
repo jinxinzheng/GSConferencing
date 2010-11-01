@@ -111,19 +111,15 @@ void *run_proceed_connection(void *arg)
   struct connection *c;
   char buf[BUFLEN];
   int cmdl;
+  int i;
 
   char *p;
-  long did;
-
-  FILE *sf;
 
   for (;;)
   {
     c = deque_connection();
 
     /* proceed with the connected socket */
-
-    sf = fdopen(c->sock, "r");
 
     /* read until the remote closes the connection */
     while ((cmdl=recv(c->sock, buf, BUFLEN, 0)) > 0)
@@ -140,65 +136,37 @@ void *run_proceed_connection(void *arg)
         rep[--cmdl] = 0;
 
       if (parse_cmd(buf, &cmd) != 0)
-        continue;
-
-      did = cmd.device_id;
-
-      switch (cmd.cmd)
       {
-        case CMD_DEV_REGISTER:
-        {
-          struct device *newdev;
+        fprintf(stderr, "cmd parse error.\n");
+        strcpy(rep, "FAIL parse error\n");
+        goto CMDERR;
+      }
 
-          p = cmd.args[0];
-          if (p && p[0]=='p')
-          {
-            char *port = p+1;
+      cmd.saddr = &c->addr;
+      cmd.rep = rep;
+      cmd.rl = cmdl;
 
-            newdev = (struct device *)malloc(sizeof (struct device));
-            newdev->id = did;
-            newdev->addr = c->addr;
-            newdev->addr.sin_port = htons(atoi(port));
-
-            if (dev_register(newdev) != 0)
-              free(newdev);
-          }
-          strcpy(rep+cmdl, " OK\n");
-        }
-        break;
-        case CMD_SUBSCRIBE:
-        {
-          p = cmd.args[0];
-
-          if (p) {
-            struct device *d;
-            struct tag *t;
-            long tid, gid;
-            long long tuid;
-
-            d = get_device(did);
-
-            gid = d->group->id;
-            tid = atoi(p);
-            tuid = TAGUID(gid, tid);
-            t = get_tag(tuid);
-
-            if (d) {
-              if (!t)
-                /* create an 'empty' tag that has no registered device.
-                 * this ensures the subscription not lost if there are
-                 * still not any device of the tag registered. */
-                t = tag_create(gid, tid);
-
-              dev_subscribe(d, t);
-            }
-          }
-          strcpy(rep+cmdl, " OK\n");
-        }
-        break;
+      i = handle_cmd(&cmd);
+      if (i < 0)
+      {
+        fprintf(stderr, "invalid cmd.\n");
+        strcpy(rep, "FAIL invalid cmd\n");
+        goto CMDERR;
+      }
+      else if (i > 0)
+      {
+        fprintf(stderr, "cmd handle error.\n");
+        strcpy(rep, "FAIL handling cmd error\n");
+        goto CMDERR;
       }
 
       /* send response */
+      send(c->sock, cmd.rep, cmd.rl, 0);
+      continue;
+
+CMDERR:
+      /* whatever error we must send the response
+       * or the client hangs and so the server does!  */
       send(c->sock, rep, strlen(rep), 0);
     }
 

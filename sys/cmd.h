@@ -1,18 +1,19 @@
 #ifndef _CMD_H_
 #define _CMD_H_
 
-enum {
-  CMD_NONE,
-  CMD_DEV_REGISTER, /* reg */
-  CMD_SUBSCRIBE,    /* sub */
-  CMD_MAX
-};
-
 struct cmd {
   int device_id;
-  int cmd;        /* CMD_* */
+  const char *cmd;
   char *args[32]; /* arguments, end with NULL */
+
+  /* extra params needed to pass to the handler */
+  struct sockaddr_in *saddr; /* source addr of this cmd */
+  char *rep; /* the repsponse buffer of this cmd,
+                initially the  */
+  int rl;    /* initial length of the string in rep */
 };
+
+void init_cmd_handlers();
 
 /* line: command line, ended by '\n' or '\r\n'.
  * cmd: cmd struct.
@@ -25,5 +26,7 @@ struct cmd {
  * 101 reg p1101
  * */
 int parse_cmd(char *line, struct cmd *pcmd);
+
+int handle_cmd(struct cmd *cmd);
 
 #endif

@@ -5,6 +5,7 @@
 #include "queue.h"
 #include <sys/types.h>
 #include <netinet/in.h>
+#include "vote.h"
 
 enum {
   DEVTYPE_NONE
@@ -106,6 +107,12 @@ struct device {
   /* ID hash table linkage. */
   struct device *hash_next;
   struct device **hash_pprev;
+
+  struct {
+    struct vote *v;
+    struct list_head l;
+    int choice;
+  } vote;
 };
 
 #endif

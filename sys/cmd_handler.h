@@ -23,6 +23,12 @@ do { \
   (cmd)->rl += strlen(s); \
 } while(0)
 
+#define REP_ADD_NUM(cmd, n) \
+do { \
+  (cmd)->rep[(cmd)->rl++] = ' '; \
+  (cmd)->rl += sprintf((cmd)->rep+(cmd)->rl, "%d", (n)); \
+} while(0)
+
 #define REP_END(cmd) \
 do { \
   (cmd)->rep[(cmd)->rl++] = '\n'; \
@@ -39,6 +45,12 @@ do { \
   int _j = strlen(a); \
   strncpy((str)+(l), (a), _j); \
   (l) += _j; \
+  (str)[(l)++] = ','; \
+} while(0)
+
+#define LIST_ADD_NUM(str, l, n) \
+do { \
+  (l) += sprintf((str)+(l), "%d", (n)); \
   (str)[(l)++] = ','; \
 } while(0)
 

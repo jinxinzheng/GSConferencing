@@ -14,6 +14,7 @@ int handle_cmd_reg(struct cmd *cmd)
     char *port = p+1;
 
     newdev = (struct device *)malloc(sizeof (struct device));
+    memset(newdev, 0, sizeof (struct device));
     newdev->id = cmd->device_id;
     newdev->addr = *cmd->saddr;
     newdev->addr.sin_port = htons(atoi(port));

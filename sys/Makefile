@@ -1,4 +1,4 @@
-
+#CC=arm-linux-gcc
 
 all: daya-sys
 

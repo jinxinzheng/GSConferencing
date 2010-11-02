@@ -1,3 +1,4 @@
+#CC=arm-linux-gcc
 
 all: test-client
 

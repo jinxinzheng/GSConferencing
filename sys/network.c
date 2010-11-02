@@ -63,9 +63,10 @@ void run_listener_tcp(int port)
   if ((tcp_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     die("socket()");
 
-	/* Eliminates "Address already in use" error from bind. */
-	if (setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int)) < 0)
-		die("setsockopt");
+  /* Eliminates "Address already in use" error from bind. */
+  optval = 1;
+  if (setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int)) < 0)
+    die("setsockopt");
 
   /* Construct local address structure */
   memset(&servAddr, 0, sizeof servAddr);   /* Zero out structure */
@@ -212,9 +213,10 @@ void run_listener_udp(int port)
   if ((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     die("socket()");
 
-	/* Eliminates "Address already in use" error from bind. */
-	if (setsockopt(udp_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int)) < 0)
-		die("setsockopt");
+  /* Eliminates "Address already in use" error from bind. */
+  optval = 1;
+  if (setsockopt(udp_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int)) < 0)
+    die("setsockopt");
 
   /* Construct local address structure */
   memset(&servAddr, 0, sizeof servAddr);   /* Zero out structure */

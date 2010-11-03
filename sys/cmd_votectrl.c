@@ -206,7 +206,9 @@ int handle_cmd_votectrl(struct cmd *cmd)
     {
       d = list_entry(t, struct device, list);
       sendto_dev_tcp(cmd->rep, cmd->rl, d);
+      d->vote.v = NULL;
     }
+    free(v);
   }
   else
     return 2;

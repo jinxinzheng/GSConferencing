@@ -285,6 +285,8 @@ int sendto_dev_tcp(const void *buf, size_t len, struct device *dev)
    * for the tcp socket could be connect()ed only once. */
   int sock;
 
+  fprintf(stderr, "sendto_dev_tcp( '%s', %d, %d )\n", buf, len, dev->id);
+
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     fail("socket()");
 

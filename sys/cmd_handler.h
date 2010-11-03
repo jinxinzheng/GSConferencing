@@ -31,7 +31,8 @@ do { \
 
 #define REP_END(cmd) \
 do { \
-  (cmd)->rep[(cmd)->rl++] = '\n'; \
+  strcpy((cmd)->rep+(cmd)->rl, "\n"); \
+  (cmd)->rl += 1; \
 } while(0)
 
 #define REP_OK(cmd) \

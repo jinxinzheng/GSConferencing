@@ -189,6 +189,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
       /* bug or corrupt of network packet */
       return 1;
 
+    /* make reply string */
     l = 0;
     for (i=0; i<v->cn_options; i++)
     {
@@ -199,9 +200,9 @@ int handle_cmd_votectrl(struct cmd *cmd)
     REP_ADD(cmd, buf);
     REP_END(cmd);
 
-    /* send the result to all clients within the group */
+    /* send the result to all clients about the vote */
     g = d->group;
-    list_for_each(t, &g->device_head)
+    list_for_each(t, &v->device_head)
     {
       d = list_entry(t, struct device, list);
       sendto_dev_tcp(cmd->rep, cmd->rl, d);

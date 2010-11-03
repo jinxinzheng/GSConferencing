@@ -90,6 +90,9 @@ int main(int argc, char *const argv[])
   listenPort = 20000+id;
   start_recv_udp(listenPort);
 
+  /* listen cmds */
+  start_recv_tcp(listenPort);
+
   /* Construct the server address structure */
   memset(&servAddr, 0, sizeof(servAddr));     /* Zero out structure */
   servAddr.sin_family      = AF_INET;             /* Internet address family */

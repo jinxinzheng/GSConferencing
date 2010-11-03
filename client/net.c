@@ -130,10 +130,77 @@ static void *run_recv_udp(void *arg)
 
 }
 
+static void *run_recv_tcp(void *arg)
+{
+  int port;
+  int lisn_sock;
+  int conn_sock;               /* Socket descriptor for incoming connection */
+  int on;
+  struct sockaddr_in loclAddr; /* local address */
+  struct sockaddr_in remtAddr; /* remote address */
+  int remtLen;
+  char buf[1024];
+  int l;
+
+  port = (int)arg;
+
+  if ((lisn_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    die("socket()");
+
+  /* Eliminates "Address already in use" error from bind. */
+  on = 1;
+  if (setsockopt(lisn_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(on)) < 0)
+    die("setsockopt");
+
+  /* Construct local address structure */
+  memset(&loclAddr, 0, sizeof loclAddr);   /* Zero out structure */
+  loclAddr.sin_family = AF_INET;                /* Internet address family */
+  loclAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
+  loclAddr.sin_port = htons(port);      /* Local port */
+
+  /* Bind to the local address */
+  if (bind(lisn_sock, (struct sockaddr *) &loclAddr, sizeof loclAddr) < 0)
+    die("bind()");
+
+  /* Mark the socket so it will listen for incoming connections */
+  if (listen(lisn_sock, 50) < 0)
+    die("listen()");
+
+  for (;;) /* Run forever */
+  {
+    /* Set the size of the in-out parameter */
+    remtLen = sizeof remtAddr;
+
+    /* Wait for a remote to connect */
+    if ((conn_sock = accept(lisn_sock, (struct sockaddr *) &remtAddr, &remtLen)) < 0)
+      perror("accept()");
+
+    /* conn_sock is connected to a remote! */
+
+    while ((l = recv(conn_sock, buf, sizeof buf, 0)) > 0)
+    {
+      buf[l] = 0;
+      fprintf(stderr, "recved cmd: %s\n", buf);
+
+      /* send any here */
+    }
+
+
+    close(conn_sock);
+  }
+  /* NOT REACHED */
+}
+
 void start_recv_udp(int listenPort)
 {
   pthread_t thread;
   pthread_create(&thread, NULL, run_recv_udp, (void*)listenPort);
+}
+
+void start_recv_tcp(int listenPort)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, run_recv_tcp, (void*)listenPort);
 }
 
 void start_send_udp(struct sockaddr_in *servAddr)

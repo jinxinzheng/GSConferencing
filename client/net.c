@@ -1,0 +1,143 @@
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "client.h"
+#include "opt.h"
+
+/* connect to and send to the server.
+ * the response is stored in buf. */
+int send_tcp(void *buf, size_t len, struct sockaddr_in *addr)
+{
+  int sock;
+  char tmp[2048];
+  int l;
+
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    fail("socket()");
+
+  if (connect(sock, (struct sockaddr *)addr, sizeof(*addr)) < 0)
+    fail("connect()");
+
+  if (send(sock, buf, len, 0) < 0)
+    fail("send()");
+
+  /* recv any reply here */
+  l=recv(sock, tmp, sizeof tmp, 0);
+  if (l > 0)
+    memcpy(buf, tmp, l);
+  else if(l==0)
+    fprintf(stderr, "(no repsponse)\n");
+  else
+    perror("recv()");
+
+  close(sock);
+  return l;
+}
+
+static int auto_send_udp(struct sockaddr_in *addr)
+{
+  int sock;
+  char buf[512], *p;
+  int len;
+
+  if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    die("socket()");
+
+  *(int *)buf = id;
+  p = buf+sizeof(id);
+
+  for(;;)
+  {
+    len = sprintf(p, "%x", rand());
+    len += sizeof(int);
+
+    /* Send the string to the server */
+    if (sendto(sock, buf, len, 0, (struct sockaddr *)
+          addr, sizeof(*addr)) != len)
+      perror("sendto() failed");
+
+    usleep(100000); /*1ms*/
+  }
+
+}
+
+static void *run_send_udp(void *addr)
+{
+  auto_send_udp((struct sockaddr_in *)addr);
+  return NULL;
+}
+
+static void *run_recv_udp(void *arg)
+{
+  int sock;
+  int on;
+  int port;
+  struct sockaddr_in addr; /* Local address */
+  struct sockaddr_in other;
+  int otherLen;
+  char buf[2048], *p;
+  int len, i;
+
+  port = (int)arg;
+
+  /* Create socket for sending/receiving datagrams */
+  if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    die("socket()");
+
+  /* Eliminates "Address already in use" error from bind. */
+  on = 1;
+  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(on)) < 0)
+    die("setsockopt");
+
+  /* Construct local address structure */
+  memset(&addr, 0, sizeof(addr));   /* Zero out structure */
+  addr.sin_family = AF_INET;                /* Internet address family */
+  addr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
+  addr.sin_port = htons(port);      /* Local port */
+
+  /* Bind to the local address */
+  if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+    die("bind()");
+
+  printf("%d listen on %d\n", id, port);
+
+  for (;;) /* Run forever */
+  {
+    /* Set the size of the in-out parameter */
+    otherLen = sizeof(other);
+
+    /* Block until receive message from a client */
+    if ((len = recvfrom(sock, buf, 1024, 0,
+            (struct sockaddr *) &other, &otherLen)) < 0)
+    {
+      perror("recvfrom() failed");
+      continue;
+    }
+
+    buf[len] = 0;
+
+    i = *(int *)buf;
+    p = buf+sizeof(int);
+
+    if (verbose)
+      fprintf(stderr,"(%d) recved %d:%s\n", id, i, p);
+
+  }
+  /* NOT REACHED */
+
+}
+
+void start_recv_udp(int listenPort)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, run_recv_udp, (void*)listenPort);
+}
+
+void start_send_udp(struct sockaddr_in *servAddr)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, run_send_udp, (void*)servAddr);
+}

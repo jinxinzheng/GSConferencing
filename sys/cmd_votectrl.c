@@ -204,7 +204,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     g = d->group;
     list_for_each(t, &v->device_head)
     {
-      d = list_entry(t, struct device, list);
+      d = list_entry(t, struct device, vote.l);
       sendto_dev_tcp(cmd->rep, cmd->rl, d);
       d->vote.v = NULL;
     }

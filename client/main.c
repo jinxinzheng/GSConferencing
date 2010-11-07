@@ -4,7 +4,7 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
-#include "client.h"
+#include "util.h"
 #include "net.h"
 
 /* options */

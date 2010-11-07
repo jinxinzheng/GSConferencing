@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "client.h"
+#include "util.h"
 #include "opt.h"
 
 /* connect to and send to the server.

@@ -112,6 +112,7 @@ struct device {
     struct vote *v;
     struct list_head l;
     int choice;
+    int forbidden;
   } vote;
 };
 

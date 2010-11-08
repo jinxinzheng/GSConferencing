@@ -84,6 +84,8 @@ int handle_cmd_votectrl(struct cmd *cmd)
     if (!d)
       return 1;
 
+    REP_ADD(cmd, "OK");
+
     j = db[i].type;
     REP_ADD_NUM(cmd, j);
 
@@ -168,7 +170,42 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     /*do we need to auto stop when all clients finished voting?*/
   }
-  else if (strcmp(scmd, "stop") == 0)
+  else if (strcmp(scmd, "status") == 0)
+  {
+    struct device *d;
+    struct vote *v;
+    struct list_head *t;
+
+    /* the vote number */
+    p = cmd->args[ai++];
+    if (!p)
+      return 1;
+
+    d = get_device(cmd->device_id);
+    if (!d)
+      return 1;
+
+    if (!(v = d->vote.v))
+      /* bug or corrupt of network packet */
+      return 1;
+
+    REP_ADD(cmd, "OK");
+
+    l = 0;
+    list_for_each(t, &v->device_head)
+    {
+      d = list_entry(t, struct device, vote.l);
+      if (d->vote.choice >= 0)
+      {
+        LIST_ADD_NUM(buf, l, d->id);
+      }
+    }
+    LIST_END(buf, l);
+
+    REP_ADD(cmd, buf);
+    REP_END(cmd);
+  }
+  else if (strcmp(scmd, "showresult") == 0)
   {
     struct device *d;
     struct group *g;
@@ -190,6 +227,8 @@ int handle_cmd_votectrl(struct cmd *cmd)
       return 1;
 
     /* make reply string */
+    REP_ADD(cmd, "OK");
+
     l = 0;
     for (i=0; i<v->cn_options; i++)
     {
@@ -209,6 +248,76 @@ int handle_cmd_votectrl(struct cmd *cmd)
       d->vote.v = NULL;
     }
     free(v);
+  }
+  else if (strcmp(scmd, "stop") == 0)
+  {
+    struct device *d;
+    struct group *g;
+    struct list_head *t;
+
+    REP_OK(cmd);
+
+    d = get_device(cmd->device_id);
+    if (!d)
+      return 1;
+
+    if (!d->vote.v)
+      /* bug or corrupt of network packet */
+      return 1;
+
+    g = d->group;
+    list_for_each(t, &g->device_head)
+    {
+      d = list_entry(t, struct device, list);
+      sendto_dev_tcp(cmd->rep, cmd->rl, d);
+    }
+  }
+  else if (strcmp(scmd, "remind") == 0)
+  {
+    struct device *d;
+    long id;
+
+    REP_OK(cmd);
+
+    /* the remindee id */
+    p = cmd->args[ai++];
+    if (!p)
+      return 1;
+    id = atol(p);
+
+    d = get_device(id);
+    if (!d)
+      return 1;
+
+    sendto_dev_tcp(cmd->rep, cmd->rl, d);
+  }
+  else if (strcmp(scmd, "forbid") == 0)
+  {
+    struct device *d;
+    long id;
+    int fbd;
+
+    REP_OK(cmd);
+
+    /* the remindee id */
+    p = cmd->args[ai++];
+    if (!p)
+      return 1;
+    id = atol(p);
+
+    d = get_device(id);
+    if (!d)
+      return 1;
+
+    /* the remindee id */
+    p = cmd->args[ai++];
+    if (!p)
+      return 1;
+    fbd = atoi(p);
+
+    d->vote.forbidden = fbd;
+
+    sendto_dev_tcp(cmd->rep, cmd->rl, d);
   }
   else
     return 2;

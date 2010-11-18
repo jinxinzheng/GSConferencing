@@ -14,6 +14,10 @@ struct cmd_handler_entry
   struct cmd_handler_entry **hash_pprev;
 };
 
+void init_cmd_handlers();
+
+int handle_cmd(struct cmd *cmd);
+
 /* macros helpful to cmd handlers */
 
 #define REP_ADD(cmd, s) \
@@ -63,7 +67,7 @@ do { \
   str[l] = 0; \
 } while(0)
 
-/* cmd handlers.
+/* sub cmd handlers.
  * handler should fill the response in cmd->rep. */
 
 int handle_cmd_reg(struct cmd *cmd);

@@ -13,8 +13,6 @@ struct cmd {
   int rl;    /* initial length of the string in rep */
 };
 
-void init_cmd_handlers();
-
 /* line: command line, ended by '\n' or '\r\n'.
  * cmd: cmd struct.
  *
@@ -26,7 +24,5 @@ void init_cmd_handlers();
  * 101 reg p1101
  * */
 int parse_cmd(char *line, struct cmd *pcmd);
-
-int handle_cmd(struct cmd *cmd);
 
 #endif

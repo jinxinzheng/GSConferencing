@@ -2,7 +2,7 @@
 
 all: daya-sys
 
-daya-sys: main.o cast.o devctl.o network.o sys.o cmd.o cmd_reg.o cmd_sub.o cmd_votectrl.o
+daya-sys: main.o cast.o devctl.o network.o sys.o cmd.o cmd_handler.o cmd_reg.o cmd_sub.o cmd_votectrl.o
 	$(CC) -lpthread -o $@ $^
 
 cast.o: cast.c
@@ -14,6 +14,8 @@ network.o: network.c
 sys.o: sys.c
 
 cmd.o: cmd.c
+
+cmd_handler.o: cmd_handler.c
 
 cmd_reg.o: cmd_reg.c
 

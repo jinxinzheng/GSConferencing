@@ -1,7 +1,11 @@
 #ifndef _CLIENT_H_
 #define _CLIENT_H_
 
-void client_init(int id, const char *serverIP);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void client_init(int id, const char *serverIP, int localPort);
 
 /* event callback routine.
  * event: EVENT_*
@@ -44,6 +48,9 @@ enum {
  * the calling side is responsible for allocating the
  * buffers for the out params. */
 
+/* register client to the server */
+int reg();
+
 /* vote controling */
 
 /* vote types */
@@ -71,5 +78,9 @@ int votectrl_stop();
 int votectrl_remind(int id);
 
 int votectrl_forbid(int id, int flag);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

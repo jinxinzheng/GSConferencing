@@ -130,6 +130,9 @@ static void *run_recv_udp(void *arg)
 
 }
 
+static int tcp_port;
+static void (*tcp_recved)(char *buf, int l);
+
 static void *run_recv_tcp(void *arg)
 {
   int port;
@@ -142,7 +145,7 @@ static void *run_recv_tcp(void *arg)
   char buf[1024];
   int l;
 
-  port = (int)arg;
+  port = tcp_port;
 
   if ((lisn_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     die("socket()");
@@ -182,6 +185,10 @@ static void *run_recv_tcp(void *arg)
       buf[l] = 0;
       fprintf(stderr, "recved cmd: %s\n", buf);
 
+      /* call the recv handler */
+      if (tcp_recved)
+        tcp_recved(buf, l);
+
       /* send any here */
     }
 
@@ -197,10 +204,12 @@ void start_recv_udp(int listenPort)
   pthread_create(&thread, NULL, run_recv_udp, (void*)listenPort);
 }
 
-void start_recv_tcp(int listenPort)
+void start_recv_tcp(int listenPort, void (*recved)(char *buf, int l))
 {
   pthread_t thread;
-  pthread_create(&thread, NULL, run_recv_tcp, (void*)listenPort);
+  tcp_port = listenPort;
+  tcp_recved = recved;
+  pthread_create(&thread, NULL, run_recv_tcp, NULL);
 }
 
 void start_send_udp(struct sockaddr_in *servAddr)

@@ -1,5 +1,6 @@
 #include "cmd_handler.h"
 #include <stdlib.h>
+#include <string.h>
 #include "strhash.h"
 
 static struct cmd_handler_entry *cmdhandler_hash[HASH_SZ];
@@ -9,6 +10,7 @@ static struct cmd_handler_entry *cmdhandler_hash[HASH_SZ];
 static struct cmd_handler_entry cmdhandlers[] = {
   CMD_HANDLER_INIT(reg),
   CMD_HANDLER_INIT(sub),
+  CMD_HANDLER_INIT(convctrl),
   CMD_HANDLER_INIT(votectrl),
   {NULL}
 };

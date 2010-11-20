@@ -197,7 +197,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
       d = list_entry(t, struct device, vote.l);
       if (d->vote.choice >= 0)
       {
-        LIST_ADD_NUM(buf, l, d->id);
+        LIST_ADD_NUM(buf, l, (int)d->id);
       }
     }
     LIST_END(buf, l);

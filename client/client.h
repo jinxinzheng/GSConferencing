@@ -51,6 +51,10 @@ enum {
 /* register client to the server */
 int reg();
 
+/* subscribe to a channel/tag.
+ * pass 0 to channel if unsubscribing. */
+int sub(int channel);
+
 /* vote controling */
 
 /* vote types */

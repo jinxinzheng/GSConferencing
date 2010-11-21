@@ -87,6 +87,17 @@ int reg()
   return 0;
 }
 
+int sub(int tag)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d sub %d\n", id, tag);
+
+  SEND_CMD();
+
+  return 0;
+}
+
 int votectrl_query(char *votelist)
 {
   BASICS;

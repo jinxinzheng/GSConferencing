@@ -2,7 +2,7 @@
 #include "net.h"
 #include <string.h>
 #include <stdio.h>
-#include <cmd.h>
+#include "cmd/cmd.h"
 
 static int id;
 static struct sockaddr_in servAddr;

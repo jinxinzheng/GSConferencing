@@ -1,6 +1,6 @@
 #include <sys/types.h>
 #include "sys.h"
-#include "queue.h"
+#include "include/queue.h"
 #include <stdlib.h>
 #include <stdio.h>
 

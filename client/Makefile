@@ -1,18 +1,19 @@
 #CC:=arm-linux-gcc
-CFLAGS:=-I../sys
+CFLAGS := -I..
+LDFLAGS := -lpthread
 
 SRCS := $(wildcard *.c)
 
 all: test-client libclient.a
 
 test-client: main.o net.o
-	$(CC) -lpthread -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^
 
-libclient.a: client.o net.o ../sys/cmd.o
-	$(AR) -rc $@ $^
+libclient.a: client.o net.o ../cmd/cmd.o
+	$(AR) -rcv $@ $^
 
 .depend: Makefile $(SRCS)
-	@$(CC) -MM $(SRCS) >$@
+	@$(CC) $(CFLAGS) -MM $(SRCS) >$@
 sinclude .depend
 
 clean:

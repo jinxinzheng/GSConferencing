@@ -1,6 +1,8 @@
 #ifndef _CMD_H_
 #define _CMD_H_
 
+#include <netinet/in.h>
+
 struct cmd {
   int device_id;
   const char *cmd;

@@ -1,5 +1,5 @@
 #include "sys.h"
-#include "cmd.h"
+#include "cmd_handler.h"
 #include "network.h"
 
 void init()

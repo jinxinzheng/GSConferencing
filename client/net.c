@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include "util.h"
 
 int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)

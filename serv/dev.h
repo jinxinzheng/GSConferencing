@@ -1,8 +1,8 @@
 #ifndef _DEV_H_
 #define _DEV_H_
 
-#include "list.h"
-#include "queue.h"
+#include "include/list.h"
+#include "include/queue.h"
 #include <sys/types.h>
 #include <netinet/in.h>
 #include "vote.h"

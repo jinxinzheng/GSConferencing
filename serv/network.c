@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "queue.h"
+#include "include/queue.h"
 #include "sys.h"
 #include "devctl.h"
 #include "cast.h"
-#include "cmd.h"
+#include "cmd/cmd.h"
 
 #define die(s) do {perror(s); exit(1);} while(0)
 #define fail(s) do {perror(s); return -1;} while(0)

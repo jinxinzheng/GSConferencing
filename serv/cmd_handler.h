@@ -1,7 +1,7 @@
 #ifndef _CMD_HANDLER_H_
 #define _CMD_HANDLER_H_
 
-#include "cmd.h"
+#include "cmd/cmd.h"
 
 struct cmd_handler_entry
 {

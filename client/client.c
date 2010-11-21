@@ -57,8 +57,8 @@ void set_event_callback(event_cb cb)
 
 #define FIND_OK(cmd) ({ \
   int _i; \
-  for (_i=0; _i<32 && (cmd).args[_i]; i++) \
-    if (strcmp("OK", (cmd).args[i]) == 0) \
+  for (_i=0; _i<32 && (cmd).args[_i]; _i++) \
+    if (strcmp("OK", (cmd).args[_i]) == 0) \
       break; \
   _i; \
 })

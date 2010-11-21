@@ -5,11 +5,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include "util.h"
-#include "opt.h"
+
+int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)
+{
+  /* one udp sock for each process.
+   * so cannot be called in two concurrent threads */
+  static int sock = 0;
+
+  if (!sock)
+    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+      die("socket()");
+
+  /* Send data to the server */
+  if (sendto(sock, buf, len, 0,
+    (struct sockaddr *)addr, sizeof(*addr)) < 0)
+    fail("sendto()");
+
+  /* not expecting any reply */
+
+  return 0;
+}
 
 /* connect to and send to the server.
  * the response is stored in buf. */
-int send_tcp(void *buf, size_t len, struct sockaddr_in *addr)
+int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
 {
   int sock;
   char tmp[2048];
@@ -37,38 +56,6 @@ int send_tcp(void *buf, size_t len, struct sockaddr_in *addr)
   return l;
 }
 
-static int auto_send_udp(struct sockaddr_in *addr)
-{
-  int sock;
-  char buf[512], *p;
-  int len;
-
-  if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-    die("socket()");
-
-  *(int *)buf = id;
-  p = buf+sizeof(id);
-
-  for(;;)
-  {
-    len = sprintf(p, "%x", rand());
-    len += sizeof(int);
-
-    /* Send the string to the server */
-    if (sendto(sock, buf, len, 0, (struct sockaddr *)
-          addr, sizeof(*addr)) != len)
-      perror("sendto() failed");
-
-    usleep(100000); /*1ms*/
-  }
-
-}
-
-static void *run_send_udp(void *addr)
-{
-  auto_send_udp((struct sockaddr_in *)addr);
-  return NULL;
-}
 
 static void *run_recv_udp(void *arg)
 {
@@ -102,7 +89,7 @@ static void *run_recv_udp(void *arg)
   if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0)
     die("bind()");
 
-  printf("%d listen on %d\n", id, port);
+  printf("listen on %d\n", port);
 
   for (;;) /* Run forever */
   {
@@ -122,8 +109,7 @@ static void *run_recv_udp(void *arg)
     i = *(int *)buf;
     p = buf+sizeof(int);
 
-    if (verbose)
-      fprintf(stderr,"(%d) recved %d:%s\n", id, i, p);
+    fprintf(stderr,"recved %d:%s\n", i, p);
 
   }
   /* NOT REACHED */
@@ -210,10 +196,4 @@ void start_recv_tcp(int listenPort, void (*recved)(char *buf, int l))
   tcp_port = listenPort;
   tcp_recved = recved;
   pthread_create(&thread, NULL, run_recv_tcp, NULL);
-}
-
-void start_send_udp(struct sockaddr_in *servAddr)
-{
-  pthread_t thread;
-  pthread_create(&thread, NULL, run_send_udp, (void*)servAddr);
 }

@@ -18,6 +18,32 @@ static int servPort = 7650;
 
 static struct sockaddr_in servAddr;
 
+static void *auto_send_udp(void *arg)
+{
+  char buf[512], *p;
+  int len;
+
+  *(int *)buf = id;
+  p = buf+sizeof(id);
+
+  for(;;)
+  {
+    len = sprintf(p, "%x", rand());
+    len += sizeof(int);
+
+    /* Send the string to the server */
+    send_udp(buf, len, &servAddr);
+
+    usleep(100000); /*1ms*/
+  }
+}
+
+static void start_auto_udp()
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, auto_send_udp, NULL);
+}
+
 void read_cmds()
 {
   char buf[2048], *cmd, *p;
@@ -118,7 +144,7 @@ int main(int argc, char *const argv[])
 
   /* auto cast packets */
   if (udp_auto)
-    start_send_udp(&servAddr);
+    start_auto_udp();
 
   /* this will not stop until eof of stdin */
   read_cmds();

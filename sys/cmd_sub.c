@@ -2,6 +2,7 @@
 #include <string.h>
 #include "sys.h"
 #include "devctl.h"
+#include "cast.h"
 
 int handle_cmd_sub(struct cmd *cmd)
 {
@@ -11,7 +12,7 @@ int handle_cmd_sub(struct cmd *cmd)
 
   if (!p)
     return 1;
-  else
+  else do
   {
     struct device *d;
     struct tag *t;
@@ -26,6 +27,12 @@ int handle_cmd_sub(struct cmd *cmd)
     t = get_tag(tuid);
 
     if (d) {
+      if (0 == tid)
+      {
+        dev_unsubscribe(d);
+        break;
+      }
+
       if (!t)
         /* create an 'empty' tag that has no registered device.
          * this ensures the subscription not lost if there are
@@ -34,7 +41,8 @@ int handle_cmd_sub(struct cmd *cmd)
 
       dev_subscribe(d, t);
     }
-  }
+  } while(0);
+
   REP_OK(cmd);
   return 0;
 }

@@ -102,3 +102,9 @@ int dev_subscribe(struct device *dev, struct tag *tag)
 
   return 0;
 }
+
+void dev_unsubscribe(struct device *dev)
+{
+  dev->subscription = NULL;
+  list_del(&dev->subscribe);
+}

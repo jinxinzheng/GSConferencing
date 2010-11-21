@@ -18,9 +18,15 @@ void set_event_callback(event_cb);
 /* event codes */
 
 enum {
+  EVENT_NONE,
+
+  /* arg1: void*, audio data
+   * arg2: int, data length */
+  EVENT_AUDIO,
+
   /* arg1: int, vote number
    * arg2: int, vote type VOTE_* */
-  EVENT_VOTE_START = 1,
+  EVENT_VOTE_START,
 
   /* arg1: int, vote number
    * arg2: int[], results */
@@ -82,6 +88,10 @@ int votectrl_stop();
 int votectrl_remind(int id);
 
 int votectrl_forbid(int id, int flag);
+
+/* data casting */
+
+int send_audio(void *buf, int len);
 
 #ifdef __cplusplus
 }

@@ -115,7 +115,7 @@ int main(int argc, char *const argv[])
   /* listen packets */
 
   listenPort = 20000+id;
-  start_recv_udp(listenPort);
+  start_recv_udp(listenPort, NULL);
 
   /* listen cmds */
   start_recv_tcp(listenPort, NULL);

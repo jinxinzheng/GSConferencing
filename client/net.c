@@ -58,6 +58,9 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
 }
 
 
+static int udp_port;
+static void (*udp_recved)(char *buf, int l);
+
 static void *run_recv_udp(void *arg)
 {
   int sock;
@@ -69,7 +72,7 @@ static void *run_recv_udp(void *arg)
   char buf[2048], *p;
   int len, i;
 
-  port = (int)arg;
+  port = udp_port;
 
   /* Create socket for sending/receiving datagrams */
   if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -111,6 +114,10 @@ static void *run_recv_udp(void *arg)
     p = buf+sizeof(int);
 
     fprintf(stderr,"recved %d:%s\n", i, p);
+
+    /* call the recv handler */
+    if (udp_recved)
+      udp_recved(buf, len);
 
   }
   /* NOT REACHED */
@@ -185,10 +192,12 @@ static void *run_recv_tcp(void *arg)
   /* NOT REACHED */
 }
 
-void start_recv_udp(int listenPort)
+void start_recv_udp(int listenPort, void (*recved)(char *buf, int l))
 {
   pthread_t thread;
-  pthread_create(&thread, NULL, run_recv_udp, (void*)listenPort);
+  udp_port = listenPort;
+  udp_recved = recved;
+  pthread_create(&thread, NULL, run_recv_udp, NULL);
 }
 
 void start_recv_tcp(int listenPort, void (*recved)(char *buf, int l))

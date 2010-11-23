@@ -64,6 +64,107 @@ void set_event_callback(event_cb cb)
   event_handler = cb;
 }
 
+/* udp casting */
+
+enum {
+  TYPE_AUDIO
+};
+
+struct pack
+{
+  uint32_t type;
+  uint32_t id;
+  uint32_t datalen;
+
+  /* reserved, opaque across network */
+  struct list_head q;
+
+  char data[1];
+};
+
+#define headlen(p) ((char*)(*p).data - (char*)p)
+
+int send_audio(void *buf, int len)
+{
+  struct pack *qitem;
+
+  qitem = (struct pack *)malloc(sizeof(struct pack)+len);
+
+  qitem->type = htonl(TYPE_AUDIO);
+  qitem->id = htonl((uint32_t)id);
+  qitem->datalen = htonl((uint32_t)len);
+  memcpy(qitem->data, buf, len);
+
+  //enque
+  blocking_enque(&udp_send_q, &qitem->q);
+
+  return 0;
+}
+
+static void *run_send_udp(void *arg)
+{
+  struct pack *qitem;
+  struct list_head *p;
+
+  while (1)
+  {
+    //deque
+    p = blocking_deque(&udp_send_q);
+    qitem = list_entry(p, struct pack, q);
+
+    //send udp
+    send_udp(&qitem->data, qitem->datalen, &servAddr);
+
+    //free
+    free(qitem);
+  }
+}
+
+static void udp_recved(char *buf, int len)
+{
+  struct pack *qitem;
+
+#define NTOH(u) (u)=ntohl(u)
+  qitem = (struct pack *)buf;
+  NTOH(qitem->type);
+  NTOH(qitem->id);
+  NTOH(qitem->datalen);
+
+  if (headlen(qitem)+qitem->datalen <= len)
+    ;
+  else
+    return; /*mal pack, drop*/
+
+  qitem = (struct pack *)malloc(len);
+  memcpy(qitem, buf, len);
+
+  blocking_enque(&udp_recv_q, &qitem->q);
+}
+
+static void *run_recv_udp(void *arg)
+{
+  struct pack *qitem;
+  struct list_head *p;
+
+  while (1)
+  {
+    p = blocking_deque(&udp_recv_q);
+    qitem = list_entry(p, struct pack, q);
+
+    /* generate event */
+    if (qitem->type == TYPE_AUDIO)
+    {
+      event_handler(EVENT_AUDIO,
+        (void*)qitem->data,
+        (void*)qitem->datalen);
+    }
+
+    free(qitem);
+  }
+}
+
+/* cmd delegates */
+
 #define BASICS \
   char buf[2048]; \
   int l,i; \
@@ -301,104 +402,5 @@ static void handle_cmd(char *buf, int l)
       CHECKOK(c.args[i++]);
       event_handler(EVENT_VOTE_REMIND, (void*)did, (void*)flag);
     }
-  }
-}
-
-/* udp casting */
-
-enum {
-  TYPE_AUDIO
-};
-
-struct pack
-{
-  uint32_t type;
-  uint32_t id;
-  uint32_t datalen;
-
-  /* reserved, opaque across network */
-  struct list_head q;
-
-  char data[1];
-};
-
-#define headlen(p) ((char*)(*p).data - (char*)p)
-
-int send_audio(void *buf, int len)
-{
-  struct pack *qitem;
-
-  qitem = (struct pack *)malloc(sizeof(struct pack)+len);
-
-  qitem->type = htonl(TYPE_AUDIO);
-  qitem->id = htonl((uint32_t)id);
-  qitem->datalen = htonl((uint32_t)len);
-  memcpy(qitem->data, buf, len);
-
-  //enque
-  blocking_enque(&udp_send_q, &qitem->q);
-
-  return 0;
-}
-
-static void *run_send_udp(void *arg)
-{
-  struct pack *qitem;
-  struct list_head *p;
-
-  while (1)
-  {
-    //deque
-    p = blocking_deque(&udp_send_q);
-    qitem = list_entry(p, struct pack, q);
-
-    //send udp
-    send_udp(&qitem->data, qitem->datalen, &servAddr);
-
-    //free
-    free(qitem);
-  }
-}
-
-static void udp_recved(char *buf, int len)
-{
-  struct pack *qitem;
-
-#define NTOH(u) (u)=ntohl(u)
-  qitem = (struct pack *)buf;
-  NTOH(qitem->type);
-  NTOH(qitem->id);
-  NTOH(qitem->datalen);
-
-  if (headlen(qitem)+qitem->datalen <= len)
-    ;
-  else
-    return; /*mal pack, drop*/
-
-  qitem = (struct pack *)malloc(len);
-  memcpy(qitem, buf, len);
-
-  blocking_enque(&udp_recv_q, &qitem->q);
-}
-
-static void *run_recv_udp(void *arg)
-{
-  struct pack *qitem;
-  struct list_head *p;
-
-  while (1)
-  {
-    p = blocking_deque(&udp_recv_q);
-    qitem = list_entry(p, struct pack, q);
-
-    /* generate event */
-    if (qitem->type == TYPE_AUDIO)
-    {
-      event_handler(EVENT_AUDIO,
-        (void*)qitem->data,
-        (void*)qitem->datalen);
-    }
-
-    free(qitem);
   }
 }

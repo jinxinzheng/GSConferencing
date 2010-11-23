@@ -61,6 +61,10 @@ int reg();
  * pass 0 to channel if unsubscribing. */
 int sub(int channel);
 
+/* data casting */
+
+int send_audio(void *buf, int len);
+
 /* vote controling */
 
 /* vote types */
@@ -88,10 +92,6 @@ int votectrl_stop();
 int votectrl_remind(int id);
 
 int votectrl_forbid(int id, int flag);
-
-/* data casting */
-
-int send_audio(void *buf, int len);
 
 #ifdef __cplusplus
 }

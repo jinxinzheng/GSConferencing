@@ -34,6 +34,11 @@ int handle_cmd_discctrl(struct cmd *cmd)
     REP_END(cmd);
   }
 
+  SUBCMD("request")
+  {
+    REP_OK(cmd);
+  }
+
   SUBCMD("status")
   {
     NEXT_ARG(p);

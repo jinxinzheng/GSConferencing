@@ -24,6 +24,22 @@ enum {
    * arg2: int, data length */
   EVENT_AUDIO,
 
+
+  /* arg1: int, discussion number
+   * arg2: unused */
+  EVENT_DISC_OPEN,
+
+  /* arg1, arg2: unused */
+  EVENT_DISC_CLOSE,
+
+  /* arg1, arg2: unused */
+  EVENT_DISC_STOP,
+
+  /* arg1: int, client id
+   * arg2: unused */
+  EVENT_DISC_FORBID,
+
+
   /* arg1: int, vote number
    * arg2: int, vote type VOTE_* */
   EVENT_VOTE_START,
@@ -64,6 +80,24 @@ int sub(int channel);
 /* data casting */
 
 int send_audio(void *buf, int len);
+
+/** command functions **/
+
+/* discussion controling */
+
+int discctrl_query(out char *disclist);
+
+int discctrl_select(int disc_num, out char *idlist);
+
+int discctrl_request();
+
+int discctrl_status(out int *idlist);
+
+int discctrl_close();
+
+int discctrl_stop();
+
+int discctrl_forbid(int id);
 
 /* vote controling */
 

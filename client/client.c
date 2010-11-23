@@ -224,6 +224,43 @@ int sub(int tag)
   return 0;
 }
 
+
+int discctrl_query(char *disclist)
+{
+  return 1;
+}
+
+int discctrl_select(int disc_num, char *idlist)
+{
+  return 1;
+}
+
+int discctrl_request()
+{
+  return 1;
+}
+
+int discctrl_status(out int *idlist)
+{
+  return 1;
+}
+
+int discctrl_close()
+{
+  return 1;
+}
+
+int discctrl_stop()
+{
+  return 1;
+}
+
+int discctrl_forbid(int id)
+{
+  return 1;
+}
+
+
 int votectrl_query(char *votelist)
 {
   BASICS;

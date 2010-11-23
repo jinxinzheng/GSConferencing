@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "types.h"
+#include "include/types.h"
 #include "dev.h"
 #include "sys.h"
 
@@ -20,9 +20,9 @@ int handle_cmd_votectrl(struct cmd *cmd)
     int cn_options;
   }
   db[] = {
-    {"vote1", "101,102,103,104", VOTE_YESNO, 2},
-    {"vote2", "101,103,105,106", VOTE_SAT, 5},
-    {"vote3", "all", VOTE_CUSTOM, 0},
+    {"vote1", "101,102,103,104", VOTE_COMMON, 3},
+    {"vote2", "101,103,105,106", VOTE_1IN5, 5},
+    {"vote3", "all", 0, 0},
     {NULL}
   };
   static int dbl = 3;

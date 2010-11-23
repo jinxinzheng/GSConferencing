@@ -101,13 +101,6 @@ int discctrl_forbid(int id);
 
 /* vote controling */
 
-/* vote types */
-enum {
-  VOTE_COMMON,
-  VOTE_1IN5,
-  VOTE_SCORE
-};
-
 int votectrl_query(out char *votelist);
 
 int votectrl_select(int vote_num, out int *idlist);

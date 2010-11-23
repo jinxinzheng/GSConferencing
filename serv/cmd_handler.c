@@ -10,7 +10,7 @@ static struct cmd_handler_entry *cmdhandler_hash[HASH_SZ];
 static struct cmd_handler_entry cmdhandlers[] = {
   CMD_HANDLER_INIT(reg),
   CMD_HANDLER_INIT(sub),
-  CMD_HANDLER_INIT(convctrl),
+  CMD_HANDLER_INIT(discctrl),
   CMD_HANDLER_INIT(votectrl),
   {NULL}
 };

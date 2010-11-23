@@ -1,7 +1,7 @@
 #include "cmd_handler.h"
 #include <string.h>
 
-int handle_cmd_convctrl(struct cmd *cmd)
+int handle_cmd_discctrl(struct cmd *cmd)
 {
   char *subcmd, *p;
   char buf[1024];

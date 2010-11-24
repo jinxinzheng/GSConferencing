@@ -440,4 +440,31 @@ static void handle_cmd(char *buf, int l)
       event_handler(EVENT_VOTE_REMIND, (void*)did, (void*)flag);
     }
   }
+
+  else if (STREQU(c.cmd, "discctrl"))
+  {
+    char *sub = c.args[i++];
+    if (STREQU(sub, "select"))
+    {
+      int dn = atoi(c.args[i++]);
+      CHECKOK(c.args[i++]);
+      event_handler(EVENT_DISC_OPEN, (void*)dn, NULL);
+    }
+    else if (STREQU(sub, "close"))
+    {
+      CHECKOK(c.args[i++]);
+      event_handler(EVENT_DISC_CLOSE, NULL, NULL);
+    }
+    else if (STREQU(sub, "stop"))
+    {
+      CHECKOK(c.args[i++]);
+      event_handler(EVENT_DISC_STOP, NULL, NULL);
+    }
+    else if (STREQU(sub, "forbid"))
+    {
+      int did = atoi(c.args[i++]);
+      CHECKOK(c.args[i++]);
+      event_handler(EVENT_DISC_FORBID, (void*)did, NULL);
+    }
+  }
 }

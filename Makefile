@@ -1,7 +1,12 @@
-#CC:=arm-linux-gcc
-#AR:=arm-linux-ar
-#export CC
-#export AR
+#ARCH=arm-linux
+
+ifdef ARCH
+CC:=$(ARCH)-gcc
+AR:=$(ARCH)-ar
+export ARCH
+export CC
+export AR
+endif
 
 SUBDIRS:=cmd serv client
 

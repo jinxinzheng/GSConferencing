@@ -5,9 +5,16 @@ LDFLAGS:=-lpthread
 SRCS := $(wildcard *.c)
 OBJS := $(patsubst %.c,%.o,$(SRCS))
 
-all: daya-sys
+ifdef ARCH
+sys = daya-sys-$(ARCH)
+else
+sys = daya-sys
+endif
 
-daya-sys: main.o cast.o devctl.o network.o sys.o ../cmd/cmd.o cmd_handler.o cmd_reg.o cmd_sub.o cmd_discctrl.o cmd_votectrl.o
+
+all: $(sys)
+
+$(sys): main.o cast.o devctl.o network.o sys.o ../cmd/cmd.o cmd_handler.o cmd_reg.o cmd_sub.o cmd_discctrl.o cmd_votectrl.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 .depend: Makefile $(SRCS)
@@ -15,4 +22,4 @@ daya-sys: main.o cast.o devctl.o network.o sys.o ../cmd/cmd.o cmd_handler.o cmd_
 sinclude .depend
 
 clean:
-	rm -f *.o .depend daya-sys
+	rm -f *.o .depend $(sys)

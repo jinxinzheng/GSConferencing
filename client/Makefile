@@ -4,12 +4,20 @@ LDFLAGS := -lpthread
 
 SRCS := $(wildcard *.c)
 
-all: test-client libclient.a
+ifdef ARCH
+libclient := libclient-$(ARCH).a
+test_client := test-client-$(ARCH)
+else
+test_client := test-client
+libclient := libclient.a
+endif
 
-test-client: main.o net.o
+all: test-client $(libclient)
+
+$(test_client): main.o net.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-libclient.a: client.o net.o ../cmd/cmd.o
+$(libclient): client.o net.o ../cmd/cmd.o
 	$(AR) -rcv $@ $^
 
 .depend: Makefile $(SRCS)
@@ -17,4 +25,4 @@ libclient.a: client.o net.o ../cmd/cmd.o
 sinclude .depend
 
 clean:
-	rm -rf *.o .depend test-client libclient.a
+	rm -rf *.o .depend $(test-client) $(libclient)

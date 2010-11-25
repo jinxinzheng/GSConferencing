@@ -227,37 +227,99 @@ int sub(int tag)
 
 int discctrl_query(char *disclist)
 {
-  return 1;
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl query\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  strcpy(disclist, c.args[i+1]);
+
+  return 0;
 }
 
 int discctrl_select(int disc_num, char *idlist)
 {
-  return 1;
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl select %d\n", id, disc_num);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  STR_TO_INT_LIST(c.args[i+1], idlist);
+
+  return 0;
 }
 
 int discctrl_request()
 {
-  return 1;
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl request\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  return 0;
 }
 
-int discctrl_status(out int *idlist)
+int discctrl_status(int *idlist)
 {
-  return 1;
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl status\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  STR_TO_INT_LIST(c.args[i+1], idlist);
+
+  return 0;
 }
 
 int discctrl_close()
 {
-  return 1;
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl close\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  return 0;
 }
 
 int discctrl_stop()
 {
-  return 1;
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl stop\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  return 0;
 }
 
-int discctrl_forbid(int id)
+int discctrl_forbid(int did)
 {
-  return 1;
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl forbid %d\n", id, did);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  return 0;
 }
 
 

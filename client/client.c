@@ -240,7 +240,7 @@ int discctrl_query(char *disclist)
   return 0;
 }
 
-int discctrl_select(int disc_num, char *idlist)
+int discctrl_select(int disc_num, int *idlist)
 {
   BASICS;
 

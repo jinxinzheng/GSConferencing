@@ -87,7 +87,7 @@ int send_audio(void *buf, int len);
 
 int discctrl_query(out char *disclist);
 
-int discctrl_select(int disc_num, out char *idlist);
+int discctrl_select(int disc_num, out int *idlist);
 
 int discctrl_request();
 

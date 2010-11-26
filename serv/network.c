@@ -243,7 +243,7 @@ void run_listener_udp(int port)
       struct device *d;
 
       /* work out the device object */
-      did = *(long *)buf;
+      did = (long)ntohl(*(uint32_t *)buf);
       d = get_device(did);
       if (!d)
         continue;

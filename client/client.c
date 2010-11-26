@@ -72,8 +72,8 @@ enum {
 
 struct pack
 {
-  uint32_t type;
   uint32_t id;
+  uint32_t type;
   uint32_t datalen;
 
   /* reserved, opaque across network */

@@ -82,6 +82,22 @@ struct pack
   char data[1];
 };
 
+#define _hton(u) (u) = htonl(u)
+#define HTON(p) \
+do { \
+  _hton((p)->type); \
+  _hton((p)->id); \
+  _hton((p)->datalen); \
+}while(0)
+
+#define _ntoh(u) (u) = ntohl(u)
+#define NTOH(p) \
+do { \
+  _ntoh((p)->type); \
+  _ntoh((p)->id); \
+  _ntoh((p)->datalen); \
+}while (0)
+
 #define headlen(p) ((char*)(*p).data - (char*)p)
 
 int send_audio(void *buf, int len)
@@ -90,9 +106,9 @@ int send_audio(void *buf, int len)
 
   qitem = (struct pack *)malloc(sizeof(struct pack)+len);
 
-  qitem->type = htonl(TYPE_AUDIO);
-  qitem->id = htonl((uint32_t)id);
-  qitem->datalen = htonl((uint32_t)len);
+  qitem->type = TYPE_AUDIO;
+  qitem->id = (uint32_t)id;
+  qitem->datalen = (uint32_t)len;
   memcpy(qitem->data, buf, len);
 
   //enque
@@ -105,6 +121,7 @@ static void *run_send_udp(void *arg)
 {
   struct pack *qitem;
   struct list_head *p;
+  int l;
 
   while (1)
   {
@@ -113,7 +130,9 @@ static void *run_send_udp(void *arg)
     qitem = list_entry(p, struct pack, q);
 
     //send udp
-    send_udp(&qitem->data, qitem->datalen, &servAddr);
+    l = headlen(qitem) + qitem->datalen;
+    HTON(qitem);
+    send_udp(qitem, l, &servAddr);
 
     //free
     free(qitem);
@@ -124,11 +143,8 @@ static void udp_recved(char *buf, int len)
 {
   struct pack *qitem;
 
-#define NTOH(u) (u)=ntohl(u)
   qitem = (struct pack *)buf;
-  NTOH(qitem->type);
-  NTOH(qitem->id);
-  NTOH(qitem->datalen);
+  NTOH(qitem);
 
   if (headlen(qitem)+qitem->datalen <= len)
     ;

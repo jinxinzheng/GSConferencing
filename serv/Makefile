@@ -14,7 +14,7 @@ endif
 
 all: $(sys)
 
-$(sys): main.o cast.o devctl.o network.o sys.o ../cmd/cmd.o cmd_handler.o cmd_reg.o cmd_sub.o cmd_discctrl.o cmd_votectrl.o
+$(sys): main.o cast.o devctl.o network.o sys.o cmd_handler.o cmd_reg.o cmd_sub.o cmd_discctrl.o cmd_votectrl.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 .depend: Makefile $(SRCS)

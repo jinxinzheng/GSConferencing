@@ -8,7 +8,7 @@ export CC
 export AR
 endif
 
-SUBDIRS:=cmd serv client
+SUBDIRS:=serv client
 
 all:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d; done

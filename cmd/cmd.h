@@ -2,6 +2,9 @@
 #define _CMD_H_
 
 #include <netinet/in.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 struct cmd {
   int device_id;
@@ -25,6 +28,28 @@ struct cmd {
  * example:
  * 101 reg p1101
  * */
-int parse_cmd(char *line, struct cmd *pcmd);
+static inline int parse_cmd(char *line, struct cmd *pcmd)
+{
+  char *p;
+  int i;
+
+  p = strtok(line, " \r\n");
+  pcmd->device_id = atoi(p);
+
+  p = strtok(NULL, " \r\n");
+  if (!p)
+    return 1;
+  pcmd->cmd=p;
+
+  i=0;
+  do
+  {
+    p = strtok(NULL, " \r\n");
+    pcmd->args[i++] = p;
+  }
+  while (p);
+
+  return 0;
+}
 
 #endif

@@ -17,7 +17,7 @@ all: test-client $(libclient)
 $(test_client): main.o net.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-$(libclient): client.o net.o ../cmd/cmd.o
+$(libclient): client.o net.o
 	$(AR) -rcv $@ $^
 
 .depend: Makefile $(SRCS)

@@ -25,4 +25,7 @@ $(libclient): client.o net.o
 sinclude .depend
 
 clean:
-	rm -rf *.o .depend $(test-client) $(libclient)
+	rm -rf *.o .depend $(test-client) apitest $(libclient)
+
+apitest: apitest.o client.o net.o
+	$(CC) $(LDFLAGS) -o $@ $^

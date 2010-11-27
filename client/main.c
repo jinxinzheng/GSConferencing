@@ -24,7 +24,7 @@ static void *auto_send_udp(void *arg)
   char buf[512], *p;
   int len;
 
-  *(int *)buf = id;
+  *(uint32_t *)buf = htonl((uint32_t)id);
   p = buf+sizeof(id);
 
   for(;;)

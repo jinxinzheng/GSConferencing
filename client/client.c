@@ -149,7 +149,10 @@ static void udp_recved(char *buf, int len)
   if (headlen(qitem)+qitem->datalen <= len)
     ;
   else
+  {
+    fprintf(stderr, "bug: %d+%d > %d\n", headlen(qitem), qitem->datalen, len);
     return; /*mal pack, drop*/
+  }
 
   qitem = (struct pack *)malloc(len);
   memcpy(qitem, buf, len);

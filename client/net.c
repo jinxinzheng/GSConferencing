@@ -69,7 +69,7 @@ static void *run_recv_udp(void *arg)
   struct sockaddr_in addr; /* Local address */
   struct sockaddr_in other;
   int otherLen;
-  char buf[2048], *p;
+  char buf[4096], *p;
   int len, i;
 
   port = udp_port;
@@ -101,7 +101,7 @@ static void *run_recv_udp(void *arg)
     otherLen = sizeof(other);
 
     /* Block until receive message from a client */
-    if ((len = recvfrom(sock, buf, 1024, 0,
+    if ((len = recvfrom(sock, buf, sizeof buf, 0,
             (struct sockaddr *) &other, &otherLen)) < 0)
     {
       perror("recvfrom() failed");

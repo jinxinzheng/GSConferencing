@@ -1,6 +1,6 @@
 #CC:=arm-linux-gcc
-CFLAGS:=-I..
-LDFLAGS:=-lpthread
+CFLAGS:=-I. -I..
+LDFLAGS:=-lpthread -lsqlite
 
 SRCS := $(wildcard *.c)
 OBJS := $(patsubst %.c,%.o,$(SRCS))
@@ -14,7 +14,7 @@ endif
 
 all: $(sys)
 
-$(sys): main.o cast.o devctl.o network.o sys.o cmd_handler.o cmd_reg.o cmd_sub.o cmd_discctrl.o cmd_votectrl.o
+$(sys): main.o cast.o devctl.o network.o sys.o cmd_handler.o cmd_reg.o cmd_sub.o cmd_discctrl.o cmd_votectrl.o db/md.o db/db.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 .depend: Makefile $(SRCS)
@@ -22,4 +22,4 @@ $(sys): main.o cast.o devctl.o network.o sys.o cmd_handler.o cmd_reg.o cmd_sub.o
 sinclude .depend
 
 clean:
-	rm -f *.o .depend $(sys)
+	rm -f *.o .depend $(sys) db/*.o

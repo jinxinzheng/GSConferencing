@@ -10,18 +10,12 @@ struct db_device
 	char ip[32];
 	int port;
 	int tagid;
-
-  struct db_device *hash_next;
-  struct db_device **hash_pprev;
 };
 
 struct db_tag
 {
 	long id;
 	char name[10];
-
-  struct db_tag *hash_next;
-  struct db_tag **hash_pprev;
 };
 
 struct db_vote
@@ -31,9 +25,6 @@ struct db_vote
 	int type;
 	int options_count;
 	char members[1024];
-
-  struct db_vote *hash_next;
-  struct db_vote **hash_pprev;
 };
 
 

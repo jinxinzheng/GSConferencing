@@ -1,94 +1,128 @@
 #include "md.h"
+#include "db.h"
 #include <stdlib.h>
 #include <string.h>
-#include "hash.h"
+#include <include/list.h>
+#include <hash.h>
 
-/* these static buffers store all the data.
- * the p_* pointers points to an 'available space'
- * that could be used to store new data. */
+#define SETUP(type) \
+struct md_##type                    \
+{                                   \
+  struct db_##type data;            \
+  int id; /* redundant for hash */  \
+  struct list_head l;               \
+  struct md_##type *hash_next;      \
+  struct md_##type **hash_pprev;    \
+};                                  \
+\
+struct list_head list_##type;                 \
+struct md_##type *hash_##type[HASH_SZ];       \
+\
+static void _add_##type(struct db_##type *p)  \
+{                                             \
+  struct md_##type *m = (struct md_##type *)  \
+    malloc(sizeof(struct md_##type));         \
+  m->data = *p;                               \
+  m->id = m->data.id;                         \
+  list_add_tail(&m->l, &list_##type);         \
+  hash_id(hash_##type, m);                    \
+}                                             \
+\
+static void _del_##type(int id)   \
+{                                 \
+  struct md_##type *m =           \
+    find_by_id(hash_##type, id);  \
+  if (m)                          \
+  {                               \
+    list_del(&m->l);               \
+    unhash_id(m);                 \
+    free(m);                      \
+  }                               \
+}                                 \
+\
+static int _list_to_array_##type(struct list_head *list, struct db_##type *array[]) \
+{                         \
+  struct list_head *p;    \
+  struct md_##type *m;    \
+  int i = 0;              \
+                          \
+  list_for_each(p, list)  \
+  {                       \
+    m = list_entry(p, struct md_##type, l); \
+                          \
+    array[i++] = &m->data;\
+  }                       \
+  array[i] = NULL;        \
+                          \
+  return i;               \
+}                         \
+\
+/* get a 'snapshot' of the data */ \
+int md_get_array_##type(struct db_##type *array[])    \
+{                                                     \
+  return _list_to_array_##type(&list_##type, array);  \
+}                                                     \
+\
+struct db_##type *md_find_##type(int id)              \
+{                                                     \
+  struct md_##type *m = find_by_id(hash_##type, id);  \
+  if (m)                                              \
+    return &m->data;                                  \
+  else                                                \
+    return NULL;                                      \
+}                                                     \
+\
+void md_add_##type(struct db_##type *p) \
+{                                       \
+  if (db_add_##type(p) != 0)            \
+    return;                             \
+  _add_##type(p);                       \
+}                                       \
+\
+void md_del_##type(int id)    \
+{                             \
+  if (db_del_##type(id) != 0) \
+    return;                   \
+  _del_##type(id);            \
+}                             \
+\
+void md_update_##type(struct db_##type *p)    \
+{                                             \
+  if (db_update_##type(p) != 0)               \
+    return;                                   \
+  /* assume that p is returned by md_find so
+   * we don't need to update memory data. */  \
+}
 
-#define SETUP_BUFFERS(type, cap) \
-static struct db_##type table_##type[cap]; \
-static struct db_##type *p_##type = table_##type; \
-static struct db_##type *hash_##type[HASH_SZ];
 
-SETUP_BUFFERS(device, 10000);
-SETUP_BUFFERS(tag, 1000);
-SETUP_BUFFERS(vote, 1000);
-
-#define CAP(table) (sizeof(table)/sizeof(table[0]))
+SETUP(device);
+SETUP(tag);
+SETUP(vote);
 
 void md_load_all()
 {
   int l,i;
+  char *buf = malloc(4*1024*1024); /*4M*/
 
   db_init();
 
 #define LOAD(type) \
-  memset(table_##type, 0, sizeof table_##type); \
-  memset(hash_##type, 0, sizeof hash_##type); \
-  l = db_get_##type(table_##type); \
-  for (i=0; i<l; i++) \
-    hash_id(hash_##type, &table_##type[i]); \
-  p_##type = table_##type + l;
+  do { \
+    struct db_##type *buf_##type; \
+    \
+    memset(hash_##type, 0, sizeof hash_##type); \
+    \
+    buf_##type = (struct db_##type *)buf; \
+    l = db_get_##type(buf_##type); \
+    for (i=0; i<l; i++) \
+    { \
+      _add_##type(buf_##type+i); \
+    } \
+  } while(0)
 
   LOAD(device);
-
   LOAD(tag);
-
   LOAD(vote);
-}
 
-
-#define md_find(type, id) \
-  find_by_id(hash_##type, (id))
-
-
-/* p does not need to point to an item in the buffer */
-#define md_add(type, p) \
-do { \
-  if (db_add_##type(p) != 0) \
-    break; \
-  *p_##type = *(p); \
-  hash_id(hash_##type, p_##type); \
-  /* find next available space */ \
-  { \
-    struct db_##type *_t = p_##type; \
-    do { \
-      _t = (_t+1) % CAP(table_##type); \
-      if (_t->id == 0) \
-        break; \
-    } while (_t != p_##type); \
-    if (_t->id == 0) /* found? */ \
-      p_##type = _t; \
-    else \
-      /* if we get here then we are out of buffer. \
-       * need to increase the capacity */ \
-      fprintf(stderr, "out of buffer\n"); \
-  } \
-} while(0)
-
-
-/* p should point to an item in the buffer,
- * i.e. returned by md_find */
-#define md_del(type, p) \
-do { \
-  if (db_del_##type((p)->id) != 0) \
-    break; \
-  /* delete from hash */ \
-  unhash_id(p); \
-  /* mark the space available */ \
-  (p)->id = 0; \
-} while(0)
-
-
-/* p should point to an item in the buffer,
- * i.e. returned by md_find */
-#define md_update(type, p) \
-  db_update_##type(p)
-
-
-struct db_device *md_find_device(long id)
-{
-  return md_find(device, id);
+  free(buf);
 }

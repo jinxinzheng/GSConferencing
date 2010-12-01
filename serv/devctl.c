@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "cast.h"
+#include "db/md.h"
 
 struct group *group_create(long gid)
 {
@@ -57,8 +58,11 @@ int dev_register(struct device *dev)
   }
 
   /* set up group,tag from database */
-  gid=1;
-  tid = dev->id / 100;
+  {
+    struct db_device *dbd = md_find_device(dev->id);
+    gid=1;
+    tid = dbd->tagid;
+  }
 
   /* tag unique id */
   tuid = TAGUID(gid, tid);

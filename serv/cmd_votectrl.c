@@ -5,6 +5,7 @@
 #include "include/types.h"
 #include "dev.h"
 #include "sys.h"
+#include "db/md.h"
 
 int handle_cmd_votectrl(struct cmd *cmd)
 {
@@ -12,20 +13,8 @@ int handle_cmd_votectrl(struct cmd *cmd)
   char buf[1024];
   int ai=0, i,j,l;
 
-  /* todo: replace with database */
-  static struct {
-    char *name;
-    char *members;
-    int type;
-    int cn_options;
-  }
-  db[] = {
-    {"vote1", "101,102,103,104", VOTE_COMMON, 3},
-    {"vote2", "101,103,105,106", VOTE_1IN5, 5},
-    {"vote3", "all", 0, 0},
-    {NULL}
-  };
-  static int dbl = 3;
+  static struct db_vote *db[1024];
+  static int dbl;
 
   scmd = cmd->args[ai++];
   if (!scmd)
@@ -35,10 +24,14 @@ int handle_cmd_votectrl(struct cmd *cmd)
   {
     REP_ADD(cmd, "OK");
 
+    /* get a snapshot of the database
+     * which is valid until stop. */
+    dbl = md_get_array_vote(db);
+
     l=0;
     for (i=0; i<dbl; i++)
     {
-      LIST_ADD(buf, l, db[i].name);
+      LIST_ADD(buf, l, db[i]->name);
     }
     LIST_END(buf, l);
 
@@ -59,7 +52,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     REP_ADD(cmd, "OK");
 
-    p = db[i].members;
+    p = db[i]->members;
     REP_ADD(cmd, p);
 
     REP_END(cmd);
@@ -86,7 +79,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     REP_ADD(cmd, "OK");
 
-    j = db[i].type;
+    j = db[i]->type;
     REP_ADD_NUM(cmd, j);
 
     REP_END(cmd);
@@ -95,14 +88,14 @@ int handle_cmd_votectrl(struct cmd *cmd)
     v = (struct vote *)malloc(sizeof (struct vote));
     memset(v, 0, sizeof (struct vote));
     INIT_LIST_HEAD(&v->device_head);
-    v->cn_options = db[i].cn_options;
+    v->cn_options = db[i]->options_count;
 
     /* set the vote object on the master device
      * but do not add to the vote list */
     d->vote.v = v;
 
     /*send vote start cmd to the members*/
-    strcpy(buf, db[i].members);
+    strcpy(buf, db[i]->members);
     if (strcmp(buf, "all")==0)
     {
       struct group *g;
@@ -271,6 +264,10 @@ int handle_cmd_votectrl(struct cmd *cmd)
       d = list_entry(t, struct device, list);
       sendto_dev_tcp(cmd->rep, cmd->rl, d);
     }
+
+    /* clear database snapshot */
+    memset(db, 0, sizeof db);
+    dbl = 0;
   }
   else if (strcmp(scmd, "remind") == 0)
   {

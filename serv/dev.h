@@ -114,6 +114,12 @@ struct device {
     int choice;
     int forbidden;
   } vote;
+
+  struct {
+    struct list_head l;
+    int open;
+    int forbidden;
+  } discuss;
 };
 
 #endif

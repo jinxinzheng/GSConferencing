@@ -1,6 +1,8 @@
 #include "sys.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <arpa/inet.h>
 #include "cast.h"
 #include "db/md.h"
 
@@ -57,11 +59,40 @@ int dev_register(struct device *dev)
     return 1;
   }
 
-  /* set up group,tag from database */
+  /* update the device database and
+   * set up group, tag */
   {
-    struct db_device *dbd = md_find_device(dev->id);
-    gid=1;
-    tid = dbd->tagid;
+    struct db_device *dbd;
+    char *ip = inet_ntoa(dev->addr.sin_addr);
+    int port = ntohs(dev->addr.sin_port);
+
+    gid = 1;
+    if (dbd = md_find_device(dev->id))
+    {
+      if (strcmp(dbd->ip, ip) != 0 || dbd->port != port)
+      {
+        strcpy(dbd->ip, ip);
+        dbd->port = port;
+
+        md_update_device(dbd);
+      }
+
+      tid = dbd->tagid;
+    }
+    else
+    {
+      struct db_device tmp = {
+        dev->id,
+        "",
+        port,
+        1
+      };
+      strcpy(tmp.ip, ip);
+
+      md_add_device(&tmp);
+
+      tid = tmp.tagid;
+    }
   }
 
   /* tag unique id */

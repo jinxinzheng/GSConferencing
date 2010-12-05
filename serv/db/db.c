@@ -1,6 +1,7 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include <sqlite.h>
+#include <string.h>
 #include "db.h"
 
 
@@ -10,7 +11,7 @@ sqlite *db = NULL;		//pointer to sqlite database.
 int db_init()
 {
 	char *errmsg;
-	db = sqlite_open("test.db", 0777, &errmsg);
+	db = sqlite_open("sys.db", 0777, &errmsg);
 	if (db == 0)
 	{
 		fprintf(stderr, "Could not open database: %s\n", errmsg);
@@ -55,7 +56,7 @@ int db_get_device(struct db_device *dev)
 {
 	const char **values, **columnNames;
 	char *errmsg;
-	int ret, cols, rows, i;
+	int ret, cols, rows;
 	char sqlcmd[64];
 	sqlite_vm *vm;
 
@@ -66,12 +67,13 @@ int db_get_device(struct db_device *dev)
 	while (sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW)
 	{
 		rows++;
-		dev->id = atoi(values[0]);
+		dev->id = atol(values[0]);
 		strcpy(dev->ip, values[1]);
 		dev->port = atoi(values[2]);
 		dev->tagid = atoi(values[3]);
 		dev++;
 /*
+        int i;
 		for (i = 0; i < cols; i++) {
 			printf("%s: %s; ", columnNames[i], values[i]);
 		}
@@ -99,7 +101,7 @@ int db_update_device(struct db_device *dev)
 	char sqlcmd[256];
 
 	sprintf(sqlcmd, "UPDATE device SET ip = '%s', port = %d, tagid = %d "
-         "WHERE id = %d;", dev->ip, dev->port, dev->tagid, dev->id);
+         "WHERE id = %ld;", dev->ip, dev->port, dev->tagid, dev->id);
 
 //  printf("%s\n", sqlcmd);
 
@@ -124,7 +126,7 @@ int db_add_device(struct db_device *dev)
 	int ret;
 	char sqlcmd[256];
 
-	sprintf(sqlcmd, "insert into device(id, ip, port, tagid) values(%d, '%s', %d, %d);",
+	sprintf(sqlcmd, "insert into device(id, ip, port, tagid) values(%ld, '%s', %d, %d);",
          dev->id, dev->ip, dev->port, dev->tagid);
 
 //	printf("%s\n", sqlcmd);
@@ -137,20 +139,20 @@ int db_add_device(struct db_device *dev)
   	}
   	else
   	{
-		printf("%d was inserted as ID %d\n", dev->id, sqlite_last_insert_rowid(db));
+		printf("%ld was inserted as ID %d\n", dev->id, sqlite_last_insert_rowid(db));
 	}
 
 	return ret;
 }
 
 
-int db_del_device(int id)
+int db_del_device(long id)
 {
 	char *errmsg;
 	int ret;
 	char sqlcmd[64];
 
-	sprintf(sqlcmd, "delete from device where id = %d;", id);
+	sprintf(sqlcmd, "delete from device where id = %ld;", id);
 
 //  printf("%s\n", sqlcmd);
 
@@ -173,7 +175,7 @@ int db_get_tag(struct db_tag *tag)
 {
   const char **values, **columnNames;
 	char *errmsg;
-	int ret, cols, rows, i;
+	int ret, cols, rows;
 	char sqlcmd[64];
 	sqlite_vm *vm;
 
@@ -184,7 +186,7 @@ int db_get_tag(struct db_tag *tag)
 	while (sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW)
 	{
 		rows++;
-		tag->id = atoi(values[0]);
+		tag->id = atol(values[0]);
 		strcpy(tag->name, values[1]);
 		tag++;
 	}
@@ -205,7 +207,7 @@ int db_update_tag(struct db_tag *tag)
 	int ret;
 	char sqlcmd[256];
 
-	sprintf(sqlcmd, "UPDATE tag SET name = '%s' WHERE id = %d;", tag->name, tag->id);
+	sprintf(sqlcmd, "UPDATE tag SET name = '%s' WHERE id = %ld;", tag->name, tag->id);
 
 //  printf("%s\n", sqlcmd);
 
@@ -247,13 +249,13 @@ int db_add_tag(struct db_tag *tag)
 	return ret;
 }
 
-int db_del_tag(int id)
+int db_del_tag(long id)
 {
     char *errmsg;
 	int ret;
 	char sqlcmd[64];
 
-	sprintf(sqlcmd, "delete from tag where id = %d;", id);
+	sprintf(sqlcmd, "delete from tag where id = %ld;", id);
 
 //  printf("%s\n", sqlcmd);
 
@@ -276,7 +278,7 @@ int db_get_vote(struct db_vote *vote)
 {
   const char **values, **columnNames;
 	char *errmsg;
-	int ret, cols, rows, i;
+	int ret, cols, rows;
 	char sqlcmd[64];
 	sqlite_vm *vm;
 
@@ -287,7 +289,7 @@ int db_get_vote(struct db_vote *vote)
 	while (sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW)
 	{
 		rows++;
-		vote->id = atoi(values[0]);
+		vote->id = atol(values[0]);
 		strcpy(vote->name, values[1]);
 		vote->type = atoi(values[2]);
 		vote->options_count = atoi(values[3]);
@@ -312,7 +314,7 @@ int db_update_vote(struct db_vote *vote)
 	char sqlcmd[256];
 
 	sprintf(sqlcmd, "UPDATE vote SET name = '%s', type = %d, options_count = %d, "
-         "members = '%s' WHERE id = %d;", vote->name, vote->type, vote->options_count, vote->members, vote->id);
+         "members = '%s' WHERE id = %ld;", vote->name, vote->type, vote->options_count, vote->members, vote->id);
 
 //  printf("%s\n", sqlcmd);
 
@@ -355,13 +357,13 @@ int db_add_vote(struct db_vote *vote)
 	return ret;
 }
 
-int db_del_vote(int id)
+int db_del_vote(long id)
 {
     char *errmsg;
 	int ret;
 	char sqlcmd[64];
 
-	sprintf(sqlcmd, "delete from vote where id = %d;", id);
+	sprintf(sqlcmd, "delete from vote where id = %ld;", id);
 
 //  printf("%s\n", sqlcmd);
 
@@ -379,110 +381,107 @@ int db_del_vote(int id)
 	return ret;
 }
 
-
-/*
- * just for testing...
- */
-int __main(void)
+int db_get_discuss(struct db_discuss *discuss)
 {
-	struct db_device dev[10];
+  const char **values, **columnNames;
+	char *errmsg;
+	int ret, cols, rows;
+	char sqlcmd[64];
+	sqlite_vm *vm;
 
+	rows = 0;
+	strcpy(sqlcmd, "select * from discuss;");
+	ret = sqlite_compile(db, sqlcmd, NULL, &vm, &errmsg);
+
+	while (sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW)
+	{
+		rows++;
+		discuss->id = atol(values[0]);
+		strcpy(discuss->name, values[1]);
+		strcpy(discuss->members, values[2]);
+		discuss++;
+	}
+
+	ret = sqlite_finalize(vm, &errmsg);
+
+	if (ret != SQLITE_OK)
+	{
+		fprintf(stderr, "SQL error: %s\n", errmsg);
+	}
+
+	return rows;
+}
+
+int db_update_discuss(struct db_discuss *discuss)
+{
+    char *errmsg;
 	int ret;
-	ret = db_init();
-//	printf("%d\n", ret);
-/*
-	ret = db_get_device(dev);
-	printf("%d\n", ret);
+	char sqlcmd[256];
 
-	int i;
-	for (i = 0; i < ret; i++)
+	sprintf(sqlcmd, "UPDATE discuss SET name = '%s', "
+         "members = '%s' WHERE id = %ld;", discuss->name, discuss->members, discuss->id);
+
+//  printf("%s\n", sqlcmd);
+
+	ret = sqlite_exec(db, sqlcmd, NULL, NULL, &errmsg);
+
+	if (ret != SQLITE_OK)
 	{
-		printf("%d; %s; %d; %d\n", dev[i].id, dev[i].ip, dev[i].port, dev[i].tagid);
-	}       */
-/*
-	struct db_device dev2;
-
-	dev2.id = 201;
-	strcpy(dev2.ip, "192.168.150.110");
-	dev2.port = 33333;
-	dev2.tagid = 2;
-
-	ret = db_add_device(&dev2);
-	printf("%d\n", ret);
-*/
-/*
-	struct db_device dev3;
-
-	dev3.id = 201;
-	strcpy(dev3.ip, "10.100.150.1");
-	dev3.port = 5555;
-	dev3.tagid = 2;
-
-	ret = db_update_device(&dev3);
-	printf("%d\n", ret);
-*/
-/*    int devid = 201;
-    ret = db_del_device(devid);
-    printf("%d\n", ret);
-*/
-
-    struct db_tag tag[10];
-
-/*    ret = db_get_tag(tag);
-
-    int i;
-	for (i = 0; i < ret; i++)
-	{
-		printf("%d; %s\n", tag[i].id, tag[i].name);
+		fprintf(stderr, "SQL error: %s\n", errmsg);
 	}
-*/
-/*    struct db_tag tag2;
-
-    strcpy(tag2.name, "abcdefg");
-
-    ret = db_add_tag(&tag2);
-    printf("%d\n",ret);
-*/
-/*    struct db_tag tag3;
-
-    tag3.id = 7;
-    strcpy(tag3.name, "qwertyui");
-
-    ret = db_update_tag(&tag3);
-    printf("%d\n",ret);
-*/
-/*    int tagid = 7;
-
-    ret = db_del_tag(7);
-    printf("%d\n",ret);
-*/
-
-    struct db_vote vote[10];
-
-/*    ret = db_get_vote(vote);
-
-    int i;
-	for (i = 0; i < ret; i++)
+	else
 	{
-		printf("%d; %s; %d; %d; %s\n", vote[i].id, vote[i].name,
-            vote[i].type, vote[i].options_count, vote[i].members);
+		printf("%d row(s) were changed\n", sqlite_changes(db));
 	}
-*/
-/*    struct db_vote vote2 = {0, "test_vote", 2, 2, "lisi;wangwu;dingliu"};
 
-    ret = db_add_vote(&vote2);
-    printf("%d\n",ret);
-*/
-/*    struct db_vote vote3 = {5, "test_vote2", 1, 2, "lisi;wangwu"};
+	return ret;
+}
 
-    ret = db_update_vote(&vote3);
-    printf("%d\n",ret);
-*/
-    int voteid = 5;
-    ret = db_del_vote(voteid);
-    printf("%d\n",ret);
+int db_add_discuss(struct db_discuss *discuss)
+{
+    char *errmsg;
+	int ret;
+	char sqlcmd[256];
 
-	db_close();
+	sprintf(sqlcmd, "insert into discuss(name, members) "
+         "values('%s', '%s');", discuss->name, discuss->members);
 
-	return 0;
+//	printf("%s\n", sqlcmd);
+
+	ret = sqlite_exec(db, sqlcmd, NULL, NULL, &errmsg);
+
+	if (ret != SQLITE_OK)
+  	{
+		fprintf(stderr, "SQL error: %s\n%s\n", errmsg, sqlcmd);
+  	}
+  	else
+  	{
+		printf("%s was inserted as ID %d\n", discuss->name, sqlite_last_insert_rowid(db));
+	}
+
+	return ret;
+}
+
+int db_del_discuss(long id)
+{
+    char *errmsg;
+	int ret;
+	char sqlcmd[64];
+
+	sprintf(sqlcmd, "delete from discuss where id = %ld;", id);
+
+//  printf("%s\n", sqlcmd);
+
+	ret = sqlite_exec(db, sqlcmd, NULL, NULL, &errmsg);
+
+	if (ret != SQLITE_OK)
+	{
+		fprintf(stderr, "SQL error: %s\n", errmsg);
+	}
+	else
+	{
+		printf("%d row(s) were changed\n", sqlite_changes(db));
+	}
+
+	return ret;
 }

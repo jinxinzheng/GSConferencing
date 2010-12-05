@@ -1,6 +1,7 @@
 #include "md.h"
 #include "db.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <include/list.h>
 #include <hash.h>
@@ -15,8 +16,8 @@ struct md_##type                    \
   struct md_##type **hash_pprev;    \
 };                                  \
 \
-struct list_head list_##type;                 \
-struct md_##type *hash_##type[HASH_SZ];       \
+static LIST_HEAD(list_##type);                       \
+static struct md_##type *hash_##type[HASH_SZ];       \
 \
 static void _add_##type(struct db_##type *p)  \
 {                                             \
@@ -98,6 +99,7 @@ void md_update_##type(struct db_##type *p)    \
 SETUP(device);
 SETUP(tag);
 SETUP(vote);
+SETUP(discuss);
 
 void md_load_all()
 {
@@ -123,6 +125,7 @@ void md_load_all()
   LOAD(device);
   LOAD(tag);
   LOAD(vote);
+  LOAD(discuss);
 
   free(buf);
 }

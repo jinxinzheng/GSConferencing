@@ -22,6 +22,13 @@ create table vote
 	members varchar(1024)
 );
 
+create table discuss
+(
+	id integer primary key,     --autoincrement field
+	name varchar(64),
+	members varchar(1024)
+);
+
 
 --some test data.
 
@@ -37,7 +44,10 @@ insert into device(id, ip, port, tagid) values(102, '192.168.1.101', 12345, 1);
 insert into device(id, ip, port, tagid) values(103, '192.168.1.102', 12345, 2);
 insert into device(id, ip, port, tagid) values(104, '192.168.1.103', 12345, 3);
 
-insert into vote(name, type, options_count, members) values('vote_1', 1, 2, 'zhangsan;lisi');
-insert into vote(name, type, options_count, members) values('vote_2', 2, 2, 'zhangsan;wangwu');
-insert into vote(name, type, options_count, members) values('vote_3', 2, 2, 'zhangsan');
-insert into vote(name, type, options_count, members) values('vote_4', 3, 2, 'zhangsan');
+insert into vote(name, type, options_count, members) values('vote_1', 1, 2, '101,102,103');
+insert into vote(name, type, options_count, members) values('vote_2', 2, 2, '101,102');
+insert into vote(name, type, options_count, members) values('vote_3', 2, 2, '101');
+insert into vote(name, type, options_count, members) values('vote_4', 3, 2, '104');
+
+insert into discuss(name, members) values('test_discuss_1', '101,102,103,104');
+insert into discuss(name, members) values('test_discuss_2', '101,102,103');

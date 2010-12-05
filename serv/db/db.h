@@ -27,6 +27,13 @@ struct db_vote
 	char members[1024];
 };
 
+struct db_discuss
+{
+    long id;
+    char name[64];
+    char members[1024];
+};
+
 
 /*
  * init sqlite database.
@@ -64,7 +71,7 @@ int db_update_device(struct db_device *);
  *
  * the argument point to a db_device variable which you want to add.
  * the return value indicates the operation result.
- * 
+ *
  * note: the device id is not an auto increment field, so you have to specify it.
  */
 int db_add_device(struct db_device *);
@@ -75,7 +82,7 @@ int db_add_device(struct db_device *);
  * the argument is the device id which you want to delete.
  * the return value indicates the operation result.
  */
-int db_del_device(int id);
+int db_del_device(long id);
 
 
 /*
@@ -110,8 +117,7 @@ int db_add_tag(struct db_tag *);
  * the argument is the tag id which you want to delete.
  * the return value indicates the operation result.
  */
-int db_del_tag(int id);
-
+int db_del_tag(long id);
 
 
 /*
@@ -146,8 +152,42 @@ int db_add_vote(struct db_vote *);
  * the argument is the vote id which you want to delete.
  * the return value indicates the operation result.
  */
-int db_del_vote(int id);
+int db_del_vote(long id);
 
+
+/*
+ * get all discuss from database.
+ *
+ * the argument point to a db_discuss array which stored discuss info.
+ * the return value indicates how many discuss in database.
+ */
+int db_get_discuss(struct db_discuss *);
+
+/*
+ * update a discuss info in database.
+ *
+ * the argument point to a db_discuss variable which you want to update.
+ * the return value indicates the operation result.
+ */
+int db_update_discuss(struct db_discuss *);
+
+/*
+ * add a discuss info in database.
+ *
+ * the argument point to a db_discuss variable which you want to add.
+ * the return value indicates the operation result.
+ *
+ * note: the tag id is an auto increment field, so it's unnecessary.
+ */
+int db_add_discuss(struct db_discuss *);
+
+/*
+ * delete a discuss info in database.
+ *
+ * the argument is the discuss id which you want to delete.
+ * the return value indicates the operation result.
+ */
+int db_del_discuss(long id);
 
 
 #endif // DB_H_INCLUDED

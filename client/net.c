@@ -39,10 +39,16 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
     fail("socket()");
 
   if (connect(sock, (struct sockaddr *)addr, sizeof(*addr)) < 0)
+  {
+    close(sock);
     fail("connect()");
+  }
 
   if (send(sock, buf, len, 0) < 0)
+  {
+    close(sock);
     fail("send()");
+  }
 
   /* recv any reply here */
   l=recv(sock, tmp, sizeof tmp, 0);

@@ -85,7 +85,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
     p = strtok(buf, ",");
     do
     {
-      if (d = get_device(i))
+      if (d = get_device(atoi(p)))
       {
         list_add_tail(&d->discuss.l, &current.dev_list);
         d->discuss.open = 0;

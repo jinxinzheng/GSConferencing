@@ -4,21 +4,6 @@
 #include "sys.h"
 #include "db/md.h"
 
-#define SEND_TO_GROUP_ALL(cmd) \
-do { \
-  struct group *_g; \
-  struct device *_d; \
-  struct list_head *_t; \
-  if (!(_d = get_device((cmd)->device_id))) \
-    return 1; \
-  _g = _d->group; \
-  list_for_each(_t, &_g->device_head) \
-  { \
-    _d = list_entry(_t, struct device, list); \
-    sendto_dev_tcp((cmd)->rep, (cmd)->rl, _d); \
-  } \
-} while(0)
-
 #define MAKE_STRLIST(buf, parr, arrlen, member) \
 do { \
   int _i, _l=0; \
@@ -45,15 +30,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   struct device *d;
 
-#define NEXT_ARG(p) \
-  if (!(p = cmd->args[a++])) \
-    return 1;
-
   NEXT_ARG(subcmd);
 
   if (0) ;
-
-#define SUBCMD(c) else if (strcmp(c, subcmd)==0)
 
   SUBCMD("query")
   {
@@ -82,8 +61,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
     INIT_LIST_HEAD(&current.dev_list);
 
     strcpy(buf, s->members);
-    p = strtok(buf, ",");
-    do
+    IDLIST_FOREACH_p(buf)
     {
       if (d = get_device(atoi(p)))
       {
@@ -93,15 +71,13 @@ int handle_cmd_discctrl(struct cmd *cmd)
         sendto_dev_tcp(cmd->rep, cmd->rl, d);
       }
     }
-    while (p = strtok(NULL, ","));
   }
 
   SUBCMD("request")
   {
     REP_OK(cmd);
 
-    if (!(d = get_device(cmd->device_id)))
-      return 1;
+    THIS_DEVICE(cmd, d);
 
     d->discuss.open = 1;
   }

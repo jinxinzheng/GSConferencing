@@ -73,9 +73,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
       return 1;
     }
 
-    d = get_device(cmd->device_id);
-    if (!d)
-      return 1;
+    THIS_DEVICE(cmd, d);
 
     REP_ADD(cmd, "OK");
 
@@ -120,14 +118,12 @@ int handle_cmd_votectrl(struct cmd *cmd)
     else
     {
       /*send to only the specified members*/
-      p = strtok(buf, ",");
-      while(p)
+      IDLIST_FOREACH_p(buf)
       {
         d = get_device(atoi(p));
         if (d) {
           device_vote_start();
         }
-        p = strtok(NULL, ",");
       }
     }
 
@@ -147,9 +143,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
       return 1;
     i = atoi(p);
 
-    d = get_device(cmd->device_id);
-    if (!d)
-      return 1;
+    THIS_DEVICE(cmd, d);
 
     if (!d->vote.v)
       /* bug or corrupt of network packet */
@@ -174,9 +168,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     if (!p)
       return 1;
 
-    d = get_device(cmd->device_id);
-    if (!d)
-      return 1;
+    THIS_DEVICE(cmd, d);
 
     if (!(v = d->vote.v))
       /* bug or corrupt of network packet */
@@ -210,9 +202,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     if (!p)
       return 1;
 
-    d = get_device(cmd->device_id);
-    if (!d)
-      return 1;
+    THIS_DEVICE(cmd, d);
 
     v = d->vote.v;
     if (!v)
@@ -250,9 +240,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     REP_OK(cmd);
 
-    d = get_device(cmd->device_id);
-    if (!d)
-      return 1;
+    THIS_DEVICE(cmd, d);
 
     if (!d->vote.v)
       /* bug or corrupt of network packet */

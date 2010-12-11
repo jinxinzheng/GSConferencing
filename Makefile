@@ -10,8 +10,15 @@ endif
 
 SUBDIRS:=serv client
 
-all:
-	for d in $(SUBDIRS); do $(MAKE) -C $$d; done
+all: $(SUBDIRS)
 
 clean:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
+
+serv:
+	$(MAKE) -C $@
+
+client:
+	$(MAKE) -C $@
+
+.PHONY: $(SUBDIRS)

@@ -253,9 +253,7 @@ void run_listener_udp(int port)
         continue;
 
       /* dup and put data into processing queue */
-      void *data = malloc(len+1);
-      memcpy(data, buf, len);
-      dev_cast_packet(d, 0, data, len);
+      dev_cast_packet(d, 0, buf, len);
     }
 
     /* Send any reply here */

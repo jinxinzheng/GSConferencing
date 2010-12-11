@@ -33,11 +33,12 @@ struct device;
 
 struct packet
 {
-  void *data;
-  size_t len;
   struct device *dev; /* by what device it was sent */
 
   struct list_head l;
+
+  size_t len; /* length of data */
+  char data[1];
 };
 
 struct tag {

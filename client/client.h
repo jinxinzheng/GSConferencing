@@ -24,6 +24,8 @@ enum {
    * arg2: int, data length */
   EVENT_AUDIO,
 
+  /* arg1, arg2: unused */
+  EVENT_REG_OK,
 
   /* arg1: int, discussion number
    * arg2: unused */
@@ -72,6 +74,9 @@ enum {
 
 /* register client to the server */
 int reg();
+/* asynchronous reg,
+ * upon success an EVENT_REG_OK is generated. */
+void start_try_reg();
 
 /* subscribe to a channel/tag.
  * pass 0 to channel if unsubscribing. */

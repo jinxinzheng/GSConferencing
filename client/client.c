@@ -225,11 +225,28 @@ int reg()
 {
   BASICS;
 
-  l = sprintf(buf, "%d reg p%d\n", id, listenPort);
+#define _MAKE_REG() \
+  l = sprintf(buf, "%d reg p%d\n", id, listenPort)
+
+  _MAKE_REG();
 
   SEND_CMD();
 
   return 0;
+}
+
+static void try_reg_end(char *reply)
+{
+  event_handler(EVENT_REG_OK, NULL, NULL);
+}
+
+void start_try_reg()
+{
+  BASICS;
+
+  _MAKE_REG();
+
+  start_try_send_tcp(buf, l, &servAddr, try_reg_end);
 }
 
 int sub(int tag)

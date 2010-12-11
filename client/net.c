@@ -63,6 +63,48 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
   return l;
 }
 
+struct try_send_tcp_param_t
+{
+  char *buf;
+  int len;
+  struct sockaddr_in addr;
+  void (*try_end)(char *);
+
+  char bytes[1];
+};
+
+/* this thread runs until the command is successfully sent */
+static void *try_send_tcp(void *arg)
+{
+  struct try_send_tcp_param_t *param = (struct try_send_tcp_param_t *)arg;
+
+  while(1)
+  {
+    if (send_tcp(param->buf, param->len, &param->addr) > 0)
+      break;
+    else
+      sleep(3);
+  }
+
+  param->try_end(param->buf);
+
+  free(param);
+}
+
+void start_try_send_tcp(void *buf, int len, const struct sockaddr_in *addr, void (*try_end)(char *))
+{
+  pthread_t thread;
+  struct try_send_tcp_param_t *param =
+    (struct try_send_tcp_param_t *)malloc(sizeof(struct try_send_tcp_param_t) + len);
+  memcpy(param->bytes, buf, len);
+  param->buf = param->bytes;
+  param->len = len;
+  param->addr = *addr;
+  param->try_end = try_end;
+
+  pthread_create(&thread, NULL, try_send_tcp, param);
+}
+
 
 static int udp_port;
 static void (*udp_recved)(char *buf, int l);

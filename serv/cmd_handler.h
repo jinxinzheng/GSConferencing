@@ -117,5 +117,6 @@ int handle_cmd_reg(struct cmd *cmd);
 int handle_cmd_sub(struct cmd *cmd);
 int handle_cmd_discctrl(struct cmd *cmd);
 int handle_cmd_votectrl(struct cmd *cmd);
+int handle_cmd_msgctrl(struct cmd *cmd);
 
 #endif

@@ -12,6 +12,7 @@ static struct cmd_handler_entry cmdhandlers[] = {
   CMD_HANDLER_INIT(sub),
   CMD_HANDLER_INIT(discctrl),
   CMD_HANDLER_INIT(votectrl),
+  CMD_HANDLER_INIT(msgctrl),
   {NULL}
 };
 

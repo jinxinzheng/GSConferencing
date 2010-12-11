@@ -248,6 +248,10 @@ void run_listener_udp(int port)
       if (!d)
         continue;
 
+      /* don't cast if it is prohibited */
+      if (d->discuss.forbidden)
+        continue;
+
       /* dup and put data into processing queue */
       void *data = malloc(len+1);
       memcpy(data, buf, len);

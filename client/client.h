@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void client_init(int id, const char *serverIP, int localPort);
+void client_init(int id, int type, const char *serverIP, int localPort);
 
 /* event callback routine.
  * event: EVENT_*
@@ -77,10 +77,10 @@ enum {
  * buffers for the out params. */
 
 /* register client to the server */
-int reg();
+int reg(const char *passwd);
 /* asynchronous reg,
  * upon success an EVENT_REG_OK is generated. */
-void start_try_reg();
+void start_try_reg(const char *passwd);
 
 /* subscribe to a channel/tag.
  * pass 0 to channel if unsubscribing. */

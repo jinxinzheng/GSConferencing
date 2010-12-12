@@ -8,6 +8,7 @@
 #include "include/queue.h"
 
 static int id;
+static int devtype;
 static struct sockaddr_in servAddr;
 static int listenPort;
 
@@ -29,12 +30,14 @@ static void *run_send_udp(void *arg);
 
 static void *run_recv_udp(void *arg);
 
-void client_init(int dev_id, const char *servIP, int localPort)
+void client_init(int dev_id, int type, const char *servIP, int localPort)
 {
   int servPort = 7650;
   pthread_t thread;
 
   id = dev_id;
+
+  devtype = type;
 
   /* Construct the server address structure */
   memset(&servAddr, 0, sizeof(servAddr));     /* Zero out structure */
@@ -246,12 +249,12 @@ static void int_list_to_str(char *s, int list[])
   s[l>0? l-1:0] = 0;
 }
 
-int reg()
+int reg(const char *passwd)
 {
   BASICS;
 
 #define _MAKE_REG() \
-  l = sprintf(buf, "%d reg p%d\n", id, listenPort)
+  l = sprintf(buf, "%d reg %d %s %d\n", id, devtype, passwd, listenPort)
 
   _MAKE_REG();
 
@@ -265,7 +268,7 @@ static void try_reg_end(char *reply)
   event_handler(EVENT_REG_OK, NULL, NULL);
 }
 
-void start_try_reg()
+void start_try_reg(const char *passwd)
 {
   BASICS;
 

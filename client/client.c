@@ -208,18 +208,22 @@ static void *run_recv_udp(void *arg)
   _i; \
 })
 
-#define STR_TO_INT_LIST(s, list) do { \
-  char *_p; \
-  int _i;   \
-  _p = (s); \
-  _i = 0;   \
-  _p = strtok(_p, ","); \
-  while (_p) { \
-    (list)[_i++] = atoi(_p); \
-    _p = strtok(NULL, ",");  \
-  } \
-  (list)[_i] = 0; \
-} while (0)
+
+#define STR_TO_INT_LIST str_to_int_list
+
+static void str_to_int_list(char *s, int *list)
+{
+  char *p;
+  int i;
+  i = 0;
+  p = strtok(s, ",");
+  while (p) {
+    list[i++] = atoi(p);
+    p = strtok(NULL, ",");
+  }
+  list[i] = 0;
+}
+
 
 int reg()
 {

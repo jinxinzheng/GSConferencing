@@ -29,3 +29,6 @@ clean:
 
 apitest: apitest.o client.o net.o
 	$(CC) $(LDFLAGS) -o $@ $^
+
+pass: pass.o ../sha/sha128.o
+	$(CC) -o $@ $^

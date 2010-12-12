@@ -8,5 +8,15 @@ enum {
   VOTE_SCORE
 };
 
+/* service request types */
+enum {
+  REQUEST_PAPER,
+  REQUEST_PEN,
+  REQUEST_TOWEL,
+  REQUEST_TEA,
+  REQUEST_WATER,
+  REQUEST_OTHER
+};
+
 
 #endif

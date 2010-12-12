@@ -60,7 +60,11 @@ enum {
 
   /* arg1: int, client id
    * arg2: int, flag */
-  EVENT_VOTE_FORBID
+  EVENT_VOTE_FORBID,
+
+  /* arg1: char *, msg string
+   * arg2: unused */
+  EVENT_MSG,
 };
 
 
@@ -124,6 +128,14 @@ int votectrl_stop();
 int votectrl_remind(int id);
 
 int votectrl_forbid(int id, int flag);
+
+/* messaging */
+
+int msgctrl_query(out int *idlist);
+
+/* idlist: ends with 0.
+ * if idlist is NULL, send to all other clients. */
+int msgctrl_send(int idlist[], const char *msg);
 
 #ifdef __cplusplus
 }

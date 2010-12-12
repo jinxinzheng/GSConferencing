@@ -208,6 +208,18 @@ static void *run_recv_udp(void *arg)
   _i; \
 })
 
+/* checks whether an int is in a int list str */
+static inline int int_in_str(int i, char *s)
+{
+  char *p = strtok(s, ",");
+  do
+  {
+    if (atoi(p)==i)
+      return 1;
+    p=strtok(NULL, ",");
+  }while (p);
+  return 0;
+}
 
 #define STR_TO_INT_LIST str_to_int_list
 
@@ -224,6 +236,15 @@ static void str_to_int_list(char *s, int *list)
   list[i] = 0;
 }
 
+static void int_list_to_str(char *s, int list[])
+{
+  int i, l=0;
+  for (i=0; list[i]; i++) {
+    l += sprintf(s+l, "%d", list[i]);
+    s[l++] = ',';
+  }
+  s[l>0? l-1:0] = 0;
+}
 
 int reg()
 {
@@ -490,6 +511,39 @@ int votectrl_forbid(int did, int flag)
   return 0;
 }
 
+int msgctrl_query(int *idlist)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d msgctrl query\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  str_to_int_list(c.args[i+1], idlist);
+
+  return 0;
+}
+
+int msgctrl_send(int idlist[], const char *msg)
+{
+  BASICS;
+  char tmp[1024];
+
+  if (idlist)
+    strcpy(tmp, "all");
+  else
+    int_list_to_str(tmp, idlist);
+
+  l = sprintf(buf, "%d msgctrl send %s %s\n", id, tmp, msg);
+
+  SEND_CMD();
+
+  return 0;
+}
+
+
 /* handle recved cmd and generate appropriate events to the client */
 static void handle_cmd(char *buf, int l)
 {
@@ -567,6 +621,20 @@ static void handle_cmd(char *buf, int l)
       int did = atoi(c.args[i++]);
       CHECKOK(c.args[i++]);
       event_handler(EVENT_DISC_FORBID, (void*)did, NULL);
+    }
+  }
+
+  else if (STREQU(c.cmd, "msgctrl"))
+  {
+    char *sub = c.args[i++];
+    if (STREQU(sub, "send"))
+    {
+      char *ids = c.args[i++];
+      char *msg = c.args[i++];
+      if (int_in_str(id, ids))
+      {
+        event_handler(EVENT_MSG, msg, NULL);
+      }
     }
   }
 }

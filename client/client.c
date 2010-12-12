@@ -526,6 +526,17 @@ int msgctrl_query(int *idlist)
   return 0;
 }
 
+int servicecall(int request)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d servicecall %d\n", id, request);
+
+  SEND_CMD();
+
+  return 0;
+}
+
 int msgctrl_send(int idlist[], const char *msg)
 {
   BASICS;

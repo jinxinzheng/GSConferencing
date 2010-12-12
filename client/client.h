@@ -129,6 +129,11 @@ int votectrl_remind(int id);
 
 int votectrl_forbid(int id, int flag);
 
+/* service request */
+
+/* request: see enum REQUEST_* */
+int servicecall(int request);
+
 /* messaging */
 
 int msgctrl_query(out int *idlist);

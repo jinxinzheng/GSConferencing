@@ -57,4 +57,8 @@ int handle_cmd_msgctrl(struct cmd *cmd)
       SEND_TO_IDLIST(cmd, p);
     }
   }
+
+  else return 2; /*sub cmd not found*/
+
+  return 0;
 }

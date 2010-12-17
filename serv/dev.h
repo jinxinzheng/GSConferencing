@@ -29,18 +29,6 @@ enum {
  *
  * */
 
-struct device;
-
-struct packet
-{
-  struct device *dev; /* by what device it was sent */
-
-  struct list_head l;
-
-  size_t len; /* length of data */
-  char data[1];
-};
-
 struct tag {
   long tid;
   /*as tid is not unique, need to use group_id<<16 + tag_id as the unique id. */

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "opts.h"
+#include "packet.h"
 
 static inline void tag_enque_packet(struct tag *t, struct packet *p)
 {
@@ -44,7 +45,7 @@ int dev_cast_packet(struct device *dev, int packet_type, void *data, size_t len)
     return 1;
   }
 
-  pack = (struct packet *)malloc(sizeof(struct packet)+len);
+  pack = pack_get_new();
   memcpy(pack->data, data, len);
   pack->len = len;
   pack->dev = dev;
@@ -98,7 +99,7 @@ void *tag_run_casting(void *tag)
     //((char*)pack->data)[pack->len]=0;
     //printf("cast packet from %d: %s\n", *(int *)pack->data, ((char*)pack->data) +sizeof(int));
 
-    free(pack);
+    pack_free(pack);
 
   } while (1);
 

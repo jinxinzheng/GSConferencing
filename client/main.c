@@ -32,6 +32,9 @@ static void *auto_send_udp(void *arg)
     len = sprintf(p, "%x", rand());
     len += sizeof(int);
 
+    if (verbose)
+      fprintf(stderr, "sending :%s\n", p);
+
     /* Send the string to the server */
     send_udp(buf, len, &servAddr);
 

@@ -28,6 +28,8 @@ struct blocking_queue
   pthread_mutex_t mutex;
   pthread_cond_t cond;
   struct list_head head;
+
+  int len;
 };
 
 static inline void blocking_queue_init(struct blocking_queue *q)
@@ -35,6 +37,7 @@ static inline void blocking_queue_init(struct blocking_queue *q)
   pthread_mutex_init(&q->mutex, NULL);
   pthread_cond_init(&q->cond, NULL);
   INIT_LIST_HEAD(&q->head);
+  q->len = 0;
 }
 
 static inline void blocking_enque(struct blocking_queue *q, struct list_head *p)
@@ -42,6 +45,7 @@ static inline void blocking_enque(struct blocking_queue *q, struct list_head *p)
   pthread_mutex_lock(&q->mutex);
 
   enque(&q->head, p);
+  q->len++;
 
   pthread_mutex_unlock(&q->mutex);
 
@@ -58,6 +62,7 @@ static inline struct list_head *blocking_deque(struct blocking_queue *q)
   {
     pthread_cond_wait(&q->cond, &q->mutex);
   }
+  q->len--;
 
   pthread_mutex_unlock(&q->mutex);
 

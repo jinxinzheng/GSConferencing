@@ -5,16 +5,21 @@
 #include <stdio.h>
 #include <string.h>
 
-static void tag_enque_packet(struct tag *t, struct packet *p)
+static inline void tag_enque_packet(struct tag *t, struct packet *p)
 {
   blocking_enque(&t->pack_queue, &p->l);
 }
 
-static struct packet *tag_deque_packet(struct tag *t)
+static inline struct packet *tag_deque_packet(struct tag *t)
 {
   struct list_head *p;
   p = blocking_deque(&t->pack_queue);
   return list_entry(p, struct packet, l);
+}
+
+static inline int tag_queue_len(struct tag *t)
+{
+  return t->pack_queue.len;
 }
 
 /* packets sent by devices with the same tag will be queued together.
@@ -79,8 +84,8 @@ void *tag_run_casting(void *tag)
 
     tag_cast_pack(t, pack);
 
-    ((char*)pack->data)[pack->len]=0;
-    printf("cast packet from %d: %s\n", *(int *)pack->data, ((char*)pack->data) +sizeof(int));
+    //((char*)pack->data)[pack->len]=0;
+    //printf("cast packet from %d: %s\n", *(int *)pack->data, ((char*)pack->data) +sizeof(int));
 
     free(pack);
 

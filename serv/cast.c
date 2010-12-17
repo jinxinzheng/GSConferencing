@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "opts.h"
 
 static inline void tag_enque_packet(struct tag *t, struct packet *p)
 {
@@ -35,6 +36,14 @@ int dev_cast_packet(struct device *dev, int packet_type, void *data, size_t len)
 
   t = dev->tag;
 
+  if (opt_queue_max!=0 && tag_queue_len(t) >= opt_queue_max)
+  {
+    /* discard if the queue/buffer is full.
+     * this may help to reduce the latency. */
+    fprintf(stderr, "buffer %d is full, packet is dropped\n", (int)t->tid);
+    return 1;
+  }
+
   pack = (struct packet *)malloc(sizeof(struct packet)+len);
   memcpy(pack->data, data, len);
   pack->len = len;
@@ -42,6 +51,8 @@ int dev_cast_packet(struct device *dev, int packet_type, void *data, size_t len)
 
   /* notify the processing thread to go */
   tag_enque_packet(t, pack);
+
+  return 0;
 }
 
 /* send a packet to all of the tag members */

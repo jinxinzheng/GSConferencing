@@ -18,7 +18,7 @@ static event_cb event_handler;
 
 #define CHECKOK(s) if (!STREQU(s,"OK")) return;
 
-static void handle_cmd(char *buf, int l);
+static void handle_cmd(int, char *buf, int l);
 
 static void udp_recved(char *buf, int l);
 
@@ -587,10 +587,48 @@ int videoctrl_select(int vid_num)
 
 
 /* handle recved cmd and generate appropriate events to the client */
-static void handle_cmd(char *buf, int l)
+static void handle_cmd(int sock, char *buf, int l)
 {
+  /* this is maintained during each connection.
+   * caution: this only supports one thread running tcp recv! */
+  static struct
+  {
+    int sock;
+
+    void (*job)(char *data, int *plen, const char *buf, int l);
+
+    char *data;
+    int len;
+  }
+  contex = { 0, 0, NULL, 0 };
+
   struct cmd c;
   int i;
+
+
+  if (contex.sock == sock)
+  {
+    /* connection consecutive */
+    if (contex.job)
+      contex.job(contex.data, &contex.len, buf, l);
+    return;
+  }
+  else if (sock == 0)
+  {
+    /* connection is closing */
+    if (contex.job)
+      contex.job(contex.data, &contex.len, NULL, 0);
+    contex.job = NULL;
+    contex.data = NULL;
+    return;
+  }
+  else
+  {
+    /* new connection */
+    contex.sock = sock;
+    contex.job = NULL;
+  }
+
 
   parse_cmd(buf, &c);
 

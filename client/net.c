@@ -173,7 +173,7 @@ static void *run_recv_udp(void *arg)
 }
 
 static int tcp_port;
-static void (*tcp_recved)(char *buf, int l);
+static void (*tcp_recved)(int sock, char *buf, int l);
 
 static void *run_recv_tcp(void *arg)
 {
@@ -184,7 +184,7 @@ static void *run_recv_tcp(void *arg)
   struct sockaddr_in loclAddr; /* local address */
   struct sockaddr_in remtAddr; /* remote address */
   int remtLen;
-  char buf[1024];
+  char buf[2048];
   int l;
 
   port = tcp_port;
@@ -221,19 +221,25 @@ static void *run_recv_tcp(void *arg)
       perror("accept()");
 
     /* conn_sock is connected to a remote! */
+    fprintf(stderr, "recved cmd: ");
 
     while ((l = recv(conn_sock, buf, sizeof buf, 0)) > 0)
     {
       buf[l] = 0;
-      fprintf(stderr, "recved cmd: %s\n", buf);
+      fprintf(stderr, "%s", buf);
 
       /* call the recv handler */
       if (tcp_recved)
-        tcp_recved(buf, l);
+        tcp_recved(conn_sock, buf, l);
 
       /* send any here */
     }
 
+    /* notify connection closing */
+    if (tcp_recved)
+      tcp_recved(0, NULL, 0);
+
+    fprintf(stderr, "\n");
 
     close(conn_sock);
   }
@@ -248,7 +254,7 @@ void start_recv_udp(int listenPort, void (*recved)(char *buf, int l))
   pthread_create(&thread, NULL, run_recv_udp, NULL);
 }
 
-void start_recv_tcp(int listenPort, void (*recved)(char *buf, int l))
+void start_recv_tcp(int listenPort, void (*recved)(int, char *buf, int l))
 {
   pthread_t thread;
   tcp_port = listenPort;

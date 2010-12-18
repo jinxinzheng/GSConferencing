@@ -142,6 +142,12 @@ int msgctrl_query(out int *idlist);
  * if idlist is NULL, send to all other clients. */
 int msgctrl_send(int idlist[], const char *msg);
 
+/* video controling */
+
+int videoctrl_query(out char *vidlist);
+
+int videoctrl_select(int vid_num);
+
 #ifdef __cplusplus
 }
 #endif

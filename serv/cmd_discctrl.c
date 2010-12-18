@@ -4,16 +4,6 @@
 #include "sys.h"
 #include "db/md.h"
 
-#define MAKE_STRLIST(buf, parr, arrlen, member) \
-do { \
-  int _i, _l=0; \
-  for (_i=0; _i<(arrlen); _i++) \
-  { \
-    LIST_ADD(buf, _l, (parr)[_i]->member); \
-  } \
-  LIST_END(buf, _l); \
-} while(0)
-
 static struct db_discuss *db[1024];
 static int dbl;
 static struct {

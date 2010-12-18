@@ -110,6 +110,16 @@ do { \
       sendto_dev_tcp(cmd->rep, cmd->rl, _d); \
   }
 
+#define MAKE_STRLIST(buf, parr, arrlen, member) \
+do { \
+  int _i, _l=0; \
+  for (_i=0; _i<(arrlen); _i++) \
+  { \
+    LIST_ADD(buf, _l, (parr)[_i]->member); \
+  } \
+  LIST_END(buf, _l); \
+} while(0)
+
 /* sub cmd handlers.
  * handler should fill the response in cmd->rep. */
 
@@ -119,5 +129,6 @@ int handle_cmd_discctrl(struct cmd *cmd);
 int handle_cmd_votectrl(struct cmd *cmd);
 int handle_cmd_servicecall(struct cmd *cmd);
 int handle_cmd_msgctrl(struct cmd *cmd);
+int handle_cmd_videoctrl(struct cmd *cmd);
 
 #endif

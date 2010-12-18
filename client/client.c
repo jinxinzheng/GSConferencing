@@ -557,6 +557,34 @@ int msgctrl_send(int idlist[], const char *msg)
   return 0;
 }
 
+int videoctrl_query(char *vidlist)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d videoctrl query\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  strcpy(vidlist, c.args[i+1]);
+
+  return 0;
+}
+
+int videoctrl_select(int vid_num)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d videoctrl select %d\n", id, vid_num);
+
+  SEND_CMD();
+
+  FIND_OK(c);
+
+  return 0;
+}
+
 
 /* handle recved cmd and generate appropriate events to the client */
 static void handle_cmd(char *buf, int l)

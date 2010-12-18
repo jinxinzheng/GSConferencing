@@ -65,6 +65,10 @@ enum {
   /* arg1: char *, msg string
    * arg2: unused */
   EVENT_MSG,
+
+  /* arg1: char *, file data
+   * arg2: int, file length */
+  EVENT_FILE,
 };
 
 
@@ -147,6 +151,12 @@ int msgctrl_send(int idlist[], const char *msg);
 int videoctrl_query(out char *vidlist);
 
 int videoctrl_select(int vid_num);
+
+/* file transfer */
+
+int filectrl_query(out char *filelist);
+
+int filectrl_select(int file_num);
 
 #ifdef __cplusplus
 }

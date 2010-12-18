@@ -585,6 +585,49 @@ int videoctrl_select(int vid_num)
   return 0;
 }
 
+int filectrl_query(char *filelist)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d filectrl query\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  strcpy(filelist, c.args[i+1]);
+
+  return 0;
+}
+
+int filectrl_select(int file_num)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d filectrl select %d\n", id, file_num);
+
+  SEND_CMD();
+
+  FIND_OK(c);
+
+  return 0;
+}
+
+
+
+static void file_transfer(char *data, int *plen, const char *buf, int l)
+{
+  if (buf)
+  {
+    memcpy(data+*plen, buf, l);
+    *plen += l;
+  }
+  else
+  {
+    event_handler(EVENT_FILE, data, (void*)*plen);
+    free(data);
+  }
+}
 
 /* handle recved cmd and generate appropriate events to the client */
 static void handle_cmd(int sock, char *buf, int l)
@@ -716,5 +759,17 @@ static void handle_cmd(int sock, char *buf, int l)
         event_handler(EVENT_MSG, msg, NULL);
       }
     }
+  }
+
+  else if (STREQU(c.cmd, "file"))
+  {
+    /* this is a file transfer. need to handle specially. */
+    char *p = c.args[i++];
+    int len = atoi(p);
+    contex.data = malloc(len);
+    contex.len = 0;
+    /* put the connection into 'busy' state
+     * so that later file data will be correctly handled. */
+    contex.job = file_transfer;
   }
 }

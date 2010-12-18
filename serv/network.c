@@ -1,4 +1,5 @@
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -280,8 +281,28 @@ int sendto_dev_udp(int sock, const void *buf, size_t len, struct device *dev)
   return 0;
 }
 
+
+#define _CONNECT_DEV(dev, sock) \
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) \
+  { \
+    perror("socket()"); \
+    goto END; \
+  } \
+  if (connect(sock, (struct sockaddr *) &dev->addr, sizeof dev->addr) < 0) \
+  { \
+    perror("connect()"); \
+    goto END; \
+  }
+
+#define _SEND(sock, buf, len) \
+  if (send(sock, buf, len, 0) < 0) \
+  { \
+    perror("send()"); \
+    goto END; \
+  }
+
 /* TCP send. not for reply use. */
-int sendto_dev_tcp(const void *buf, size_t len, struct device *dev)
+void sendto_dev_tcp(const void *buf, size_t len, struct device *dev)
 {
   /* the tcp socket must be created for each call.
    * for the tcp socket could be connect()ed only once. */
@@ -289,17 +310,52 @@ int sendto_dev_tcp(const void *buf, size_t len, struct device *dev)
 
   fprintf(stderr, "sendto_dev_tcp( '%s', %d, %d )\n", (char*)buf, len, (int)dev->id);
 
-  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    fail("socket()");
+  _CONNECT_DEV(dev, sock);
 
-  if (connect(sock, (struct sockaddr *) &dev->addr, sizeof dev->addr) < 0)
-    fail("connect()");
-
-  if (send(sock, buf, len, 0) < 0)
-    fail("send()");
+  _SEND(sock, buf, len);
 
   /* recv any reply here */
 
+END:
   close(sock);
-  return 0;
+}
+
+void send_file_to_dev(const char *path, struct device *dev)
+{
+  int sock;
+  FILE *f;
+  struct stat st;
+  char buf[1024];
+  int l;
+
+  fprintf(stderr, "send_file_to_dev( '%s', %d )\n", path, (int)dev->id);
+
+  if (!(f = fopen(path, "r")))
+  {
+    perror("fopen()");
+    return;
+  }
+
+  fstat(fileno(f), &st);
+
+  /* file transfer begins with a command:
+   * "id file name length"
+   * followed by the file content */
+
+  l = sprintf(buf, "%d file %d\n", (int)dev->id, (int)st.st_size);
+
+  _CONNECT_DEV(dev, sock);
+
+  _SEND(sock, buf, l);
+
+  while ((l=fread(buf, 1, sizeof buf, f)) > 0)
+  {
+    _SEND(sock, buf, l);
+  }
+
+  /* recv any reply here */
+
+END:
+  fclose(f);
+  close(sock);
 }

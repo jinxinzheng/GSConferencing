@@ -79,6 +79,7 @@ enum {
 struct pack
 {
   uint32_t id;
+  uint32_t seq;
   uint32_t type;
   uint32_t datalen;
 
@@ -93,6 +94,7 @@ struct pack
 do { \
   _hton((p)->type); \
   _hton((p)->id); \
+  _hton((p)->seq); \
   _hton((p)->datalen); \
 }while(0)
 
@@ -101,6 +103,7 @@ do { \
 do { \
   _ntoh((p)->type); \
   _ntoh((p)->id); \
+  _ntoh((p)->seq); \
   _ntoh((p)->datalen); \
 }while (0)
 
@@ -110,10 +113,13 @@ int send_audio(void *buf, int len)
 {
   struct pack *qitem;
 
+  static int qseq = 0;
+
   qitem = (struct pack *)malloc(sizeof(struct pack)+len);
 
   qitem->type = TYPE_AUDIO;
   qitem->id = (uint32_t)id;
+  qitem->seq = qseq++;
   qitem->datalen = (uint32_t)len;
   memcpy(qitem->data, buf, len);
 

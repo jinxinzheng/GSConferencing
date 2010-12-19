@@ -161,7 +161,7 @@ static void *run_recv_udp(void *arg)
     i = *(int *)buf;
     p = buf+sizeof(int);
 
-    fprintf(stderr,"recved %d:%s\n", i, p);
+    //fprintf(stderr,"recved %d:%s\n", i, p);
 
     /* call the recv handler */
     if (udp_recved)

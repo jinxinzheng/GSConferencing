@@ -174,6 +174,14 @@ static void udp_recved(char *buf, int len)
   memcpy(qitem, buf, len);
 
   blocking_enque(&udp_recv_q, &qitem->q);
+
+  //tmp: do not put in queue, directly play.
+  /*if (qitem->type == TYPE_AUDIO)
+  {
+    event_handler(EVENT_AUDIO,
+        (void*)qitem->data,
+        (void*)qitem->datalen);
+  }*/
 }
 
 static void *run_recv_udp(void *arg)
@@ -193,6 +201,8 @@ static void *run_recv_udp(void *arg)
         (void*)qitem->data,
         (void*)qitem->datalen);
     }
+
+    //fprintf(stderr, "recv pack %d\n", qitem->seq);
 
     free(qitem);
   }

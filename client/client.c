@@ -7,6 +7,9 @@
 #include "cmd/cmd.h"
 #include "include/queue.h"
 
+#define MINRECV 5
+#define MAXRECV 30
+
 static int id;
 static int devtype;
 static struct sockaddr_in servAddr;
@@ -146,6 +149,10 @@ static void udp_recved(char *buf, int len)
 {
   struct pack *qitem;
 
+  if (udp_recv_q.len >= MAXRECV)
+    /* queue is full */
+    return;
+
   qitem = (struct pack *)buf;
   NTOH(qitem);
 
@@ -170,7 +177,7 @@ static void *run_recv_udp(void *arg)
 
   while (1)
   {
-    p = blocking_deque(&udp_recv_q);
+    p = blocking_deque_min(&udp_recv_q, MINRECV);
     qitem = list_entry(p, struct pack, q);
 
     /* generate event */

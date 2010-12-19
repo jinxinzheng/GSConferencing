@@ -52,13 +52,15 @@ static inline void blocking_enque(struct blocking_queue *q, struct list_head *p)
   pthread_cond_signal(&q->cond);
 }
 
-static inline struct list_head *blocking_deque(struct blocking_queue *q)
+/* this always keeps at least min items in queue */
+static inline struct list_head *blocking_deque_min(struct blocking_queue *q, int min)
 {
   struct list_head *p;
 
   pthread_mutex_lock(&q->mutex);
 
-  while ((p = deque(&q->head)) == NULL)
+  while (!( (p = deque(&q->head)) != NULL &&
+          q->len > min ))
   {
     pthread_cond_wait(&q->cond, &q->mutex);
   }
@@ -67,6 +69,11 @@ static inline struct list_head *blocking_deque(struct blocking_queue *q)
   pthread_mutex_unlock(&q->mutex);
 
   return p;
+}
+
+static inline struct list_head *blocking_deque(struct blocking_queue *q)
+{
+  return blocking_deque_min(q, 0);
 }
 
 #endif

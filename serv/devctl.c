@@ -50,12 +50,15 @@ int dev_register(struct device *dev)
   struct tag *t;
   long long tuid;
 
-  if (get_device(dev->id))
+  struct device *d;
+
+  if (d = get_device(dev->id))
   {
     /* this device has already been registered.
      * this may be due to a reset of the device or some. */
     printf("device %ld already registered, ignoring.\n", dev->id);
-    /* maybe we should update the properties of the device like the address? */
+    /* should update the properties of the device like the address */
+    d->addr = dev->addr;
     return 1;
   }
 

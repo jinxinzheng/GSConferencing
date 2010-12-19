@@ -19,7 +19,7 @@ int handle_cmd_sub(struct cmd *cmd)
     long tid, gid;
     long long tuid;
 
-    d = get_device(cmd->device_id);
+    THIS_DEVICE(cmd, d);
 
     gid = d->group->id;
     tid = atoi(p);

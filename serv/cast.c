@@ -30,10 +30,9 @@ static inline int tag_queue_len(struct tag *t)
  * in sequence.
  * Each queue will be managed within one thread for performance
  * consideration. */
-int dev_cast_packet(struct device *dev, int packet_type, void *data, size_t len)
+int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
 {
   struct tag *t;
-  struct packet *pack;
 
   t = dev->tag;
 
@@ -44,11 +43,6 @@ int dev_cast_packet(struct device *dev, int packet_type, void *data, size_t len)
     fprintf(stderr, "buffer %d is full, packet is dropped\n", (int)t->tid);
     return 1;
   }
-
-  pack = pack_get_new();
-  memcpy(pack->data, data, len);
-  pack->len = len;
-  pack->dev = dev;
 
   /* notify the processing thread to go */
   tag_enque_packet(t, pack);

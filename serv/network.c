@@ -8,6 +8,7 @@
 #include "sys.h"
 #include "devctl.h"
 #include "cast.h"
+#include "packet.h"
 #include "cmd/cmd.h"
 
 #define die(s) do {perror(s); exit(1);} while(0)
@@ -205,8 +206,8 @@ void run_listener_udp(int port)
   struct sockaddr_in clntAddr; /* Client address */
   unsigned int clntLen;         /* Length of incoming message */
   int optval;
-  char buf[BUFLEN];        /* Buffer for echo string */
-  int len;                 /* Size of received message */
+
+  struct packet *pack;
 
   long did;
 
@@ -229,14 +230,20 @@ void run_listener_udp(int port)
   if (bind(udp_sock, (struct sockaddr *) &servAddr, sizeof servAddr) < 0)
     die("bind()");
 
+
+  pack = pack_get_new();
+
   for (;;) /* Run forever */
   {
     /* Set the size of the in-out parameter */
     clntLen = sizeof(clntAddr);
 
     /* Block until receive message from a client */
-    if ((len = recvfrom(udp_sock, buf, BUFLEN, 0, (struct sockaddr *) &clntAddr, &clntLen)) < 0)
+    if ((pack->len = recvfrom(udp_sock, pack->data, sizeof pack->data, 0, (struct sockaddr *) &clntAddr, &clntLen)) < 0)
+    {
       perror("recvfrom()");
+      continue;
+    }
 
     /* analyze the packet data. */
 
@@ -244,7 +251,7 @@ void run_listener_udp(int port)
       struct device *d;
 
       /* work out the device object */
-      did = (long)ntohl(*(uint32_t *)buf);
+      did = (long)ntohl(*(uint32_t *)pack->data);
       d = get_device(did);
       if (!d)
         continue;
@@ -253,11 +260,15 @@ void run_listener_udp(int port)
       if (d->discuss.forbidden)
         continue;
 
-      /* dup and put data into processing queue */
-      dev_cast_packet(d, 0, buf, len);
+      /* put packet into processing queue */
+      pack->dev = d;
+      if (dev_cast_packet(d, 0, pack) != 0)
+        continue;
     }
 
     /* Send any reply here */
+
+    pack = pack_get_new();
   }
   /* NOT REACHED */
 }

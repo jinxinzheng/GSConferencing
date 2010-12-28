@@ -21,6 +21,14 @@ static inline struct list_head *deque(struct list_head *head)
   }
 }
 
+static inline struct list_head *queue_get_front(struct list_head *head)
+{
+  if (list_empty(head))
+    return NULL;
+  else
+    return head->next;
+}
+
 /* blocking queue implement */
 
 struct blocking_queue
@@ -49,7 +57,9 @@ static inline void blocking_enque(struct blocking_queue *q, struct list_head *p)
 
   pthread_mutex_unlock(&q->mutex);
 
-  pthread_cond_signal(&q->cond);
+  /* unblock all threads that are waiting to
+   * deque or get_front */
+  pthread_cond_broadcast(&q->cond);
 }
 
 /* this always keeps at least min items in queue */
@@ -74,6 +84,22 @@ static inline struct list_head *blocking_deque_min(struct blocking_queue *q, int
 static inline struct list_head *blocking_deque(struct blocking_queue *q)
 {
   return blocking_deque_min(q, 0);
+}
+
+static inline struct list_head *blocking_get_front(struct blocking_queue *q)
+{
+  struct list_head *p;
+
+  pthread_mutex_lock(&q->mutex);
+
+  while (!( p = queue_get_front(&q->head) ))
+  {
+    pthread_cond_wait(&q->cond, &q->mutex);
+  }
+
+  pthread_mutex_unlock(&q->mutex);
+
+  return p;
 }
 
 #endif

@@ -1,3 +1,3 @@
 #include "opts.h"
 
-int opt_queue_max = 0;
+int opt_queue_max = 100;

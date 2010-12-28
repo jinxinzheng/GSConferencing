@@ -7,7 +7,7 @@
 #include "cmd/cmd.h"
 #include "include/queue.h"
 
-#define MINRECV 5
+#define MINRECV 0
 #define MAXRECV 30
 
 static int id;

@@ -568,7 +568,7 @@ int msgctrl_send(int idlist[], const char *msg)
   BASICS;
   char tmp[1024];
 
-  if (idlist)
+  if (!idlist)
     strcpy(tmp, "all");
   else
     int_list_to_str(tmp, idlist);

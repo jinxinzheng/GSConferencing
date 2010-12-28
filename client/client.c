@@ -672,27 +672,31 @@ static void handle_cmd(int sock, char *buf, int l)
   int i;
 
 
-  if (contex.sock == sock)
-  {
-    /* connection consecutive */
-    if (contex.job)
-      contex.job(contex.data, &contex.len, buf, l);
-    return;
-  }
-  else if (sock == 0)
-  {
-    /* connection is closing */
-    if (contex.job)
-      contex.job(contex.data, &contex.len, NULL, 0);
-    contex.job = NULL;
-    contex.data = NULL;
-    return;
-  }
-  else
+  if (contex.sock == 0)
   {
     /* new connection */
     contex.sock = sock;
     contex.job = NULL;
+  }
+  else
+  {
+    if (contex.sock == sock)
+    {
+      /* connection consecutive */
+      if (contex.job)
+        contex.job(contex.data, &contex.len, buf, l);
+      return;
+    }
+    else if (0 == sock)
+    {
+      /* connection is closing */
+      if (contex.job)
+        contex.job(contex.data, &contex.len, NULL, 0);
+      contex.sock = 0;
+      contex.job = NULL;
+      contex.data = NULL;
+      return;
+    }
   }
 
 

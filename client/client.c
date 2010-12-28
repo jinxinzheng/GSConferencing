@@ -787,7 +787,7 @@ static void handle_cmd(int sock, char *buf, int l)
     {
       char *ids = c.args[i++];
       char *msg = c.args[i++];
-      if (int_in_str(id, ids))
+      if (strcmp(ids,"all")==0 || int_in_str(id, ids))
       {
         event_handler(EVENT_MSG, msg, NULL);
       }

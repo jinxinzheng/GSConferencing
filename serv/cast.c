@@ -40,7 +40,8 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   {
     /* discard if the queue/buffer is full.
      * this may help to reduce the latency. */
-    fprintf(stderr, "buffer %d is full, packet is dropped\n", (int)t->tid);
+    fprintf(stderr, "buffer %d is full, packet %d is dropped\n",
+      (int)t->tid, ntohl(((uint32_t *)pack->data)[1]));
     return 1;
   }
 

@@ -23,12 +23,17 @@ static void *auto_send_udp(void *arg)
 {
   char buf[512], *p;
   int len;
+  uint32_t *phead, s=0;
 
-  *(uint32_t *)buf = htonl((uint32_t)id);
-  p = buf+sizeof(id);
+  phead = (uint32_t *)buf;
+  phead[0] = htonl((uint32_t)id);
+  phead[1] = s;
+
+  p = buf+8;
 
   for(;;)
   {
+    phead[1] = htonl(s++);
     len = sprintf(p, "%x", rand());
     len += sizeof(int);
 
@@ -36,9 +41,9 @@ static void *auto_send_udp(void *arg)
       fprintf(stderr, "sending :%s\n", p);
 
     /* Send the string to the server */
-    send_udp(buf, len, &servAddr);
+    send_udp(buf, 512, &servAddr);
 
-    usleep(100000); /*1ms*/
+    usleep(3000); /*1ms=1000*/
   }
 }
 
@@ -46,6 +51,21 @@ static void start_auto_udp()
 {
   pthread_t thread;
   pthread_create(&thread, NULL, auto_send_udp, NULL);
+}
+
+static void udp_recved(char *buf, int l)
+{
+  uint32_t *phead, i,s;
+  phead = (uint32_t *)buf;
+  if (verbose)
+  {
+    i = ntohl(phead[0]);
+    s = ntohl(phead[1]);
+    if ((s % 100) == 0)
+    {
+      fprintf(stderr, "%d:%d:...\n", i, s);
+    }
+  }
 }
 
 void read_cmds()
@@ -107,6 +127,8 @@ static struct
   {0}
 };
 
+static const char *uni = "*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&";
+
 int main(int argc, char *const argv[])
 {
   int opt;
@@ -150,7 +172,7 @@ int main(int argc, char *const argv[])
   /* listen packets */
 
   listenPort = 20000+id;
-  start_recv_udp(listenPort, NULL);
+  start_recv_udp(listenPort, udp_recved);
 
   /* listen cmds */
   start_recv_tcp(listenPort, NULL);
@@ -161,7 +183,7 @@ int main(int argc, char *const argv[])
   servAddr.sin_addr.s_addr = inet_addr(servIP);   /* Server IP address */
   servAddr.sin_port        = htons(servPort); /* Server port */
 
-  /* register this client */
+  /* register this client * /
   p = NULL;
   for (i=0; i<sizeof(passwd)/sizeof(passwd[0]); i++)
     if( passwd[i].id == id )
@@ -171,6 +193,8 @@ int main(int argc, char *const argv[])
     }
 
   len = sprintf(buf, "%d reg %d %s %d\n", id, 1, p, listenPort);
+  */
+  len = sprintf(buf, "%d reg %d %s %d\n", id, id, uni, listenPort);
 
   if (send_tcp(buf, len, &servAddr) <= 0)
     return 2;
@@ -181,7 +205,7 @@ int main(int argc, char *const argv[])
   {
     len = sprintf(buf, "%d sub %d\n", id, subscribe);
 
-    if (send_tcp(buf, len, &servAddr) != 0)
+    if (send_tcp(buf, len, &servAddr) < 0)
       return 2;
   }
 

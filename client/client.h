@@ -69,6 +69,9 @@ enum {
   /* arg1: char *, file data
    * arg2: int, file length */
   EVENT_FILE,
+
+  /* arg1, arg2: unused */
+  EVENT_NEED_REG,
 };
 
 

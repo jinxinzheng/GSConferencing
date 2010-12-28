@@ -218,10 +218,16 @@ static void *run_recv_udp(void *arg)
 #define SEND_CMD() do {\
   l = send_tcp(buf, l, &servAddr); \
   if (l>0) { \
+    int _e;  \
     buf[l] = 0; \
-    if (strncmp("FAIL", buf, 4)==0) \
+    if (_e = parse_cmd(buf, &c)) \
+    { \
+      if (_e == ERR_NOT_REG) \
+      { \
+        event_handler(EVENT_NEED_REG, NULL, NULL); \
+      } \
       return -2; \
-    parse_cmd(buf, &c); \
+    } \
   } \
   else return -1; \
 } while (0)

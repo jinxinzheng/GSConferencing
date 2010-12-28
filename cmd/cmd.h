@@ -18,6 +18,14 @@ struct cmd {
   int rl;    /* initial length of the string in rep */
 };
 
+/* cmd error codes */
+enum {
+  ERR_PARSE = 1,
+  ERR_BAD_CMD,
+  ERR_NOT_REG,
+  ERR_OTHER,
+};
+
 /* line: command line, ended by '\n' or '\r\n'.
  * cmd: cmd struct.
  *
@@ -32,14 +40,23 @@ static inline int parse_cmd(char *line, struct cmd *pcmd)
 {
   char *p;
   int i;
+  int err = 0;
 
   p = strtok(line, " \r\n");
-  pcmd->device_id = atoi(p);
+
+  if (strcmp(p, "FAIL") == 0)
+    err = 1;
+  else
+    pcmd->device_id = atoi(p);
 
   p = strtok(NULL, " \r\n");
   if (!p)
-    return 1;
-  pcmd->cmd=p;
+    return ERR_PARSE;
+
+  if (err)
+    return atoi(p);
+  else
+    pcmd->cmd=p;
 
   i=0;
   do

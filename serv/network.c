@@ -141,7 +141,7 @@ void *run_proceed_connection(void *arg)
       if (parse_cmd(buf, &cmd) != 0)
       {
         fprintf(stderr, "cmd parse error.\n");
-        strcpy(rep, "FAIL parse error\n");
+        sprintf(rep, "FAIL %d parse error\n", ERR_PARSE);
         goto CMDERR;
       }
 
@@ -153,13 +153,13 @@ void *run_proceed_connection(void *arg)
       if (i < 0)
       {
         fprintf(stderr, "invalid cmd.\n");
-        strcpy(rep, "FAIL invalid cmd\n");
+        sprintf(rep, "FAIL %d invalid cmd\n", ERR_BAD_CMD);
         goto CMDERR;
       }
       else if (i > 0)
       {
         fprintf(stderr, "cmd handle error.\n");
-        strcpy(rep, "FAIL handling cmd error\n");
+        sprintf(rep, "FAIL %d handling cmd error\n", i);
         goto CMDERR;
       }
 

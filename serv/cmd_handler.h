@@ -77,7 +77,7 @@ do { \
 
 #define THIS_DEVICE(cmd, d) \
   if (!(d = get_device((cmd)->device_id))) \
-    return 1;
+    return ERR_NOT_REG;
 
 #define SEND_TO_GROUP_ALL(cmd) \
 do { \

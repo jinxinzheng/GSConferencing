@@ -13,8 +13,9 @@ int main(int argc, char *const argv[])
   int s=0, r=0;
   char buf[60];
   int i=0;
+  int idlist[1000];
 
-  int id;
+  int id=3;
 
   while ((opt = getopt(argc, argv, "sr")) != -1) {
     switch (opt) {
@@ -29,11 +30,14 @@ int main(int argc, char *const argv[])
     }
   }
 
-  client_init(id, "127.0.0.1", 20000+id);
+  client_init(id,id,  "127.0.0.1", 20000+id);
 
   set_event_callback(on_event);
 
-  reg();
+  reg("*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&");
+
+  msgctrl_query(idlist);
+  msgctrl_send(NULL, "hello");
 
   if (r)
     sub(1);

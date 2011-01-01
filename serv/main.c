@@ -18,10 +18,13 @@ int main(int argc, char *const argv[])
 {
   int opt;
 
-  while ((opt = getopt(argc, argv, "q:")) != -1) {
+  while ((opt = getopt(argc, argv, "q:B")) != -1) {
     switch (opt) {
       case 'q':
         opt_queue_max = atoi(optarg);
+        break;
+      case 'B':
+        opt_broadcast = 0;
         break;
       default:
         break;

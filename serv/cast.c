@@ -6,6 +6,7 @@
 #include <string.h>
 #include "opts.h"
 #include "packet.h"
+#include "include/pack.h"
 
 static inline void tag_enque_packet(struct tag *t, struct packet *p)
 {
@@ -32,6 +33,7 @@ static inline int tag_queue_len(struct tag *t)
  * consideration. */
 int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
 {
+  pack_data *p = (pack_data *)pack->data;
   struct tag *t;
 
   t = dev->tag;
@@ -41,9 +43,12 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
     /* discard if the queue/buffer is full.
      * this may help to reduce the latency. */
     fprintf(stderr, "buffer %d is full, packet %d is dropped\n",
-      (int)t->tid, ntohl(((uint32_t *)pack->data)[1]));
+      (int)t->tid, ntohl(p->seq));
     return 1;
   }
+
+  /* fill the tag id */
+  p->tag = htons((uint16_t)t->id);
 
   /* notify the processing thread to go */
   tag_enque_packet(t, pack);
@@ -57,6 +62,13 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   struct device *d;
   struct list_head *p, *h;
   h = &t->subscribe_head;
+
+  if (opt_broadcast)
+  {
+    /* do broadcast here */
+    broadcast(t->sock, pack->data, pack->len);
+    return;
+  }
 
   list_for_each(p, h)
   {
@@ -83,6 +95,18 @@ void *tag_run_casting(void *tag)
    * without intefering with each other. */
   if ((t->sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     return NULL;
+
+  if (opt_broadcast)
+  {
+    int r, optval;
+    optval = 1;
+    if (r = setsockopt(t->sock, SOL_SOCKET, SO_BROADCAST, &optval, sizeof optval))
+    {
+      perror("setsockopt(SO_BROADCAST)");
+      close(t->sock);
+      return NULL;
+    }
+  }
 
   do {
 

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <pthread.h>
 #include "util.h"
+#include "../config.h"
 
 int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)
 {
@@ -109,16 +110,16 @@ void start_try_send_tcp(void *buf, int len, const struct sockaddr_in *addr, void
 static int udp_port;
 static void (*udp_recved)(char *buf, int l);
 
+static void _recv_udp(int s);
+
 static void *run_recv_udp(void *arg)
 {
-  int sock;
+  int sock, br_sock;
   int on;
   int port;
   struct sockaddr_in addr; /* Local address */
-  struct sockaddr_in other;
-  int otherLen;
-  char buf[4096], *p;
-  int len, i;
+  fd_set sks;
+  int n;
 
   port = udp_port;
 
@@ -143,34 +144,88 @@ static void *run_recv_udp(void *arg)
 
   printf("listen on %d\n", port);
 
+
+  /* Create socket for receving broadcasted packets */
+  if ((br_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    die("socket()");
+
+  on = 1;
+  if (setsockopt(br_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+    die("setsockopt");
+
+  on = 1;
+  if (setsockopt(br_sock, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on)) < 0)
+    die("setsockopt");
+
+  /* Bind to the broadcast port */
+  addr.sin_port = htons(BRCAST_PORT);
+
+  if (bind(br_sock, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+  {
+    close(br_sock);
+    br_sock = 0;
+    perror("bind to broadcast port");
+  }
+
+  n = (sock>br_sock? sock:br_sock) +1;
+
   for (;;) /* Run forever */
   {
-    /* Set the size of the in-out parameter */
-    otherLen = sizeof(other);
+    FD_ZERO(&sks);
+    FD_SET(sock, &sks);
+    if (br_sock)
+      FD_SET(br_sock, &sks);
 
-    /* Block until receive message from a client */
-    if ((len = recvfrom(sock, buf, sizeof buf, 0,
-            (struct sockaddr *) &other, &otherLen)) < 0)
+    if (select(n, &sks, NULL, NULL, NULL) > 0)
     {
-      perror("recvfrom() failed");
+      if (FD_ISSET(sock, &sks))
+      {
+        FD_CLR(sock, &sks);
+        _recv_udp(sock);
+      }
+      if (br_sock > 0 && FD_ISSET(br_sock, &sks))
+      {
+        FD_CLR(br_sock, &sks);
+        _recv_udp(br_sock);
+      }
+    }
+    else
+    {
+      perror("select");
       continue;
     }
-
-    buf[len] = 0;
-
-    i = *(int *)buf;
-    p = buf+sizeof(int);
-
-    //fprintf(stderr,"recved %d:%s\n", i, p);
-
-    /* call the recv handler */
-    if (udp_recved)
-      udp_recved(buf, len);
 
   }
   /* NOT REACHED */
 
 }
+
+static void _recv_udp(int s)
+{
+  struct sockaddr_in other;
+  int otherLen;
+  char buf[4096], *p;
+  int len;
+
+  otherLen = sizeof(other);
+
+  if ((len = recvfrom(s, buf, sizeof buf, 0,
+          (struct sockaddr *) &other, &otherLen)) < 0)
+  {
+    perror("recvfrom() failed");
+    return;
+  }
+
+  //buf[len] = 0;
+  //i = *(int *)buf;
+  //p = buf+sizeof(int);
+  //fprintf(stderr,"recved %d:%s\n", i, p);
+
+  /* call the recv handler */
+  if (udp_recved)
+    udp_recved(buf, len);
+}
+
 
 static int tcp_port;
 static void (*tcp_recved)(int sock, char *buf, int l);

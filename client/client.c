@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include "cmd/cmd.h"
 #include "include/queue.h"
+#include "include/pack.h"
+#include "../config.h"
 
 #define MINRECV 0
 #define MAXRECV 30
@@ -15,6 +17,7 @@ static int devtype;
 static struct sockaddr_in servAddr;
 static int listenPort;
 
+static int subscription = 0;
 static event_cb event_handler;
 
 #define STREQU(a, b) (strcmp((a), (b))==0)
@@ -35,7 +38,7 @@ static void *run_recv_udp(void *arg);
 
 void client_init(int dev_id, int type, const char *servIP, int localPort)
 {
-  int servPort = 7650;
+  int servPort = SERVER_PORT;
   pthread_t thread;
 
   id = dev_id;
@@ -76,36 +79,8 @@ enum {
   TYPE_AUDIO
 };
 
-struct pack
-{
-  uint32_t id;
-  uint32_t seq;
-  uint32_t type;
-  uint32_t datalen;
-
-  /* reserved, opaque across network */
-  struct list_head q;
-
-  char data[1];
-};
-
-#define _hton(u) (u) = htonl(u)
-#define HTON(p) \
-do { \
-  _hton((p)->type); \
-  _hton((p)->id); \
-  _hton((p)->seq); \
-  _hton((p)->datalen); \
-}while(0)
-
-#define _ntoh(u) (u) = ntohl(u)
-#define NTOH(p) \
-do { \
-  _ntoh((p)->type); \
-  _ntoh((p)->id); \
-  _ntoh((p)->seq); \
-  _ntoh((p)->datalen); \
-}while (0)
+#define HTON P_HTON
+#define NTOH P_NTOH
 
 #define headlen(p) ((char*)(*p).data - (char*)p)
 
@@ -155,12 +130,20 @@ static void udp_recved(char *buf, int len)
 {
   struct pack *qitem;
 
+  qitem = (struct pack *)buf;
+  NTOH(qitem);
+
+  /* broadcasted packet could be sent back */
+  if (qitem->id == id)
+    return;
+
+  /* broadcasted packet needs to be checked by tag */
+  if (qitem->tag != subscription)
+    return;
+
   if (udp_recv_q.len >= MAXRECV)
     /* queue is full */
     return;
-
-  qitem = (struct pack *)buf;
-  NTOH(qitem);
 
   if (headlen(qitem)+qitem->datalen <= len)
     ;
@@ -313,6 +296,8 @@ int sub(int tag)
   l = sprintf(buf, "%d sub %d\n", id, tag);
 
   SEND_CMD();
+
+  subscription = tag;
 
   return 0;
 }

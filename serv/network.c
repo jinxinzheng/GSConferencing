@@ -10,6 +10,7 @@
 #include "cast.h"
 #include "packet.h"
 #include "cmd/cmd.h"
+#include "../config.h"
 
 #define die(s) do {perror(s); exit(1);} while(0)
 #define fail(s) do {perror(s); return -1;} while(0)
@@ -186,7 +187,7 @@ void *listener_tcp_proc(void *p)
   int port;
 
   /* read port from config ? */
-  port = 7650;
+  port = SERVER_PORT;
 
   run_listener_tcp(port);
 }
@@ -278,7 +279,7 @@ void listener_udp()
   int port;
 
   /* read port from config ? */
-  port = 7650;
+  port = SERVER_PORT;
 
   run_listener_udp(port);
 }
@@ -288,6 +289,24 @@ int sendto_dev_udp(int sock, const void *buf, size_t len, struct device *dev)
 {
   if (sendto(sock, buf, len, 0, (struct sockaddr *) &dev->addr, sizeof dev->addr) == -1)
     fail("sendto()");
+
+  return 0;
+}
+
+int broadcast(int sock, const void *buf, size_t len)
+{
+  /* because we only deliver packets within the subnet
+   * there only needs to be one sockaddr */
+  static struct sockaddr_in ba = {0};
+  if (!ba.sin_family)
+  {
+    ba.sin_family = AF_INET;
+    ba.sin_port = htons(BRCAST_PORT);
+    ba.sin_addr.s_addr = inet_addr("255.255.255.255");
+  }
+
+  if (sendto(sock, buf, len, 0, (struct sockaddr *) &ba, sizeof ba) == -1)
+    fail(__func__);
 
   return 0;
 }

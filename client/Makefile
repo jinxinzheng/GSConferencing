@@ -12,7 +12,7 @@ test_client := test-client
 libclient := libclient.a
 endif
 
-all: test-client $(libclient)
+all: $(test_client) $(libclient)
 
 $(test_client): main.o net.o
 	$(CC) $(LDFLAGS) -o $@ $^
@@ -25,7 +25,7 @@ $(libclient): client.o net.o
 sinclude .depend
 
 clean:
-	rm -rf *.o .depend $(test-client) apitest $(libclient)
+	rm -rf *.o .depend $(test_client) apitest $(libclient)
 
 apitest: apitest.o client.o net.o
 	$(CC) $(LDFLAGS) -o $@ $^

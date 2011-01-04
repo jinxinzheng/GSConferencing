@@ -132,6 +132,7 @@ int dev_register(struct device *dev)
   dev->group = g;
   dev->tag = t;
   dev->subscription = NULL;
+  INIT_LIST_HEAD(&dev->subscribe);
 
   add_device(dev);
 

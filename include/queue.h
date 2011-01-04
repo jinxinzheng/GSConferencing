@@ -69,11 +69,11 @@ static inline struct list_head *blocking_deque_min(struct blocking_queue *q, int
 
   pthread_mutex_lock(&q->mutex);
 
-  while (!( (p = deque(&q->head)) != NULL &&
-          q->len > min ))
+  while (!( q->len > min ))
   {
     pthread_cond_wait(&q->cond, &q->mutex);
   }
+  p = deque(&q->head);
   q->len--;
 
   pthread_mutex_unlock(&q->mutex);

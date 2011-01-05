@@ -474,7 +474,7 @@ int votectrl_status(int vote_num, int *idlist)
   return 0;
 }
 
-int votectrl_showresult(int vote_num, out int *results)
+int votectrl_showresult(int vote_num, int *results)
 {
   BASICS;
 

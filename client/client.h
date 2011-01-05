@@ -75,13 +75,13 @@ enum {
 };
 
 
-#define out
+#define __out
 
 /* these functions return 0 for success, other for failure.
  *
- * params declared with *out* is used for returning values.
+ * params declared with *__out* is used for returning values.
  * the calling side is responsible for allocating the
- * buffers for the out params. */
+ * buffers for the __out params. */
 
 /* register client to the server */
 int reg(const char *passwd);
@@ -101,13 +101,13 @@ int send_audio(void *buf, int len);
 
 /* discussion controling */
 
-int discctrl_query(out char *disclist);
+int discctrl_query(__out char *disclist);
 
-int discctrl_select(int disc_num, out int *idlist);
+int discctrl_select(int disc_num, __out int *idlist);
 
 int discctrl_request();
 
-int discctrl_status(out int *idlist);
+int discctrl_status(__out int *idlist);
 
 int discctrl_close();
 
@@ -117,18 +117,18 @@ int discctrl_forbid(int id);
 
 /* vote controling */
 
-int votectrl_query(out char *votelist);
+int votectrl_query(__out char *votelist);
 
-int votectrl_select(int vote_num, out int *idlist);
+int votectrl_select(int vote_num, __out int *idlist);
 
 /* vote_type: see enum VOTE_* */
-int votectrl_start(int vote_num, out int *vote_type);
+int votectrl_start(int vote_num, __out int *vote_type);
 
 int votectrl_result(int vote_num, int result);
 
-int votectrl_status(int vote_num, out int *idlist);
+int votectrl_status(int vote_num, __out int *idlist);
 
-int votectrl_showresult(int vote_num, out int *results);
+int votectrl_showresult(int vote_num, __out int *results);
 
 int votectrl_stop();
 
@@ -143,7 +143,7 @@ int servicecall(int request);
 
 /* messaging */
 
-int msgctrl_query(out int *idlist);
+int msgctrl_query(__out int *idlist);
 
 /* idlist: ends with 0.
  * if idlist is NULL, send to all other clients. */
@@ -151,13 +151,13 @@ int msgctrl_send(int idlist[], const char *msg);
 
 /* video controling */
 
-int videoctrl_query(out char *vidlist);
+int videoctrl_query(__out char *vidlist);
 
 int videoctrl_select(int vid_num);
 
 /* file transfer */
 
-int filectrl_query(out char *filelist);
+int filectrl_query(__out char *filelist);
 
 int filectrl_select(int file_num);
 

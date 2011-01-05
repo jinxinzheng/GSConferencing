@@ -95,7 +95,11 @@ int sub(int channel);
 
 /* data casting */
 
-int send_audio(void *buf, int len);
+/* fill audio in the buffer returned by send_audio_start(),
+ * then call send_audio_end(). */
+void *send_audio_start();
+
+int send_audio_end(int len);
 
 /** command functions **/
 

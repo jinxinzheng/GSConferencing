@@ -7,6 +7,7 @@
 #include "cmd/cmd.h"
 #include "include/queue.h"
 #include "include/pack.h"
+#include "include/cfifo.h"
 #include "../config.h"
 
 #define MINRECV 0
@@ -28,7 +29,7 @@ static void handle_cmd(int, char *buf, int l);
 
 static void udp_recved(char *buf, int l);
 
-static struct blocking_queue udp_send_q;
+static struct cfifo udp_snd_fifo;
 
 static struct blocking_queue udp_recv_q;
 
@@ -60,7 +61,9 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   start_recv_udp(listenPort, udp_recved);
 
   /* udp sending and recving queues */
-  blocking_queue_init(&udp_send_q);
+  cfifo_init(&udp_snd_fifo, 8, 11); //256 of size and 2K of element size
+  cfifo_enable_locking(&udp_snd_fifo);
+
   blocking_queue_init(&udp_recv_q);
 
   /* udp sender thread */
@@ -84,22 +87,27 @@ enum {
 
 #define headlen(p) ((char*)(*p).data - (char*)p)
 
-int send_audio(void *buf, int len)
-{
-  struct pack *qitem;
+static struct pack *audio_current;
 
+void *send_audio_start()
+{
+  audio_current = (struct pack *)cfifo_get_in(&udp_snd_fifo);
+  return audio_current->data;
+}
+
+int send_audio_end(int len)
+{
   static int qseq = 0;
 
-  qitem = (struct pack *)malloc(sizeof(struct pack)+len);
 
-  qitem->type = TYPE_AUDIO;
-  qitem->id = (uint32_t)id;
-  qitem->seq = qseq++;
-  qitem->datalen = (uint32_t)len;
-  memcpy(qitem->data, buf, len);
+  audio_current->type = TYPE_AUDIO;
+  audio_current->id = (uint32_t)id;
+  audio_current->seq = ++qseq;
+  audio_current->datalen = (uint32_t)len;
+
 
   //enque
-  blocking_enque(&udp_send_q, &qitem->q);
+  cfifo_in_signal(&udp_snd_fifo);
 
   return 0;
 }
@@ -113,8 +121,8 @@ static void *run_send_udp(void *arg)
   while (1)
   {
     //deque
-    p = blocking_deque(&udp_send_q);
-    qitem = list_entry(p, struct pack, q);
+    cfifo_wait_empty(&udp_snd_fifo);
+    qitem = (struct pack *)cfifo_get_out(&udp_snd_fifo);
 
     //send udp
     l = headlen(qitem) + qitem->datalen;
@@ -122,7 +130,7 @@ static void *run_send_udp(void *arg)
     send_udp(qitem, l, &servAddr);
 
     //free
-    free(qitem);
+    cfifo__out(&udp_snd_fifo);
   }
 }
 

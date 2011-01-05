@@ -31,7 +31,7 @@ static void udp_recved(char *buf, int l);
 
 static struct cfifo udp_snd_fifo;
 
-static struct blocking_queue udp_recv_q;
+static struct cfifo udp_rcv_fifo;
 
 static void *run_send_udp(void *arg);
 
@@ -64,7 +64,8 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   cfifo_init(&udp_snd_fifo, 8, 11); //256 of size and 2K of element size
   cfifo_enable_locking(&udp_snd_fifo);
 
-  blocking_queue_init(&udp_recv_q);
+  cfifo_init(&udp_rcv_fifo, 8, 11);
+  cfifo_enable_locking(&udp_rcv_fifo);
 
   /* udp sender thread */
   pthread_create(&thread, NULL, run_send_udp, NULL);
@@ -149,10 +150,6 @@ static void udp_recved(char *buf, int len)
   if (qitem->tag != subscription)
     return;
 
-  if (udp_recv_q.len >= MAXRECV)
-    /* queue is full */
-    return;
-
   if (headlen(qitem)+qitem->datalen <= len)
     ;
   else
@@ -161,10 +158,10 @@ static void udp_recved(char *buf, int len)
     return; /*mal pack, drop*/
   }
 
-  qitem = (struct pack *)malloc(len);
+  qitem = (struct pack *)cfifo_get_in(&udp_rcv_fifo);
   memcpy(qitem, buf, len);
 
-  blocking_enque(&udp_recv_q, &qitem->q);
+  cfifo_in_signal(&udp_rcv_fifo);
 
   //tmp: do not put in queue, directly play.
   /*if (qitem->type == TYPE_AUDIO)
@@ -182,8 +179,8 @@ static void *run_recv_udp(void *arg)
 
   while (1)
   {
-    p = blocking_deque_min(&udp_recv_q, MINRECV);
-    qitem = list_entry(p, struct pack, q);
+    cfifo_wait_empty(&udp_rcv_fifo);
+    qitem = (struct pack *)cfifo_get_out(&udp_rcv_fifo);
 
     /* generate event */
     if (qitem->type == TYPE_AUDIO)
@@ -195,7 +192,7 @@ static void *run_recv_udp(void *arg)
 
     //fprintf(stderr, "recv pack %d\n", qitem->seq);
 
-    free(qitem);
+    cfifo__out(&udp_rcv_fifo);
   }
 }
 

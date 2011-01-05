@@ -10,19 +10,18 @@
 
 static inline void tag_enque_packet(struct tag *t, struct packet *p)
 {
-  blocking_enque(&t->pack_queue, &p->l);
+  struct packet **pp = (struct packet **)cfifo_get_in(&t->pack_fifo);
+  *pp = p;
+  cfifo_in_signal(&t->pack_fifo);
 }
 
 static inline struct packet *tag_deque_packet(struct tag *t)
 {
-  struct list_head *p;
-  p = blocking_deque(&t->pack_queue);
-  return list_entry(p, struct packet, l);
-}
-
-static inline int tag_queue_len(struct tag *t)
-{
-  return t->pack_queue.len;
+  struct packet *p;
+  cfifo_wait_empty(&t->pack_fifo);
+  p = *(struct packet **)cfifo_get_out(&t->pack_fifo);
+  cfifo__out(&t->pack_fifo);
+  return p;
 }
 
 /* packets sent by devices with the same tag will be queued together.
@@ -37,15 +36,6 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   struct tag *t;
 
   t = dev->tag;
-
-  if (opt_queue_max!=0 && tag_queue_len(t) >= opt_queue_max)
-  {
-    /* discard if the queue/buffer is full.
-     * this may help to reduce the latency. */
-    fprintf(stderr, "buffer %d is full, packet %d is dropped\n",
-      (int)t->tid, ntohl(p->seq));
-    return 1;
-  }
 
   /* fill the tag id */
   p->tag = htons((uint16_t)t->id);

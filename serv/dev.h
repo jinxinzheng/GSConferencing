@@ -3,6 +3,7 @@
 
 #include "include/list.h"
 #include "include/queue.h"
+#include "include/cfifo.h"
 #include <sys/types.h>
 #include <netinet/in.h>
 #include "vote.h"
@@ -51,8 +52,8 @@ struct tag {
   struct tag *hash_next;
   struct tag **hash_pprev;
 
-  /* packet queue */
-  struct blocking_queue pack_queue;
+  /* packet fifo */
+  struct cfifo pack_fifo;
 };
 
 #define TAGUID(gid,tid) (((long long)gid<<32) ^ tid)

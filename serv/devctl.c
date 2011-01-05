@@ -33,7 +33,8 @@ struct tag *tag_create(long gid, long tid)
   t->name[0]=0;
   t->device_list = NULL;
   INIT_LIST_HEAD(&t->subscribe_head);
-  blocking_queue_init(&t->pack_queue);
+  cfifo_init(&t->pack_fifo, 8, 2); //256 elements of 4 bytes for each
+  cfifo_enable_locking(&t->pack_fifo);
   add_tag(t);
 
   /* create the tag's casting queue thread */

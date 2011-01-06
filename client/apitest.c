@@ -44,11 +44,12 @@ int main(int argc, char *const argv[])
 
   for(;;)
   {
-    sleep(1);
+    usleep(2800);
     if (s)
     {
-      sprintf(buf, "%x", i++);
-      send_audio(buf, 12);
+      char *p = send_audio_start();
+      sprintf(p, "%x", i++);
+      send_audio_end(512);
     }
   }
 }

@@ -19,31 +19,6 @@ struct group *group_create(long gid)
   return g;
 }
 
-struct tag *tag_create(long gid, long tid)
-{
-  struct tag *t;
-  pthread_t thread;
-  long long tuid;
-
-  tuid = TAGUID(gid, tid);
-
-  t = (struct tag *)malloc(sizeof (struct tag));
-  t->tid = tid;
-  t->id = tuid;
-  t->name[0]=0;
-  t->device_list = NULL;
-  INIT_LIST_HEAD(&t->subscribe_head);
-  cfifo_init(&t->pack_fifo, 8, 2); //256 elements of 4 bytes for each
-  cfifo_enable_locking(&t->pack_fifo);
-  add_tag(t);
-
-  /* create the tag's casting queue thread */
-  pthread_create(&thread, NULL, tag_run_casting, t);
-
-  printf("tag %ld:%ld created\n", gid, tid);
-  return t;
-}
-
 int dev_register(struct device *dev)
 {
   long gid, tid;

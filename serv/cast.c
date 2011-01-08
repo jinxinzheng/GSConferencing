@@ -8,22 +8,6 @@
 #include "packet.h"
 #include "include/pack.h"
 
-static inline void tag_enque_packet(struct tag *t, struct packet *p)
-{
-  struct packet **pp = (struct packet **)cfifo_get_in(&t->pack_fifo);
-  *pp = p;
-  cfifo_in_signal(&t->pack_fifo);
-}
-
-static inline struct packet *tag_deque_packet(struct tag *t)
-{
-  struct packet *p;
-  cfifo_wait_empty(&t->pack_fifo);
-  p = *(struct packet **)cfifo_get_out(&t->pack_fifo);
-  cfifo__out(&t->pack_fifo);
-  return p;
-}
-
 /* packets sent by devices with the same tag will be queued together.
  * There will be as many queues as the number of existing tags.
  * The queued packets will be sent to the 'subscribers' of the tag

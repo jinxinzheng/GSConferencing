@@ -3,7 +3,6 @@
 
 #include "include/list.h"
 #include "include/queue.h"
-#include "include/cfifo.h"
 #include <sys/types.h>
 #include <netinet/in.h>
 #include "vote.h"
@@ -30,33 +29,7 @@ enum {
  *
  * */
 
-struct tag {
-  long tid;
-  /*as tid is not unique, need to use group_id<<16 + tag_id as the unique id. */
-  long long id;
-  char name[64];
-
-  /* the socket used for casting */
-  int sock;
-
-  /* tagged devices
-   * this list is not stand-alone. it's partial of the group list.
-   * so can't use a real head here, just use a link pointer. */
-  struct list_head *device_list;
-
-  /* see device.subscription */
-  //struct device *subscribe_head;
-  struct list_head subscribe_head;
-
-  /* ID hash table linkage. */
-  struct tag *hash_next;
-  struct tag **hash_pprev;
-
-  /* packet fifo */
-  struct cfifo pack_fifo;
-};
-
-#define TAGUID(gid,tid) (((long long)gid<<32) ^ tid)
+#include "tag.h"
 
 struct group {
   long id;

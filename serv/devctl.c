@@ -105,6 +105,9 @@ int dev_register(struct device *dev)
       tag_add_device(t, dev);
   }
 
+  if (dev->bcast.sin_addr.s_addr)
+    tag_add_bcast(t, &dev->bcast);
+
   dev->group = g;
   dev->tag = t;
   dev->subscription = NULL;

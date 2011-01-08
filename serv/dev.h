@@ -47,6 +47,7 @@ struct device {
   /*unsigned long ip;
   long port;*/
   struct sockaddr_in addr;
+  struct sockaddr_in bcast;
   int type;
   int mode;
   int privilege;

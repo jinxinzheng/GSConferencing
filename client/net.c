@@ -1,12 +1,43 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
 #include "util.h"
 #include "../config.h"
+
+void get_broadcast_addr(char *addr)
+{
+  struct ifaddrs *ifa, *p;
+
+  getifaddrs(&ifa);
+
+  for(p=ifa; p; p=p->ifa_next)
+  {
+    if (strcmp("eth0", p->ifa_name) == 0)
+    {
+      if (p->ifa_addr->sa_family == AF_INET)
+      {
+        if (p->ifa_flags & IFF_BROADCAST)
+        {
+          struct sockaddr_in *si;
+
+          si = (struct sockaddr_in *)p->ifa_broadaddr;
+          sprintf(addr, "%s", inet_ntoa(si->sin_addr));
+
+          break;
+        }
+      }
+    }
+  }
+
+  freeifaddrs(ifa);
+}
 
 int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)
 {

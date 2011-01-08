@@ -194,7 +194,7 @@ int main(int argc, char *const argv[])
 
   len = sprintf(buf, "%d reg %d %s %d\n", id, 1, p, listenPort);
   */
-  len = sprintf(buf, "%d reg %d %s %d\n", id, id, uni, listenPort);
+  len = sprintf(buf, "%d reg %d %s %d none\n", id, id, uni, listenPort);
 
   if (send_tcp(buf, len, &servAddr) <= 0)
     return 2;

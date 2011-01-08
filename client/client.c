@@ -21,6 +21,8 @@ static int listenPort;
 static int subscription = 0;
 static event_cb event_handler;
 
+static char br_addr[32];
+
 #define STREQU(a, b) (strcmp((a), (b))==0)
 
 #define CHECKOK(s) if (!STREQU(s,"OK")) return;
@@ -45,6 +47,10 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   id = dev_id;
 
   devtype = type;
+
+  /* get this network's broadcast address */
+  strcpy(br_addr, "none");
+  get_broadcast_addr(br_addr);
 
   /* Construct the server address structure */
   memset(&servAddr, 0, sizeof(servAddr));     /* Zero out structure */
@@ -271,7 +277,7 @@ int reg(const char *passwd)
   BASICS;
 
 #define _MAKE_REG() \
-  l = sprintf(buf, "%d reg %d %s %d\n", id, devtype, passwd, listenPort)
+  l = sprintf(buf, "%d reg %d %s %d %s\n", id, devtype, passwd, listenPort, br_addr)
 
   _MAKE_REG();
 

@@ -293,10 +293,11 @@ int sendto_dev_udp(int sock, const void *buf, size_t len, struct device *dev)
   return 0;
 }
 
-int broadcast(int sock, const void *buf, size_t len)
+int broadcast(struct tag *t, const void *buf, size_t len)
 {
-  /* because we only deliver packets within the subnet
-   * there only needs to be one sockaddr */
+  int i;
+
+  /* broadcast address for within the subnet */
   static struct sockaddr_in ba = {0};
   if (!ba.sin_family)
   {
@@ -305,8 +306,18 @@ int broadcast(int sock, const void *buf, size_t len)
     ba.sin_addr.s_addr = inet_addr("255.255.255.255");
   }
 
-  if (sendto(sock, buf, len, 0, (struct sockaddr *) &ba, sizeof ba) == -1)
-    fail(__func__);
+  if (t->bcast_size == 0)
+  {
+    /* send to local network */
+    if (sendto(t->sock, buf, len, 0, (struct sockaddr *) &ba, sizeof ba) == -1)
+      fail(__func__);
+  }
+  else
+  for (i=0; i<t->bcast_size; i++)
+  {
+    if (sendto(t->sock, buf, len, 0, (struct sockaddr *) t->bcasts[i], sizeof(struct sockaddr_in)) == -1)
+      perror(__func__);
+  }
 
   return 0;
 }

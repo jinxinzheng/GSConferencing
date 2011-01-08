@@ -40,7 +40,7 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   if (opt_broadcast)
   {
     /* do broadcast here */
-    broadcast(t->sock, pack->data, pack->len);
+    broadcast(t, pack->data, pack->len);
     return;
   }
 

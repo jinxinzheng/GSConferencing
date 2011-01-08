@@ -8,6 +8,7 @@ static struct cmd_handler_entry *cmdhandler_hash[HASH_SZ];
 #define CMD_HANDLER_INIT(c) {#c, handle_cmd_##c, NULL, NULL}
 
 static struct cmd_handler_entry cmdhandlers[] = {
+  CMD_HANDLER_INIT(debug),
   CMD_HANDLER_INIT(reg),
   CMD_HANDLER_INIT(sub),
   CMD_HANDLER_INIT(discctrl),

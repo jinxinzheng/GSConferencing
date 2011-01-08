@@ -123,6 +123,7 @@ do { \
 /* sub cmd handlers.
  * handler should fill the response in cmd->rep. */
 
+int handle_cmd_debug(struct cmd *cmd);
 int handle_cmd_reg(struct cmd *cmd);
 int handle_cmd_sub(struct cmd *cmd);
 int handle_cmd_discctrl(struct cmd *cmd);

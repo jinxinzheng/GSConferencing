@@ -1,18 +1,7 @@
 #include "cmd_handler.h"
 
 #define DEVLIST_TO_IDLIST(str, head, listmember) \
-do{ \
-  int _l = 0; \
-  struct list_head *_t; \
-  struct device *_d; \
-\
-  list_for_each(_t, head) \
-  { \
-    _d = list_entry(_t, struct device, listmember); \
-    LIST_ADD_NUM(str, _l, (int)_d->id); \
-  } \
-  LIST_END(str, _l); \
-}while(0)
+  list_TO_NUMLIST(str, head, struct device, listmember, id)
 
 int handle_cmd_msgctrl(struct cmd *cmd)
 {

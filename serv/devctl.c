@@ -11,6 +11,8 @@ struct group *group_create(long gid)
   struct group *g;
 
   g = (struct group *)malloc(sizeof (struct group));
+  memset(g, 0, sizeof(struct group));
+
   g->id = gid;
   INIT_LIST_HEAD(&g->device_head);
   add_group(g);

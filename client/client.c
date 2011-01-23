@@ -318,6 +318,19 @@ int sub(int tag)
 }
 
 
+int discctrl_set_mode(int mode)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl setmode %d\n", id, mode);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  return 0;
+}
+
 int discctrl_query(char *disclist)
 {
   BASICS;
@@ -348,11 +361,11 @@ int discctrl_select(int disc_num, int *idlist)
   return 0;
 }
 
-int discctrl_request()
+int discctrl_request(int open)
 {
   BASICS;
 
-  l = sprintf(buf, "%d discctrl request\n", id);
+  l = sprintf(buf, "%d discctrl request %d\n", id, open);
 
   SEND_CMD();
 
@@ -407,6 +420,19 @@ int discctrl_forbid(int did)
   BASICS;
 
   l = sprintf(buf, "%d discctrl forbid %d\n", id, did);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  return 0;
+}
+
+int discctrl_disable_all(int flag)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d discctrl disableall %d\n", id, flag);
 
   SEND_CMD();
 

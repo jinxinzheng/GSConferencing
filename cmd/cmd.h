@@ -23,6 +23,7 @@ enum {
   ERR_PARSE = 1,
   ERR_BAD_CMD,
   ERR_NOT_REG,
+  ERR_REJECTED,
   ERR_OTHER,
 };
 

@@ -120,6 +120,19 @@ do { \
   LIST_END(buf, _l); \
 } while(0)
 
+#define list_TO_NUMLIST(buf, head, type, lm, member) \
+do { \
+  int _l = 0; \
+  struct list_head *_t; \
+  type *_e; \
+  list_for_each(_t, (head)) \
+  { \
+    _e = list_entry(_t, type, lm); \
+    LIST_ADD_NUM(buf, _l, (int)_e->member); \
+  } \
+  LIST_END(buf, _l); \
+} while(0)
+
 /* sub cmd handlers.
  * handler should fill the response in cmd->rep. */
 

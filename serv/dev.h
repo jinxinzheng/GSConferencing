@@ -40,6 +40,13 @@ struct group {
   /* ID hash table linkage. */
   struct group *hash_next;
   struct group **hash_pprev;
+
+  struct device *chairman;
+
+  struct {
+    int mode;
+    int disabled;
+  } discuss;
 };
 
 struct device {

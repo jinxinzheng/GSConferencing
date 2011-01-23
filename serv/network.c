@@ -250,6 +250,7 @@ void run_listener_udp(int port)
 
     {
       struct device *d;
+      struct group *g;
 
       /* work out the device object */
       did = (long)ntohl(*(uint32_t *)pack->data);
@@ -257,8 +258,15 @@ void run_listener_udp(int port)
       if (!d)
         continue;
 
+      g = d->group;
+
+      /* don't cast if all are disabled by the chairman.
+       * but we still need to cast the chairman's voice. */
+      if( g->discuss.disabled && d != g->chairman )
+        continue;
+
       /* don't cast if it is prohibited */
-      if (d->discuss.forbidden)
+      if( d->discuss.forbidden || !d->discuss.open )
         continue;
 
       /* put packet into processing queue */

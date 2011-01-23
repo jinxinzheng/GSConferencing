@@ -105,11 +105,15 @@ int send_audio_end(int len);
 
 /* discussion controling */
 
+/* mode: enum DISCMODE_* */
+int discctrl_set_mode(int mode);
+
 int discctrl_query(__out char *disclist);
 
 int discctrl_select(int disc_num, __out int *idlist);
 
-int discctrl_request();
+/* open: 1 open, 0 close. */
+int discctrl_request(int open);
 
 int discctrl_status(__out int *idlist);
 
@@ -118,6 +122,9 @@ int discctrl_close();
 int discctrl_stop();
 
 int discctrl_forbid(int id);
+
+/* flag: 1 disable, 0 enable. */
+int discctrl_disable_all(int flag);
 
 /* vote controling */
 

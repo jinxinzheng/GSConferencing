@@ -18,7 +18,7 @@ int handle_cmd_filectrl(struct cmd *cmd)
 
   int i;
   char *p;
-  
+
   struct device *d;
 
   THIS_DEVICE(cmd, d);

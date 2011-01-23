@@ -47,6 +47,8 @@ struct device {
   /*unsigned long ip;
   long port;*/
   struct sockaddr_in addr;
+  /* the address which receives file */
+  struct sockaddr_in fileaddr;
   struct sockaddr_in bcast;
   int type;
   int mode;

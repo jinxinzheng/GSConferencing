@@ -5,6 +5,14 @@
 int on_event(int event, void *arg1, void *arg2)
 {
   printf("e: %d, %s, %d\n", event, (char*)arg1, (int)arg2);
+  if (event == EVENT_FILE)
+  {
+    FILE *f;
+    f = fopen("transfer", "w");
+    fwrite(arg1, 1, (int)arg2, f);
+    fclose(f);
+    printf("file 'transfer' saved\n");
+  }
 }
 
 int main(int argc, char *const argv[])
@@ -38,6 +46,8 @@ int main(int argc, char *const argv[])
 
   msgctrl_query(idlist);
   msgctrl_send(NULL, "hello");
+
+  filectrl_select(0);
 
   if (r)
     sub(1);

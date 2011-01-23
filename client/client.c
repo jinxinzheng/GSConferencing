@@ -27,7 +27,7 @@ static char br_addr[32];
 
 #define CHECKOK(s) if (!STREQU(s,"OK")) return;
 
-static void handle_cmd(int, char *buf, int l);
+static void handle_cmd(int, int isfile, char *buf, int l);
 
 static void udp_recved(char *buf, int l);
 
@@ -643,23 +643,28 @@ int filectrl_select(int file_num)
 }
 
 
-
-static void file_transfer(char *data, int *plen, const char *buf, int l)
+static struct
 {
-  if (buf)
+  void *data;
+  int len;
+} transfile;
+
+static void handle_file(int sock, char *buf, int l)
+{
+  if (sock)
   {
-    memcpy(data+*plen, buf, l);
-    *plen += l;
+    memcpy(transfile.data+transfile.len, buf, l);
+    transfile.len += l;
   }
   else
   {
-    event_handler(EVENT_FILE, data, (void*)*plen);
-    free(data);
+    event_handler(EVENT_FILE, transfile.data, (void*)transfile.len);
+    free(transfile.data);
   }
 }
 
 /* handle recved cmd and generate appropriate events to the client */
-static void handle_cmd(int sock, char *buf, int l)
+static void handle_cmd(int sock, int isfile, char *buf, int l)
 {
   /* this is maintained during each connection.
    * caution: this only supports one thread running tcp recv! */
@@ -676,6 +681,13 @@ static void handle_cmd(int sock, char *buf, int l)
 
   struct cmd c;
   int i;
+
+
+  if (isfile)
+  {
+    handle_file(sock, buf, l);
+    return;
+  }
 
 
   if (contex.sock == 0)
@@ -799,10 +811,8 @@ static void handle_cmd(int sock, char *buf, int l)
     /* this is a file transfer. need to handle specially. */
     char *p = c.args[i++];
     int len = atoi(p);
-    contex.data = malloc(len);
-    contex.len = 0;
-    /* put the connection into 'busy' state
-     * so that later file data will be correctly handled. */
-    contex.job = file_transfer;
+    /* prepare file transfer */
+    transfile.data = malloc(len);
+    transfile.len = 0;
   }
 }

@@ -43,9 +43,15 @@ int handle_cmd_reg(struct cmd *cmd)
   {
     newdev = (struct device *)malloc(sizeof (struct device));
     memset(newdev, 0, sizeof (struct device));
+
     newdev->id = cmd->device_id;
+
     newdev->addr = *cmd->saddr;
     newdev->addr.sin_port = htons(port);
+
+    newdev->fileaddr = newdev->addr;
+    newdev->fileaddr.sin_port = htons(port+1);
+
     if (strcmp("none", bcast) == 0)
       newdev->bcast.sin_addr.s_addr = 0;
     else

@@ -365,6 +365,7 @@ void send_file_to_dev(const char *path, struct device *dev)
 {
   int sock;
   FILE *f;
+  int fd;
   struct stat st;
   char buf[1024];
   int l;
@@ -377,7 +378,8 @@ void send_file_to_dev(const char *path, struct device *dev)
     return;
   }
 
-  fstat(fileno(f), &st);
+  fd = fileno(f);
+  fstat(fd, &st);
 
   /* file transfer begins with a command:
    * "id file name length"
@@ -389,10 +391,28 @@ void send_file_to_dev(const char *path, struct device *dev)
 
   _SEND(sock, buf, l);
 
+  /* ensure the client has done processing the command */
+  close(sock);
+
+
+  /* connect to file port */
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  {
+    perror("socket()");
+    goto END;
+  }
+  if (connect(sock, (struct sockaddr *) &dev->fileaddr, sizeof dev->fileaddr) < 0)
+  {
+    perror("connect()");
+    goto END;
+  }
+
+  /*
   while ((l=fread(buf, 1, sizeof buf, f)) > 0)
   {
     _SEND(sock, buf, l);
-  }
+  } */
+  sendfile(sock, fd, NULL, st.st_size);
 
   /* recv any reply here */
 

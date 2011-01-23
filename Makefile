@@ -13,6 +13,7 @@ SUBDIRS:=serv client
 all: $(SUBDIRS)
 
 clean:
+	rm -rf sha/*.o
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
 
 serv:

@@ -258,14 +258,19 @@ static void _recv_udp(int s)
 }
 
 
+
 static int tcp_port;
-static void (*tcp_recved)(int sock, char *buf, int l);
+static int file_port;
+static void (*tcp_recved)(int sock, int isfile, char *buf, int l);
 
 static void *run_recv_tcp(void *arg)
 {
   int port;
   int lisn_sock;
+  int file_sock;
   int conn_sock;               /* Socket descriptor for incoming connection */
+  fd_set sks;
+  int n;
   int on;
   struct sockaddr_in loclAddr; /* local address */
   struct sockaddr_in remtAddr; /* remote address */
@@ -278,9 +283,17 @@ static void *run_recv_tcp(void *arg)
   if ((lisn_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     die("socket()");
 
+  if ((file_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    die("socket()");
+
+  n = (lisn_sock>file_sock? lisn_sock:file_sock) +1;
+
   /* Eliminates "Address already in use" error from bind. */
   on = 1;
   if (setsockopt(lisn_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(on)) < 0)
+    die("setsockopt");
+
+  if (setsockopt(file_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(on)) < 0)
     die("setsockopt");
 
   /* Construct local address structure */
@@ -293,39 +306,79 @@ static void *run_recv_tcp(void *arg)
   if (bind(lisn_sock, (struct sockaddr *) &loclAddr, sizeof loclAddr) < 0)
     die("bind()");
 
+  /* cmd and file go separate ports */
+  loclAddr.sin_port = htons(file_port);
+  if (bind(file_sock, (struct sockaddr *) &loclAddr, sizeof loclAddr) < 0)
+    die("bind()");
+
   /* Mark the socket so it will listen for incoming connections */
   if (listen(lisn_sock, 50) < 0)
     die("listen()");
 
+  if (listen(file_sock, 50) < 0)
+    die("listen()");
+
   for (;;) /* Run forever */
   {
+    int sel;
+    int isfile;
+
+    /* Wait for a remote to connect */
+
+    FD_ZERO(&sks);
+    FD_SET(lisn_sock, &sks);
+    FD_SET(file_sock, &sks);
+
+    if (select(n, &sks, NULL, NULL, NULL) > 0)
+    {
+      if (FD_ISSET(lisn_sock, &sks))
+      {
+        FD_CLR(lisn_sock, &sks);
+        sel = lisn_sock;
+        isfile = 0;
+      }
+      if (FD_ISSET(file_sock, &sks))
+      {
+        FD_CLR(file_sock, &sks);
+        sel = file_sock;
+        isfile = 1;
+      }
+    }
+    else
+    {
+      perror("select");
+      continue;
+    }
+
     /* Set the size of the in-out parameter */
     remtLen = sizeof remtAddr;
 
-    /* Wait for a remote to connect */
-    if ((conn_sock = accept(lisn_sock, (struct sockaddr *) &remtAddr, &remtLen)) < 0)
+    if ((conn_sock = accept(sel, (struct sockaddr *) &remtAddr, &remtLen)) < 0)
+    {
       perror("accept()");
+      continue;
+    }
 
     /* conn_sock is connected to a remote! */
-    fprintf(stderr, "recved cmd: ");
+    //fprintf(stderr, "recved cmd: ");
 
     while ((l = recv(conn_sock, buf, sizeof buf, 0)) > 0)
     {
-      buf[l] = 0;
-      fprintf(stderr, "%s", buf);
+      //buf[l] = 0;
+      //fprintf(stderr, "%s", buf);
 
       /* call the recv handler */
       if (tcp_recved)
-        tcp_recved(conn_sock, buf, l);
+        tcp_recved(conn_sock, isfile, buf, l);
 
       /* send any here */
     }
 
     /* notify connection closing */
     if (tcp_recved)
-      tcp_recved(0, NULL, 0);
+      tcp_recved(0, isfile, NULL, 0);
 
-    fprintf(stderr, "\n");
+    //fprintf(stderr, "\n");
 
     close(conn_sock);
   }
@@ -340,10 +393,11 @@ void start_recv_udp(int listenPort, void (*recved)(char *buf, int l))
   pthread_create(&thread, NULL, run_recv_udp, NULL);
 }
 
-void start_recv_tcp(int listenPort, void (*recved)(int, char *buf, int l))
+void start_recv_tcp(int listenPort, void (*recved)(int sock, int isfile, char *buf, int l))
 {
   pthread_t thread;
   tcp_port = listenPort;
+  file_port = listenPort+1;
   tcp_recved = recved;
   pthread_create(&thread, NULL, run_recv_tcp, NULL);
 }

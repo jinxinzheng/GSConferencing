@@ -27,8 +27,6 @@ sinclude .depend
 clean:
 	rm -rf *.o .depend $(test_client) apitest $(libclient)
 
-apitest: apitest.o client.o net.o
-	$(CC) $(LDFLAGS) -o $@ $^
+apitest: apitest.o $(libclient)
 
 pass: pass.o ../sha/sha128.o
-	$(CC) -o $@ $^

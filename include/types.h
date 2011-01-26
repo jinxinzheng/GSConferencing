@@ -1,6 +1,13 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
+/* user register modes */
+enum {
+  REGIST_KEY,
+  REGIST_CARD_ANY,
+  REGIST_CARD_ID,
+};
+
 /* discussion modes */
 enum {
   DISCMODE_AUTO,

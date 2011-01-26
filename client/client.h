@@ -27,6 +27,16 @@ enum {
   /* arg1, arg2: unused */
   EVENT_REG_OK,
 
+  /* arg1, arg2: unused */
+  EVENT_NEED_REG,
+
+  /* arg1: int, register mode, REGIST_*
+   * arg2: unused */
+  EVENT_REGIST_START,
+
+  /* arg1, arg2: unused */
+  EVENT_REGIST_STOP,
+
   /* arg1: int, discussion number
    * arg2: unused */
   EVENT_DISC_OPEN,
@@ -69,9 +79,6 @@ enum {
   /* arg1: char *, file data
    * arg2: int, file length */
   EVENT_FILE,
-
-  /* arg1, arg2: unused */
-  EVENT_NEED_REG,
 };
 
 
@@ -102,6 +109,21 @@ void *send_audio_start();
 int send_audio_end(int len);
 
 /** command functions **/
+
+/* user register */
+
+/* type: see enum REGIST_* */
+int regist_start(int mode);
+
+int regist_stop();
+
+int regist_status(__out int *expect, __out int *got);
+
+int regist_by_key();
+
+int regist_by_card();
+
+int regist_by_card_id(int cardid, __out char *name, __out int *gender, __out int *num);
 
 /* discussion controling */
 

@@ -238,6 +238,26 @@ static void *run_recv_udp(void *arg)
   _i; \
 })
 
+#define SIMPLE_CMD_0(cmd, subcmd) \
+int cmd##_##subcmd() \
+{ \
+  BASICS; \
+  l = sprintf(buf, "%d " #cmd " " #subcmd "\n", id); \
+  SEND_CMD(); \
+  i = FIND_OK(c); \
+  return 0; \
+}
+
+#define SIMPLE_CMD_1i(cmd, subcmd, i1) \
+int cmd##_##subcmd(int i1) \
+{ \
+  BASICS; \
+  l = sprintf(buf, "%d " #cmd " " #subcmd "%d\n", id, i1); \
+  SEND_CMD(); \
+  i = FIND_OK(c); \
+  return 0; \
+}
+
 /* checks whether an int is in a int list str */
 static inline int int_in_str(int i, char *s)
 {
@@ -313,6 +333,48 @@ int sub(int tag)
   SEND_CMD();
 
   subscription = tag;
+
+  return 0;
+}
+
+
+SIMPLE_CMD_1i(regist, start, mode);
+
+SIMPLE_CMD_0(regist, stop);
+
+int regist_status(int *expect, int *got)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d regist status\n", id);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  *expect = atoi(c.args[++i]);
+  *got    = atoi(c.args[++i]);
+
+  return 0;
+}
+
+SIMPLE_CMD_0(regist, by_key);
+
+SIMPLE_CMD_0(regist, by_card);
+
+int regist_by_card_id(int cardid, char *name, int *gender, int *num)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d regist by_card_id %d\n", id, cardid);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  strcpy(name,    c.args[++i]);
+  *gender = atoi( c.args[++i]);
+  *num    = atoi( c.args[++i]);
 
   return 0;
 }
@@ -815,6 +877,22 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
       int did = atoi(c.args[i++]);
       CHECKOK(c.args[i++]);
       event_handler(EVENT_DISC_FORBID, (void*)did, NULL);
+    }
+  }
+
+  else if (STREQU(c.cmd, "regist"))
+  {
+    char *sub = c.args[i++];
+    if (STREQU(sub, "start"))
+    {
+      int mode = atoi(c.args[i++]);
+      CHECKOK(c.args[i++]);
+      event_handler(EVENT_REGIST_START, (void*)mode, NULL);
+    }
+    else if (STREQU(sub, "stop"))
+    {
+      CHECKOK(c.args[i++]);
+      event_handler(EVENT_REGIST_STOP, NULL, NULL);
     }
   }
 

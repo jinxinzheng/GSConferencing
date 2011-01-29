@@ -55,6 +55,8 @@ int main(int argc, char *const argv[])
 
   filectrl_select(0);
 
+  synctime();
+
   if (r)
     sub(1);
 

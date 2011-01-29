@@ -17,6 +17,7 @@ static struct cmd_handler_entry cmdhandlers[] = {
   CMD_HANDLER_INIT(msgctrl),
   CMD_HANDLER_INIT(videoctrl),
   CMD_HANDLER_INIT(filectrl),
+  CMD_HANDLER_INIT(synctime),
   {NULL}
 };
 

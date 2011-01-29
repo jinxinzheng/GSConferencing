@@ -146,5 +146,6 @@ int handle_cmd_servicecall(struct cmd *cmd);
 int handle_cmd_msgctrl(struct cmd *cmd);
 int handle_cmd_videoctrl(struct cmd *cmd);
 int handle_cmd_filectrl(struct cmd *cmd);
+int handle_cmd_synctime(struct cmd *cmd);
 
 #endif

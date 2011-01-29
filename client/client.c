@@ -219,6 +219,9 @@ static void *run_recv_udp(void *arg)
   int l,i; \
   struct cmd c;
 
+#define PRINTC(fmt, args...) \
+  l = sprintf(buf, "%d " fmt "\n", id, ##args);
+
 #define SEND_CMD() do {\
   l = send_tcp(buf, l, &servAddr); \
   if (l>0) { \
@@ -243,6 +246,23 @@ static void *run_recv_udp(void *arg)
       break; \
   _i; \
 })
+
+/* return: position of 'OK' in the reply */
+int send_cmd(char *buf, int len, struct cmd *reply)
+{
+  int i,l;
+  struct cmd c;
+
+  l = len;
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  *reply = c;
+
+  return i;
+}
 
 #define SIMPLE_CMD_0(cmd, subcmd) \
 int cmd##_##subcmd() \
@@ -734,6 +754,36 @@ int filectrl_select(int file_num)
   FIND_OK(c);
 
   return 0;
+}
+
+
+/* hidden cmd */
+int synctime()
+{
+  BASICS;
+  struct timespec s,e,t;
+
+  PRINTC("synctime");
+
+  clock_gettime(CLOCK_REALTIME, &s);
+
+  SEND_CMD();
+
+  clock_gettime(CLOCK_REALTIME, &e);
+
+  i = FIND_OK(c);
+
+  t.tv_sec  = atoi(c.args[++i]);
+  t.tv_nsec = atoi(c.args[++i]);
+
+  //adjust the round trip time
+  t.tv_sec += (e.tv_sec - s.tv_sec)/2;
+  t.tv_nsec += (e.tv_nsec - s.tv_nsec)/2;
+
+  clock_settime(CLOCK_REALTIME, &t);
+
+  fprintf(stderr, "server time %s.%s\n", c.args[i-1], c.args[i]);
+  fprintf(stderr, "client time %d.%d\n", (int)t.tv_sec, (int)t.tv_nsec);
 }
 
 

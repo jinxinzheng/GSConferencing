@@ -7,6 +7,7 @@
 #include "opts.h"
 #include "packet.h"
 #include "include/pack.h"
+#include "include/debug.h"
 
 /* packets sent by devices with the same tag will be queued together.
  * There will be as many queues as the number of existing tags.
@@ -18,6 +19,9 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
 {
   pack_data *p = (pack_data *)pack->data;
   struct tag *t;
+
+  trace("[%s] %d.%d ", __func__, ntohl(p->id), ntohl(p->seq));
+  DEBUG_TIME_NOW();
 
   t = dev->tag;
 
@@ -36,6 +40,12 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   struct device *d;
   struct list_head *p, *h;
   h = &t->subscribe_head;
+
+  {
+    pack_data *pd = (pack_data *)pack->data;
+    trace("[%s] %d.%d ", __func__, ntohl(pd->id), ntohl(pd->seq));
+    DEBUG_TIME_NOW();
+  }
 
   if (opt_broadcast)
   {

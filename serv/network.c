@@ -10,6 +10,7 @@
 #include "cast.h"
 #include "packet.h"
 #include "cmd/cmd.h"
+#include "include/debug.h"
 #include "../config.h"
 
 #define die(s) do {perror(s); exit(1);} while(0)

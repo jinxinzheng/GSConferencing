@@ -4,7 +4,6 @@
 
 int on_event(int event, void *arg1, void *arg2)
 {
-  printf("e: %d, %s, %d\n", event, (char*)arg1, (int)arg2);
   if (event == EVENT_FILE)
   {
     FILE *f;
@@ -13,19 +12,23 @@ int on_event(int event, void *arg1, void *arg2)
     fclose(f);
     printf("file 'transfer' saved\n");
   }
+  else
+    printf("e: %d, %s, %d\n", event, (char*)arg1, (int)arg2);
 }
 
 int main(int argc, char *const argv[])
 {
   int opt;
   int s=0, r=0;
-  char buf[60];
+  char *srvaddr = "127.0.0.1";
+
+  char buf[2048];
   int i=0;
   int idlist[1000];
 
   int id=3;
 
-  while ((opt = getopt(argc, argv, "sr")) != -1) {
+  while ((opt = getopt(argc, argv, "srS:")) != -1) {
     switch (opt) {
       case 's':
         s=1;
@@ -35,10 +38,13 @@ int main(int argc, char *const argv[])
         r=1;
         id = 201;
         break;
+      case 'S':
+        srvaddr = optarg;
+        break;
     }
   }
 
-  client_init(id,id,  "127.0.0.1", 20000+id);
+  client_init(id,id, srvaddr, 20000+id);
 
   set_event_callback(on_event);
 
@@ -51,6 +57,13 @@ int main(int argc, char *const argv[])
 
   if (r)
     sub(1);
+
+  if (s)
+  {
+    discctrl_query(buf);
+    discctrl_select(0, idlist);
+    discctrl_request(1);
+  }
 
   for(;;)
   {

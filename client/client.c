@@ -8,6 +8,7 @@
 #include "include/queue.h"
 #include "include/pack.h"
 #include "include/cfifo.h"
+#include "include/debug.h"
 #include "../config.h"
 
 #define MINRECV 0
@@ -112,6 +113,8 @@ int send_audio_end(int len)
   audio_current->seq = ++qseq;
   audio_current->datalen = (uint32_t)len;
 
+  trace("[%s] %d.%d ", __func__, audio_current->id, audio_current->seq);
+  DEBUG_TIME_NOW();
 
   //enque
   cfifo_in_signal(&udp_snd_fifo);
@@ -151,6 +154,9 @@ static void udp_recved(char *buf, int len)
 
   qitem = (struct pack *)buf;
   NTOH(qitem);
+
+  trace("[%s] %d.%d ", __func__, qitem->id, qitem->seq);
+  DEBUG_TIME_NOW();
 
   /* broadcasted packet could be sent back */
   if (qitem->id == id)

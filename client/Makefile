@@ -1,6 +1,6 @@
 #CC:=arm-linux-gcc
 CFLAGS := -I..
-LDFLAGS := -lpthread
+LDFLAGS := -lpthread -lrt
 
 SRCS := $(wildcard *.c)
 
@@ -12,7 +12,7 @@ test_client := test-client
 libclient := libclient.a
 endif
 
-all: $(test_client) $(libclient)
+all: $(test_client) $(libclient) apitest
 
 $(test_client): main.o net.o
 	$(CC) $(LDFLAGS) -o $@ $^

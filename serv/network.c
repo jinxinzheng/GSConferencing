@@ -149,6 +149,7 @@ void *run_proceed_connection(void *arg)
       cmd.saddr = &c->addr;
       cmd.rep = rep;
       cmd.rl = cmdl;
+      cmd.sock = c->sock;
 
       i = handle_cmd(&cmd);
       if (i < 0)
@@ -165,7 +166,8 @@ void *run_proceed_connection(void *arg)
       }
 
       /* send response */
-      send(c->sock, cmd.rep, cmd.rl, 0);
+      if( cmd.rl > 0 )
+        send(c->sock, cmd.rep, cmd.rl, 0);
 
       /* read only 1 cmd for a connection.
        * this is useful for 'big' replies:

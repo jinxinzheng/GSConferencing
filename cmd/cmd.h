@@ -16,6 +16,10 @@ struct cmd {
   char *rep; /* the repsponse buffer of this cmd,
                 initially the  */
   int rl;    /* initial length of the string in rep */
+
+  /* on the server side, the cmd handler could choose
+   * to mandate the reply with this sock. */
+  int sock;
 };
 
 /* cmd error codes */

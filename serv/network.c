@@ -126,7 +126,6 @@ void *run_proceed_connection(void *arg)
 
     /* proceed with the connected socket */
 
-    /* read until the remote closes the connection */
     while ((cmdl=recv(c->sock, buf, BUFLEN, 0)) > 0)
     {
       struct cmd cmd;
@@ -167,12 +166,17 @@ void *run_proceed_connection(void *arg)
 
       /* send response */
       send(c->sock, cmd.rep, cmd.rl, 0);
-      continue;
+
+      /* read only 1 cmd for a connection.
+       * this is useful for 'big' replies:
+       * the client could recv until we close. */
+      break;
 
 CMDERR:
       /* whatever error we must send the response
        * or the client hangs and so the server does!  */
       send(c->sock, rep, strlen(rep), 0);
+      break;
     }
 
 NEXT:

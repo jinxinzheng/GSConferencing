@@ -27,11 +27,16 @@ struct tag {
   /* packet fifo */
   struct cfifo pack_fifo;
 
+  pthread_mutex_t mut;
+  pthread_cond_t  cnd_nonempty;
+
   /* broadcast addresses, pointers to device.bcast.
    * support up to 64 */
   struct sockaddr_in *bcasts[64];
   int bcast_size;
 };
+
+struct device;
 
 #define TAGUID(gid,tid) (((long long)gid<<32) ^ tid)
 
@@ -44,5 +49,9 @@ void tag_enque_packet(struct tag *t, struct packet *p);
 struct packet *tag_deque_packet(struct tag *t);
 
 void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast);
+
+void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack);
+
+struct packet *tag_out_dev_mixed(struct tag *t);
 
 #endif

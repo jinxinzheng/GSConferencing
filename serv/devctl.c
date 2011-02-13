@@ -103,6 +103,8 @@ int dev_register(struct device *dev)
   dev->subscription = NULL;
   INIT_LIST_HEAD(&dev->subscribe);
 
+  cfifo_init(&dev->pack_fifo, 8, 2); //256 elements of 4 bytes
+
   add_device(dev);
 
   printf("device %ld registered\n", dev->id);

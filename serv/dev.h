@@ -82,6 +82,9 @@ struct device {
   struct device *hash_next;
   struct device **hash_pprev;
 
+  /* packet fifo */
+  struct cfifo pack_fifo;
+
   struct {
     struct vote *v;
     struct list_head l;

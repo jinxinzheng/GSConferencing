@@ -28,8 +28,8 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   /* fill the tag id */
   p->tag = htons((uint16_t)t->id);
 
-  /* notify the processing thread to go */
-  tag_enque_packet(t, pack);
+  /* enque packet to device's fifo */
+  tag_in_dev_packet(t, dev, pack);
 
   return 0;
 }
@@ -94,8 +94,8 @@ void *tag_run_casting(void *tag)
 
   do {
 
-    /* wait for the main thread data ready */
-    pack = tag_deque_packet(t);
+    /* mix packs from different devices */
+    pack = tag_out_dev_mixed(t);
 
     tag_cast_pack(t, pack);
 

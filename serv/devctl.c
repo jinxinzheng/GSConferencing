@@ -85,27 +85,15 @@ int dev_register(struct device *dev)
     g = group_create(gid);
   }
 
+  group_add_device(g, dev);
+
   t = get_tag(tuid);
   if (!t)
   {
     t = tag_create(gid, tid);
-
-    t->device_list = &dev->list;
-
-    /* for a new tag, this is when the device is inserted into the group link */
-    group_add_device(g, dev);
   }
-  else
-  {
-    if (!t->device_list) {
-      t->device_list = &dev->list;
-      /* insert device into group */
-      group_add_device(g, dev);
-    }
-    else
-      /* this will also insert device into group */
-      tag_add_device(t, dev);
-  }
+
+  tag_add_device(t, dev);
 
   if (dev->bcast.sin_addr.s_addr)
     tag_add_bcast(t, &dev->bcast);
@@ -133,19 +121,7 @@ int dev_unregister(struct device *dev)
 
   if ((t = dev->tag) != NULL)
   {
-    struct list_head *p;
-    p = &dev->list;
-    if (p == t->device_list)
-    {
-      p = p->next;
-      if (
-          (p == &dev->group->device_head) /* head is not a real entry*/ ||
-          ((list_entry(p, struct device, list))->tag != t) /*the deleting device is the only one under this tag*/
-         )
-        p = NULL;
-
-      t->device_list = p;
-    }
+    list_del(&dev->tlist);
   }
 
   if (dev->group)

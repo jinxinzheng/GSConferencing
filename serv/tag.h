@@ -13,10 +13,8 @@ struct tag {
   /* the socket used for casting */
   int sock;
 
-  /* tagged devices
-   * this list is not stand-alone. it's partial of the group list.
-   * so can't use a real head here, just use a link pointer. */
-  struct list_head *device_list;
+  /* tagged device.tlist */
+  struct list_head device_head;
 
   /* see device.subscription */
   //struct device *subscribe_head;

@@ -46,15 +46,14 @@ void add_device(struct device *dev)
   hash_id(device_hash, dev);
 }
 
-/* the device is added to the tail of the group link,
- * use this when adding the head device of a new tag. */
+/* the device is added to the tail of the group link. */
 void group_add_device(struct group *g, struct device *dev)
 {
   list_add_tail(&dev->list, &g->device_head);
 }
 
-/* this ensures devices with the same tag linked together. */
+/* add to the tail of the tag link. */
 void tag_add_device(struct tag *t, struct device *dev)
 {
-  list_add(&dev->list, t->device_list);
+  list_add_tail(&dev->tlist, &t->device_head);
 }

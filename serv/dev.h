@@ -25,7 +25,6 @@ enum {
  * t           t   t
  *
  * all devices of a group are placed in a 'big linked list'.
- * devices with the same tag are arranged adjacent to each other in the list.
  *
  * */
 
@@ -67,10 +66,12 @@ struct device {
 
   struct tag *tag;
 
-  /* list layout (designed for tagged device iteration):
-   * tag0-tag0-tag0 - tag1-tag1 - tag2 -... */
-  /*struct device *prev,*next;*/
+  /* list in group */
   struct list_head list;
+
+  /* list in tag */
+  struct list_head tlist;
+
 
   /* used for cast. currently supports only one tag */
   struct tag *subscription;

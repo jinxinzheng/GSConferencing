@@ -14,7 +14,7 @@ struct tag *tag_create(long gid, long tid)
   t->tid = tid;
   t->id = tuid;
   t->name[0]=0;
-  t->device_list = NULL;
+  INIT_LIST_HEAD(&t->device_head);
   INIT_LIST_HEAD(&t->subscribe_head);
   cfifo_init(&t->pack_fifo, 8, 2); //256 elements of 4 bytes for each
   cfifo_enable_locking(&t->pack_fifo);

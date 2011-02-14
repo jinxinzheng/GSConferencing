@@ -169,6 +169,14 @@ void *run_proceed_connection(void *arg)
       if( cmd.rl > 0 )
         send(c->sock, cmd.rep, cmd.rl, 0);
 
+      /* the handler can choose to 'persist' the connection:
+       * the socket will be used in a thread created by the
+       * handler, so do not close it. */
+      if( cmd.sock == 0 )
+      {
+        c->sock = 0;
+      }
+
       /* read only 1 cmd for a connection.
        * this is useful for 'big' replies:
        * the client could recv until we close. */
@@ -182,7 +190,8 @@ CMDERR:
     }
 
 NEXT:
-    close(c->sock);
+    if( c->sock )
+      close(c->sock);
     free(c);
   }
 

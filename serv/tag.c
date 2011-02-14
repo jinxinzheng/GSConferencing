@@ -1,6 +1,9 @@
 #include "tag.h"
 #include "cast.h"
 #include <stdio.h>
+#include <string.h>
+#include "packet.h"
+#include "include/pack.h"
 
 struct tag *tag_create(long gid, long tid)
 {
@@ -20,6 +23,9 @@ struct tag *tag_create(long gid, long tid)
 
   cfifo_init(&t->pack_fifo, 8, 2); //256 elements of 4 bytes for each
   cfifo_enable_locking(&t->pack_fifo);
+
+  memset(t->mix_devs, 0, sizeof t->mix_devs);
+  t->mix_count = 0;
 
   pthread_mutex_init(&t->mut, NULL);
   pthread_cond_init(&t->cnd_nonempty, NULL);
@@ -78,40 +84,171 @@ void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast)
   ++t->bcast_size;
 }
 
+
+static void _dev_in_packet(struct device *d, struct packet *p)
+{
+  struct packet **pp = (struct packet **)cfifo_get_in(&d->pack_fifo);
+  *pp = p;
+  cfifo__in(&d->pack_fifo);
+}
+
+/* only call it when the fifo of the dev is not empty */
+static struct packet *_dev_out_packet(struct device *d)
+{
+  struct packet *p;
+  p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
+  cfifo__out(&d->pack_fifo);
+  return p;
+}
+
+
 void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
 {
-  dev_in_packet(d, pack);
+  int add = 0;
+
+  if( cfifo_empty(&d->pack_fifo) )
+  {
+    /* this fifo will become non-empty */
+    add=1;
+  }
+
+  /* put in */
+  _dev_in_packet(d, pack);
+
+  /* decide state change */
+  if( add )
+  {
+    int i;
+    /* find a place in the mix_devs,
+     * we do not put all the non-empty fifos together at top
+     * because we found it too tricky to sync them. */
+    for( i=0 ; i<8 ; i++ )
+    {
+      if( !t->mix_devs[i] )
+      {
+        t->mix_devs[i] = d;
+
+        pthread_mutex_lock(&t->mut);
+        t->mix_count ++;
+        pthread_mutex_unlock(&t->mut);
+        pthread_cond_signal(&t->cnd_nonempty);
+
+        break;
+      }
+    }
+  }
 }
+
+struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
+{
+  struct packet *p;
+  int rm = 0;
+
+  if( !cfifo_empty(&d->pack_fifo) )
+  {
+    /* this fifo will become empty */
+    rm=1;
+  }
+
+  /* put in */
+  p = _dev_out_packet(d);
+
+  /* decide state change */
+  if( rm )
+  {
+    int i;
+    /* find the device in the mix_devs */
+    for( i=0 ; i<8 ; i++ )
+    {
+      if( d == t->mix_devs[i] )
+      {
+        t->mix_devs[i] = NULL;
+
+        pthread_mutex_lock(&t->mut);
+        t->mix_count --;
+        pthread_mutex_unlock(&t->mut);
+
+        break;
+      }
+    }
+  }
+}
+
+
+static struct packet *tag_mix_audio(struct tag *t);
 
 struct packet *tag_out_dev_mixed(struct tag *t)
 {
-  struct list_head *p;
-  struct device *d;
   struct packet *pack;
 
   pthread_mutex_lock(&t->mut);
-
-  while(1)
+  while( !( t->mix_count > 0 ) )
   {
-    p = t->device_head.next;
-    d = list_entry(p, struct device, tlist);
-    if( cfifo_empty(&d->pack_fifo) )
-      break;
-
     pthread_cond_wait(&t->cnd_nonempty, &t->mut);
   }
-
   pthread_mutex_unlock(&t->mut);
 
-  list_for_each(p, &t->device_head)
-  {
-    d = list_entry(p, struct device, tlist);
-
-    if( cfifo_empty(&d->pack_fifo) )
-      break;
-
-    pack = dev_out_packet(d);
-  }
+  pack = tag_mix_audio(t);
 
   return pack;
+}
+
+static struct packet *tag_mix_audio(struct tag *t)
+{
+  struct device *d;
+  struct packet *pp[8];
+  short *au[8];
+  int i,c;
+
+  c = 0;
+  for( i=0 ; i<8 ; i++ )
+  {
+    d = t->mix_devs[i];
+
+    if( cfifo_empty(&d->pack_fifo) )
+      continue;
+
+    pp[c] = tag_out_dev_packet(t, d);
+    au[c] = (short *)( (pack_data *) pp[c]->data )->data;
+    c++;
+  }
+
+  if( c == 1 )
+  {
+    /* no need to mix */
+  }
+  else
+  {
+    /* audio params */
+    const int bytes=2;
+    const int aulen = 512/bytes;
+
+    const int zero = 1 << ((bytes*8)-1) ;
+    register int mix;
+
+    short **pau;
+    short *au0 = au[0];
+
+    for( i=0 ; i<aulen ; i++ )
+    {
+      mix = 0;
+      for( pau=&au[0] ; pau<&au[c] ; pau++ )
+      {
+        mix += *( (*pau)++ );
+      }
+      mix /= c;
+
+      if(mix > zero-1) mix = zero-1;
+      else if(mix < -zero) mix = -zero;
+
+      au0[i] = (short)mix;
+    }
+
+    for( i=1 ; i<c ; i++ )
+    {
+      pack_free(pp[i]);
+    }
+  }
+
+  return pp[0];
 }

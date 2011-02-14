@@ -4,6 +4,8 @@
 #include "include/list.h"
 #include "include/cfifo.h"
 
+struct device;
+
 struct tag {
   long tid;
   /*as tid is not unique, need to use group_id<<16 + tag_id as the unique id. */
@@ -27,6 +29,10 @@ struct tag {
   /* packet fifo */
   struct cfifo pack_fifo;
 
+  /* support up to 8 devices mixing audio */
+  struct device *mix_devs[8];
+  int mix_count;
+
   pthread_mutex_t mut;
   pthread_cond_t  cnd_nonempty;
 
@@ -35,8 +41,6 @@ struct tag {
   struct sockaddr_in *bcasts[64];
   int bcast_size;
 };
-
-struct device;
 
 #define TAGUID(gid,tid) (((long long)gid<<32) ^ tid)
 

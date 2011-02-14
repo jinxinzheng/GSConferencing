@@ -21,9 +21,6 @@ struct tag *tag_create(long gid, long tid)
   INIT_LIST_HEAD(&t->device_head);
   INIT_LIST_HEAD(&t->subscribe_head);
 
-  cfifo_init(&t->pack_fifo, 8, 2); //256 elements of 4 bytes for each
-  cfifo_enable_locking(&t->pack_fifo);
-
   memset(t->mix_devs, 0, sizeof t->mix_devs);
   t->mix_count = 0;
 
@@ -39,22 +36,6 @@ struct tag *tag_create(long gid, long tid)
 
   printf("tag %ld:%ld created\n", gid, tid);
   return t;
-}
-
-void tag_enque_packet(struct tag *t, struct packet *p)
-{
-  struct packet **pp = (struct packet **)cfifo_get_in(&t->pack_fifo);
-  *pp = p;
-  cfifo_in_signal(&t->pack_fifo);
-}
-
-struct packet *tag_deque_packet(struct tag *t)
-{
-  struct packet *p;
-  cfifo_wait_empty(&t->pack_fifo);
-  p = *(struct packet **)cfifo_get_out(&t->pack_fifo);
-  cfifo__out(&t->pack_fifo);
-  return p;
 }
 
 static int sincmp(const void *s1, const void *s2)

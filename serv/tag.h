@@ -26,9 +26,6 @@ struct tag {
   struct tag *hash_next;
   struct tag **hash_pprev;
 
-  /* packet fifo */
-  struct cfifo pack_fifo;
-
   /* support up to 8 devices mixing audio */
   struct device *mix_devs[8];
   int mix_count;
@@ -47,10 +44,6 @@ struct tag {
 struct tag *tag_create(long gid, long tid);
 
 struct packet;
-
-void tag_enque_packet(struct tag *t, struct packet *p);
-
-struct packet *tag_deque_packet(struct tag *t);
 
 void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast);
 

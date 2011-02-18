@@ -333,12 +333,20 @@ int reg(const char *passwd)
 
   SEND_CMD();
 
+  synctime();
+
   return 0;
 }
 
 static void try_reg_end(char *reply)
 {
-  event_handler(EVENT_REG_OK, NULL, NULL);
+  int e;
+  struct cmd c;
+  if( (e = parse_cmd(reply, &c)) == 0 )
+  {
+    synctime();
+  }
+  event_handler(EVENT_REG_OK, (void *)e, NULL);
 }
 
 void start_try_reg(const char *passwd)
@@ -780,7 +788,10 @@ int synctime()
   t.tv_sec += (e.tv_sec - s.tv_sec)/2;
   t.tv_nsec += (e.tv_nsec - s.tv_nsec)/2;
 
-  clock_settime(CLOCK_REALTIME, &t);
+  if( clock_settime(CLOCK_REALTIME, &t) < 0 )
+  {
+    perror("clock_settime");
+  }
 
   fprintf(stderr, "server time %s.%s\n", c.args[i-1], c.args[i]);
   fprintf(stderr, "client time %d.%d\n", (int)t.tv_sec, (int)t.tv_nsec);

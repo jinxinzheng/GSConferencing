@@ -50,6 +50,15 @@ int main(int argc, char *const argv[])
 
   reg("*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&");
 
+
+  regist_start(0);
+  regist_status(idlist+0, idlist+1);
+  regist_by_key();
+  regist_by_card();
+  regist_by_card_id(0, buf, idlist+0, idlist+1);
+  regist_stop();
+
+
   msgctrl_query(idlist);
   msgctrl_send(NULL, "hello");
 

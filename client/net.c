@@ -360,12 +360,16 @@ static void *run_recv_tcp(void *arg)
     }
 
     /* conn_sock is connected to a remote! */
-    //fprintf(stderr, "recved cmd: ");
+    if( !isfile )
+      fprintf(stderr, "recved cmd: ");
+    else
+      fprintf(stderr, "recved file\n");
 
     while ((l = recv(conn_sock, buf, sizeof buf, 0)) > 0)
     {
-      //buf[l] = 0;
-      //fprintf(stderr, "%s", buf);
+      buf[l] = 0;
+      if( !isfile )
+        fprintf(stderr, "%s", buf);
 
       /* call the recv handler */
       if (tcp_recved)
@@ -378,7 +382,8 @@ static void *run_recv_tcp(void *arg)
     if (tcp_recved)
       tcp_recved(0, isfile, NULL, 0);
 
-    //fprintf(stderr, "\n");
+    if( !isfile )
+      fprintf(stderr, "\n");
 
     close(conn_sock);
   }

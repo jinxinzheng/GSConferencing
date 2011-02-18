@@ -12,6 +12,8 @@ int handle_cmd_debug(struct cmd *cmd)
   char *p;
   char buf[2048];
 
+  struct list_head *e;
+
   THIS_DEVICE(cmd, d);
 
   NEXT_ARG(subcmd);
@@ -33,7 +35,7 @@ int handle_cmd_debug(struct cmd *cmd)
       i = atoi(p);
       if (!(t = get_tag(TAGUID(d->group->id, i))))
       {
-        REP_ADD(cmd, "not found");
+        REP_PRF(cmd, "\n%d not found", i);
       }
       else
       {
@@ -47,6 +49,22 @@ int handle_cmd_debug(struct cmd *cmd)
 
         REP_ADD(cmd, buf);
       }
+    }
+    else if( strcmp("dev", obj) == 0 )
+    {
+      struct group *g = d->group;
+
+      list_for_each(e, &g->device_head)
+      {
+        d = list_entry(e, struct device, list);
+        REP_PRF(cmd, "\n%d", (int)d->id);
+        REP_PRF(cmd, "\n addr=%s:%d", inet_ntoa(d->addr.sin_addr), ntohs(d->addr.sin_port));
+        REP_PRF(cmd, "\n tag=%d", (int)d->tag->id);
+      }
+    }
+    else
+    {
+      REP_PRF(cmd, "\n'%s' unknown", obj);
     }
 
     REP_END(cmd);

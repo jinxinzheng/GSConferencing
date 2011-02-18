@@ -21,6 +21,11 @@ int handle_cmd(struct cmd *cmd);
 
 /* macros helpful to cmd handlers */
 
+#define REP_PRF(cmd, fmt, a...) \
+do { \
+  (cmd)->rl += sprintf((cmd)->rep+(cmd)->rl, " "fmt, ##a); \
+} while(0)
+
 #define REP_ADD(cmd, s) \
 do { \
   (cmd)->rep[(cmd)->rl++] = ' '; \

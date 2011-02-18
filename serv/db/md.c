@@ -6,6 +6,19 @@
 #include <include/list.h>
 #include <hash.h>
 
+#define md_iterate(type, head, visit) \
+do                        \
+{                         \
+  struct list_head *_p;   \
+  struct md_##type *_m;   \
+  list_for_each(_p, head) \
+  {                       \
+    _m = list_entry(_p, struct md_##type, l); \
+    visit (&m->data);     \
+  }                       \
+} while(0)
+
+
 #define SETUP(type) \
 struct md_##type                    \
 {                                   \
@@ -64,6 +77,23 @@ int md_get_array_##type(struct db_##type *array[])    \
   return _list_to_array_##type(&list_##type, array);  \
 }                                                     \
 \
+void md_iterate_##type##_begin(iter *it)\
+{                                       \
+  *it = &list_##type;                   \
+}                                       \
+\
+struct db_##type *md_iterate_##type##_next(iter *it)\
+{                                                   \
+  struct list_head *p = (struct list_head *)*it;    \
+  struct md_##type *m;                              \
+  struct db_##type *t;                              \
+  if( (p = p->next) == &list_##type )               \
+    return NULL;                                    \
+  *it = p;                                          \
+  m = list_entry(p, struct md_##type, l);           \
+  return &m->data;                                  \
+}                                                   \
+\
 struct db_##type *md_find_##type(int id)              \
 {                                                     \
   struct md_##type *m = find_by_id(hash_##type, id);  \
@@ -73,26 +103,32 @@ struct db_##type *md_find_##type(int id)              \
     return NULL;                                      \
 }                                                     \
 \
-void md_add_##type(struct db_##type *p) \
-{                                       \
-  if (db_add_##type(p) != 0)            \
-    return;                             \
-  _add_##type(p);                       \
-}                                       \
+int md_add_##type(struct db_##type *p) \
+{                                      \
+  int r;                               \
+  if( (r=db_add_##type(p)) != 0 )      \
+    return r;                          \
+  _add_##type(p);                      \
+  return 0;                            \
+}                                      \
 \
-void md_del_##type(int id)    \
-{                             \
-  if (db_del_##type(id) != 0) \
-    return;                   \
-  _del_##type(id);            \
-}                             \
+int md_del_##type(int id)    \
+{                            \
+  int r;                     \
+  if( (r=db_del_##type(id)) != 0 ) \
+    return r;                \
+  _del_##type(id);           \
+  return 0;                  \
+}                            \
 \
-void md_update_##type(struct db_##type *p)    \
+int md_update_##type(struct db_##type *p)     \
 {                                             \
-  if (db_update_##type(p) != 0)               \
-    return;                                   \
+  int r;                                      \
+  if( (r=db_update_##type(p)) != 0 )          \
+    return r;                                 \
   /* assume that p is returned by md_find so
    * we don't need to update memory data. */  \
+  return 0;                                   \
 }
 
 

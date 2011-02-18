@@ -278,7 +278,7 @@ int cmd##_##subcmd() \
 int cmd##_##subcmd(int i1) \
 { \
   BASICS; \
-  l = sprintf(buf, "%d " #cmd " " #subcmd "%d\n", id, i1); \
+  l = sprintf(buf, "%d " #cmd " " #subcmd " %d\n", id, i1); \
   SEND_CMD(); \
   i = FIND_OK(c); \
   return 0; \

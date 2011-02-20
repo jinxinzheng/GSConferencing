@@ -4,6 +4,7 @@
 #include "sys.h"
 #include "db/md.h"
 #include <include/types.h>
+#include <include/debug.h>
 
 static struct db_discuss *db[1024];
 static int dbl;
@@ -113,6 +114,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
         }
         else
         {
+          trace("too many open users\n");
           return ERR_REJECTED;
         }
       }

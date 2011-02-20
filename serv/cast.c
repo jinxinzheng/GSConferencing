@@ -20,7 +20,7 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   pack_data *p = (pack_data *)pack->data;
   struct tag *t;
 
-  trace("[%s] %d.%d ", __func__, ntohl(p->id), ntohl(p->seq));
+  trace("%d.%d ", ntohl(p->id), ntohl(p->seq));
   DEBUG_TIME_NOW();
 
   t = dev->tag;
@@ -43,7 +43,7 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
 
   {
     pack_data *pd = (pack_data *)pack->data;
-    trace("[%s] %d.%d ", __func__, ntohl(pd->id), ntohl(pd->seq));
+    trace("%d.%d ", ntohl(pd->id), ntohl(pd->seq));
     DEBUG_TIME_NOW();
   }
 
@@ -96,6 +96,7 @@ void *tag_run_casting(void *tag)
 
     /* mix packs from different devices */
     pack = tag_out_dev_mixed(t);
+    trace("got mixed pack=%x from tag\n", (uint32_t)pack);
 
     tag_cast_pack(t, pack);
 

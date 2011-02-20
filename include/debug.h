@@ -5,7 +5,7 @@
 
 #ifdef DEBUG
 
-#define trace(fmt, a...) fprintf(stderr, "[%s:%d] " fmt, __FILE__, __LINE__, ##a)
+#define trace(fmt, a...) fprintf(stderr, "[%s:%d] [%s] " fmt, __FILE__, __LINE__, __func__, ##a)
 #define debug(expr) expr
 
 extern char debug_ring_buf[1024*1024*10];

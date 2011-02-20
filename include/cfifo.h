@@ -18,6 +18,7 @@ struct cfifo
 
   /* block the reader if the fifo is empty. */
   sem_t empty_sem;
+  int cancel_wait;
 };
 
 static inline void cfifo_init(struct cfifo *cf, int size_order, int e_order)
@@ -35,6 +36,7 @@ static inline void cfifo_init(struct cfifo *cf, int size_order, int e_order)
 static inline void cfifo_enable_locking(struct cfifo *cf)
 {
   sem_init(&cf->empty_sem, 0, 0);
+  cf->cancel_wait = 0;
 }
 
 static inline int cfifo_full(struct cfifo *cf)
@@ -112,10 +114,29 @@ static inline int cfifo_out(struct cfifo *cf)
 
 static inline void cfifo_wait_empty(struct cfifo *cf)
 {
-  while (cfifo_empty(cf))
+  /* clear unhandled cancel_wait() call made while
+   * no one is waiting. */
+  if( cf->cancel_wait )
+  {
+    /* down the sem up'ed by the cancel_wait() call */
+    sem_wait(&cf->empty_sem);
+    /* clear cancel wait state */
+    cf->cancel_wait = 0;
+  }
+
+  while( cfifo_empty(cf) && !cf->cancel_wait )
   {
     sem_wait(&cf->empty_sem);
   }
+
+  /* reset cancel wait */
+  cf->cancel_wait = 0;
+}
+
+static inline void cfifo_cancel_wait(struct cfifo *cf)
+{
+  cf->cancel_wait = 1;
+  sem_post(&cf->empty_sem);
 }
 
 #endif

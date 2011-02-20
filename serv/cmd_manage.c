@@ -16,7 +16,7 @@
 
 
 #define write_device(d) \
-  append("%d:%s:%d:%d\n", (int)d->id, d->ip, d->port, d->tagid)
+  append("%d:%s:%d:%d:%d\n", (int)d->id, d->ip, d->port, d->tagid, d->online)
 
 #define read_device(d, c) \
 do \
@@ -29,12 +29,38 @@ do \
 }while(0)
 
 
+#define write_tag(t) \
+  append("%d:%s\n", (int)t->id, t->name)
+
+#define read_tag(t, c) \
+do \
+{ \
+  a = 1; \
+  t->id = atoi( shift(c) ); \
+  strcpy( t->name, shift(c) ); \
+}while(0)
+
+
+#define write_discuss(d) \
+  append("%d:%s:%s\n", (int)d->id, d->name, d->members)
+
+#define read_discuss(d, c) \
+do \
+{ \
+  a = 1; \
+  d->id = atoi( shift(c) ); \
+  strcpy( d->name, shift(c) ); \
+  strcpy( d->members, shift(c) ); \
+}while(0)
+
+
 #define m_get(type, c) \
 do \
 { \
   iter _it; \
   struct db_##type *_d; \
 \
+  l = 0; \
   md_iterate_##type##_begin(&_it); \
   append("table " #type "\n"); \
   while( _d = md_iterate_##type##_next(&_it) ) \
@@ -96,6 +122,8 @@ do \
 do \
 { \
   m_get(device, c); \
+  m_get(tag, c); \
+  m_get(discuss, c); \
 }while(0)
 
 static void *serv_manage(void *arg)
@@ -143,9 +171,9 @@ static void *serv_manage(void *arg)
     } else
 
     GEN_OP(device)
-    //GEN_OP(tag)
+    GEN_OP(tag)
     //GEN_OP(vote)
-    //GEN_OP(discuss)
+    GEN_OP(discuss)
 
     if( strcmp(target, "all")==0 )
     {

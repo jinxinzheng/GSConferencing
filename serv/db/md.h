@@ -21,5 +21,6 @@ int md_update_##type(struct db_##type *p);         \
 DECLARE(device);
 DECLARE(tag);
 DECLARE(vote);
+DECLARE(discuss);
 
 #endif

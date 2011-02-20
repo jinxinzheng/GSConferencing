@@ -10,6 +10,9 @@ struct db_device
 	char ip[32];
 	int port;
 	int tagid;
+
+  /* extra db-irrelevant data */
+  int online;
 };
 
 struct db_tag

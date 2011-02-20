@@ -50,6 +50,7 @@ int dev_register(struct device *dev)
     gid = 1;
     if (dbd = md_find_device(dev->id))
     {
+      dbd->online = 1;
       if (strcmp(dbd->ip, ip) != 0 || dbd->port != port)
       {
         strcpy(dbd->ip, ip);
@@ -66,6 +67,7 @@ int dev_register(struct device *dev)
         dev->id,
         "",
         port,
+        1,
         1
       };
       strcpy(tmp.ip, ip);

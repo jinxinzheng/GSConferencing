@@ -67,6 +67,7 @@ int db_get_device(struct db_device *dev)
 	while (sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW)
 	{
 		rows++;
+    memset(dev, 0, sizeof(struct db_device));
 		dev->id = atol(values[0]);
 		strcpy(dev->ip, values[1]);
 		dev->port = atoi(values[2]);

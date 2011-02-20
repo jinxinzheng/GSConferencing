@@ -121,12 +121,16 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
       list_add_tail(&d->discuss.l, &current.open_list);
       current.openuser ++;
+
+      tag_add_outstanding(d->tag, d);
     }
     else /* closing */
     {
       /* remove it from the open users list */
       list_del(&d->discuss.l);
       current.openuser --;
+
+      tag_rm_outstanding(d->tag, d);
     }
 
     d->discuss.open = open;

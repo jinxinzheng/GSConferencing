@@ -4,6 +4,7 @@
 #include <string.h>
 #include "packet.h"
 #include "include/pack.h"
+#include "include/debug.h"
 
 struct tag *tag_create(long gid, long tid)
 {
@@ -70,16 +71,69 @@ static void _dev_in_packet(struct device *d, struct packet *p)
 {
   struct packet **pp = (struct packet **)cfifo_get_in(&d->pack_fifo);
   *pp = p;
-  cfifo__in(&d->pack_fifo);
+  cfifo_in_signal(&d->pack_fifo);
 }
 
-/* only call it when the fifo of the dev is not empty */
 static struct packet *_dev_out_packet(struct device *d)
 {
   struct packet *p;
+  cfifo_wait_empty(&d->pack_fifo);
+  if( cfifo_empty(&d->pack_fifo) )
+  {
+    /* this is important as the wait could be canceled
+       by the cmd thread */
+    return NULL;
+  }
   p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
   cfifo__out(&d->pack_fifo);
   return p;
+}
+
+
+void tag_add_outstanding(struct tag *t, struct device *d)
+{
+  int i;
+  trace("adding dev to outstanding\n");
+  /* find a place in the mix_devs,
+   * we do not put all the non-empty fifos together at top
+   * because we found it too tricky to sync them. */
+  for( i=0 ; i<8 ; i++ )
+  {
+    if( !t->mix_devs[i] )
+    {
+      t->mix_devs[i] = d;
+
+      pthread_mutex_lock(&t->mut);
+      t->mix_count ++;
+      pthread_mutex_unlock(&t->mut);
+      pthread_cond_signal(&t->cnd_nonempty);
+
+      break;
+    }
+  }
+}
+
+void tag_rm_outstanding(struct tag *t, struct device *d)
+{
+  int i;
+  /* find the device in the mix_devs */
+  for( i=0 ; i<8 ; i++ )
+  {
+    if( d == t->mix_devs[i] )
+    {
+      trace("removing dev from outstanding\n");
+      t->mix_devs[i] = NULL;
+
+      pthread_mutex_lock(&t->mut);
+      t->mix_count --;
+      pthread_mutex_unlock(&t->mut);
+
+      break;
+    }
+  }
+
+  /* avoid dead lock */
+  cfifo_cancel_wait(&d->pack_fifo);
 }
 
 
@@ -97,27 +151,6 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
   _dev_in_packet(d, pack);
 
   /* decide state change */
-  if( add )
-  {
-    int i;
-    /* find a place in the mix_devs,
-     * we do not put all the non-empty fifos together at top
-     * because we found it too tricky to sync them. */
-    for( i=0 ; i<8 ; i++ )
-    {
-      if( !t->mix_devs[i] )
-      {
-        t->mix_devs[i] = d;
-
-        pthread_mutex_lock(&t->mut);
-        t->mix_count ++;
-        pthread_mutex_unlock(&t->mut);
-        pthread_cond_signal(&t->cnd_nonempty);
-
-        break;
-      }
-    }
-  }
 }
 
 struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
@@ -125,34 +158,18 @@ struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
   struct packet *p;
   int rm = 0;
 
-  if( !cfifo_empty(&d->pack_fifo) )
+  /* get out */
+  p = _dev_out_packet(d);
+
+  if( cfifo_empty(&d->pack_fifo) )
   {
-    /* this fifo will become empty */
+    /* this fifo has become empty */
     rm=1;
   }
 
-  /* put in */
-  p = _dev_out_packet(d);
-
   /* decide state change */
-  if( rm )
-  {
-    int i;
-    /* find the device in the mix_devs */
-    for( i=0 ; i<8 ; i++ )
-    {
-      if( d == t->mix_devs[i] )
-      {
-        t->mix_devs[i] = NULL;
 
-        pthread_mutex_lock(&t->mut);
-        t->mix_count --;
-        pthread_mutex_unlock(&t->mut);
-
-        break;
-      }
-    }
-  }
+  return p;
 }
 
 
@@ -177,7 +194,7 @@ struct packet *tag_out_dev_mixed(struct tag *t)
 static struct packet *tag_mix_audio(struct tag *t)
 {
   struct device *d;
-  struct packet *pp[8];
+  struct packet *pp[8], *p;
   short *au[8];
   int i,c;
 
@@ -186,17 +203,25 @@ static struct packet *tag_mix_audio(struct tag *t)
   {
     d = t->mix_devs[i];
 
-    if( cfifo_empty(&d->pack_fifo) )
+    if( !d )
       continue;
 
-    pp[c] = tag_out_dev_packet(t, d);
+    if( !(p = _dev_out_packet(d)) )
+      continue;
+
+    pp[c] = p;
     au[c] = (short *)( (pack_data *) pp[c]->data )->data;
     c++;
   }
 
-  if( c == 1 )
+  if( c == 0 )
+  {
+    return NULL;
+  }
+  else if( c == 1 )
   {
     /* no need to mix */
+    trace("[%s] only 1 outstanding dev, mix not needed.\n", __func__);
   }
   else
   {

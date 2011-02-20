@@ -104,6 +104,7 @@ int dev_register(struct device *dev)
   INIT_LIST_HEAD(&dev->subscribe);
 
   cfifo_init(&dev->pack_fifo, 8, 2); //256 elements of 4 bytes
+  cfifo_enable_locking(&dev->pack_fifo);
 
   add_device(dev);
 

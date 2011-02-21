@@ -12,6 +12,9 @@ int handle_cmd_msgctrl(struct cmd *cmd)
   struct device *d;
   char *p;
 
+  /* require reg() before any cmd */
+  THIS_DEVICE(cmd, d);
+
   NEXT_ARG(subcmd);
 
   if (0);
@@ -19,8 +22,6 @@ int handle_cmd_msgctrl(struct cmd *cmd)
   SUBCMD("query")
   {
     struct group *g;
-
-    THIS_DEVICE(cmd, d);
 
     g = d->group;
 

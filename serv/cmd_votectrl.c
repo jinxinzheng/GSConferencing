@@ -16,6 +16,11 @@ int handle_cmd_votectrl(struct cmd *cmd)
   static struct db_vote *db[1024];
   static int dbl;
 
+  struct device *d;
+
+  /* require reg() before any cmd */
+  THIS_DEVICE(cmd, d);
+
   scmd = cmd->args[ai++];
   if (!scmd)
     return 1;
@@ -59,7 +64,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "start") == 0)
   {
-    struct device *d;
     struct vote *v;
 
     /* the vote number */
@@ -72,8 +76,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
       fprintf(stderr, "invalid vote start number.\n");
       return 1;
     }
-
-    THIS_DEVICE(cmd, d);
 
     REP_ADD(cmd, "OK");
 
@@ -130,8 +132,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "result") == 0)
   {
-    struct device *d;
-
     /* the vote number */
     p = cmd->args[ai++];
     if (!p)
@@ -142,8 +142,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
     if (!p)
       return 1;
     i = atoi(p);
-
-    THIS_DEVICE(cmd, d);
 
     if (!d->vote.v)
       /* bug or corrupt of network packet */
@@ -159,7 +157,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "status") == 0)
   {
-    struct device *d;
     struct vote *v;
     struct list_head *t;
 
@@ -167,8 +164,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
     p = cmd->args[ai++];
     if (!p)
       return 1;
-
-    THIS_DEVICE(cmd, d);
 
     if (!(v = d->vote.v))
       /* bug or corrupt of network packet */
@@ -192,7 +187,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "showresult") == 0)
   {
-    struct device *d;
     struct group *g;
     struct vote *v;
     struct list_head *t;
@@ -201,8 +195,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
     p = cmd->args[ai++];
     if (!p)
       return 1;
-
-    THIS_DEVICE(cmd, d);
 
     v = d->vote.v;
     if (!v)
@@ -234,13 +226,10 @@ int handle_cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "stop") == 0)
   {
-    struct device *d;
     struct group *g;
     struct list_head *t;
 
     REP_OK(cmd);
-
-    THIS_DEVICE(cmd, d);
 
     if (!d->vote.v)
       /* bug or corrupt of network packet */

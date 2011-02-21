@@ -19,6 +19,11 @@ int handle_cmd_videoctrl(struct cmd *cmd)
   int i;
   char *p;
 
+  struct device *d;
+
+  /* require reg() before any cmd */
+  THIS_DEVICE(cmd, d);
+
   NEXT_ARG(subcmd);
 
   if (0);

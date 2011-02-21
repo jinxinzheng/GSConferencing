@@ -38,6 +38,9 @@ int handle_cmd_regist(struct cmd *cmd)
   char *p;
   int i;
 
+  /* require reg() before any cmd */
+  THIS_DEVICE(cmd, d);
+
   NEXT_ARG(subcmd);
 
   if (0);

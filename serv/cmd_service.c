@@ -8,6 +8,9 @@ int handle_cmd_servicecall(struct cmd *cmd)
   char *p;
   int request;
 
+  /* require reg() before any cmd */
+  THIS_DEVICE(cmd, d);
+
   NEXT_ARG(p);
 
   request = atoi(p);

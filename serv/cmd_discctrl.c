@@ -26,6 +26,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   struct device *d;
 
+  /* require reg() before any cmd */
+  THIS_DEVICE(cmd, d);
+
   NEXT_ARG(subcmd);
 
   if (0) ;
@@ -34,8 +37,6 @@ int handle_cmd_discctrl(struct cmd *cmd)
   {
     NEXT_ARG(p);
     i = atoi(p);
-
-    THIS_DEVICE(cmd, d);
 
     d->group->discuss.mode = i;
 
@@ -98,8 +99,6 @@ int handle_cmd_discctrl(struct cmd *cmd)
     open = atoi(p);
 
     REP_OK(cmd);
-
-    THIS_DEVICE(cmd, d);
 
     if( open )
     {
@@ -200,8 +199,6 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     NEXT_ARG(p);
     i = atoi(p);
-
-    THIS_DEVICE(cmd, d);
 
     /* we assume this cmd is only sent from the 'chairman' device */
     g = d->group;

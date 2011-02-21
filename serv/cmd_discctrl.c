@@ -7,13 +7,15 @@
 #include <include/debug.h>
 
 static struct db_discuss *db[1024];
-static int dbl;
+static int dbl = 0;
 static struct {
   struct db_discuss *discuss;
   struct list_head open_list;
   int maxuser;
   int openuser;
-} current;
+} current = {
+  0
+};
 
 int handle_cmd_discctrl(struct cmd *cmd)
 {
@@ -57,6 +59,10 @@ int handle_cmd_discctrl(struct cmd *cmd)
     struct db_discuss *s;
     NEXT_ARG(p);
     i = atoi(p);
+    if( i>=dbl )
+    {
+      return ERR_OTHER;
+    }
     s = db[i];
 
     REP_ADD(cmd, "OK");
@@ -84,6 +90,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
   SUBCMD("request")
   {
     int open;
+
+    if( !current.discuss )
+      return ERR_OTHER;
 
     NEXT_ARG(p);
     open = atoi(p);
@@ -138,6 +147,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   SUBCMD("status")
   {
+    if( !current.discuss )
+      return ERR_OTHER;
+
     REP_ADD(cmd, "OK");
 
     list_TO_NUMLIST (buf,

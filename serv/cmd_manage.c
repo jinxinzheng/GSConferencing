@@ -54,6 +54,20 @@ do \
 }while(0)
 
 
+#define write_vote(v) \
+  append("%d:%s:%d:%s\n", (int)v->id, v->name, v->type, v->members)
+
+#define read_vote(v, c) \
+do \
+{ \
+  a = 1; \
+  v->id = atoi( shift(c) ); \
+  strcpy( v->name, shift(c) ); \
+  v->type = atoi( shift(c) ); \
+  strcpy( v->members, shift(c) ); \
+}while(0)
+
+
 #define m_get(type, c) \
 do \
 { \
@@ -124,6 +138,7 @@ do \
   m_get(device, c); \
   m_get(tag, c); \
   m_get(discuss, c); \
+  m_get(vote, c); \
 }while(0)
 
 static void *serv_manage(void *arg)
@@ -172,8 +187,8 @@ static void *serv_manage(void *arg)
 
     GEN_OP(device)
     GEN_OP(tag)
-    //GEN_OP(vote)
     GEN_OP(discuss)
+    GEN_OP(vote)
 
     if( strcmp(target, "all")==0 )
     {

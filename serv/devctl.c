@@ -40,6 +40,8 @@ int dev_register(struct device *dev)
     return 1;
   }
 
+  dev->active = 1;
+
   /* update the device database and
    * set up group, tag */
   {

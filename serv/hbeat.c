@@ -1,0 +1,52 @@
+#include "sys.h"
+#include "db/md.h"
+
+void dev_heartbeat(struct device *d)
+{
+  d->hbeat = 0;
+
+  if( !d->active )
+  {
+    struct db_device *dbd;
+    if (dbd = md_find_device(d->id))
+      dbd->online = 1;
+    d->active = 1;
+  }
+}
+
+static void *run_heartbeat_god(void *arg)
+{
+  struct group *g;
+  struct device *d;
+  struct list_head *p;
+
+  while( 1 )
+  {
+    sleep(10);
+
+    if( !(g = get_group(1)) )
+      continue;
+
+    list_for_each(p, &g->device_head)
+    {
+      d = list_entry(p, struct device, list);
+      if( ++ d->hbeat > 6 )
+      {
+        /* 1 minute has been hit */
+        if( d->active )
+        {
+          struct db_device *dbd;
+          if (dbd = md_find_device(d->id))
+            dbd->online = 0;
+          d->active = 0;
+        }
+      }
+    }
+  }
+}
+
+void start_heartbeat_god()
+{
+  pthread_t god;
+  pthread_create(&god, NULL, run_heartbeat_god, NULL);
+}

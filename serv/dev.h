@@ -61,6 +61,8 @@ struct device {
   int privilege;
   int active :1;
 
+  int hbeat;
+
   /* group and tag is stored in database */
   struct group *group;
 

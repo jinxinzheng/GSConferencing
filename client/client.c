@@ -36,6 +36,8 @@ static struct cfifo udp_snd_fifo;
 
 static struct cfifo udp_rcv_fifo;
 
+static void *run_heartbeat(void *arg);
+
 static void *run_send_udp(void *arg);
 
 static void *run_recv_udp(void *arg);
@@ -75,6 +77,7 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   cfifo_enable_locking(&udp_rcv_fifo);
 
   /* udp sender thread */
+  pthread_create(&thread, NULL, run_heartbeat, NULL);
   pthread_create(&thread, NULL, run_send_udp, NULL);
   pthread_create(&thread, NULL, run_recv_udp, NULL);
 }
@@ -90,6 +93,34 @@ void set_event_callback(event_cb cb)
 #define NTOH P_NTOH
 
 #define headlen(p) ((char*)(*p).data - (char*)p)
+
+static void *run_heartbeat(void *arg)
+{
+  struct pack hb;
+  int sock;
+
+  /* use a different sock than the audio thread */
+  if( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
+      perror("socket()");
+
+  /* Send data to the server */
+
+  hb.id = id;
+  hb.seq = 0;
+  hb.type = PACKET_HBEAT;
+  hb.datalen = 1;
+  HTON(&hb);
+
+  while (1)
+  {
+    hb.seq = htons( ntohs(hb.seq)+1 );
+
+    sendto(sock, &hb, sizeof hb, 0, (struct sockaddr *)&servAddr, sizeof(servAddr));
+
+    /* send heart beat every 3 seconds */
+    sleep(3);
+  }
+}
 
 static struct pack *audio_current;
 

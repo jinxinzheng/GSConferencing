@@ -1,5 +1,6 @@
 #include "sys.h"
 #include "cmd_handler.h"
+#include "hbeat.h"
 #include "network.h"
 #include "db/md.h"
 #include <unistd.h>
@@ -32,6 +33,8 @@ int main(int argc, char *const argv[])
   }
 
   init();
+
+  start_heartbeat_god();
 
   start_listener_tcp();
 

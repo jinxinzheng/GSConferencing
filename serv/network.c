@@ -281,7 +281,11 @@ void run_listener_udp(int port)
       switch ( i )
       {
         case PACKET_HBEAT :
+
+        dev_heartbeat(d);
+
         break;
+
 
         case PACKET_AUDIO :
 
@@ -302,6 +306,7 @@ void run_listener_udp(int port)
           continue;
 
         break;
+
 
         default :
         break;

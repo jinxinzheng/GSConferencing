@@ -86,10 +86,6 @@ void set_event_callback(event_cb cb)
 
 /* udp casting */
 
-enum {
-  TYPE_AUDIO
-};
-
 #define HTON P_HTON
 #define NTOH P_NTOH
 
@@ -108,7 +104,7 @@ int send_audio_end(int len)
   static int qseq = 0;
 
 
-  audio_current->type = TYPE_AUDIO;
+  audio_current->type = PACKET_AUDIO;
   audio_current->id = (uint32_t)id;
   audio_current->seq = ++qseq;
   audio_current->datalen = (uint32_t)len;
@@ -199,7 +195,7 @@ static void *run_recv_udp(void *arg)
     qitem = (struct pack *)cfifo_get_out(&udp_rcv_fifo);
 
     /* generate event */
-    if (qitem->type == TYPE_AUDIO)
+    if (qitem->type == PACKET_AUDIO)
     {
       event_handler(EVENT_AUDIO,
         (void*)qitem->data,

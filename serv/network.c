@@ -10,6 +10,7 @@
 #include "cast.h"
 #include "packet.h"
 #include "cmd/cmd.h"
+#include "include/pack.h"
 #include "include/debug.h"
 #include "../config.h"
 
@@ -265,30 +266,46 @@ void run_listener_udp(int port)
     /* analyze the packet data. */
 
     {
+      pack_data *p = (pack_data *)pack->data;
       struct device *d;
       struct group *g;
+      int i;
 
       /* work out the device object */
-      did = (long)ntohl(*(uint32_t *)pack->data);
+      did = ntohl(p->id);
       d = get_device(did);
       if (!d)
         continue;
 
-      g = d->group;
+      i = ntohs(p->type);
+      switch ( i )
+      {
+        case PACKET_HBEAT :
+        break;
 
-      /* don't cast if all are disabled by the chairman.
-       * but we still need to cast the chairman's voice. */
-      if( g->discuss.disabled && d != g->chairman )
-        continue;
+        case PACKET_AUDIO :
 
-      /* don't cast if it is prohibited */
-      if( d->discuss.forbidden || !d->discuss.open )
-        continue;
+        g = d->group;
 
-      /* put packet into processing queue */
-      pack->dev = d;
-      if (dev_cast_packet(d, 0, pack) != 0)
-        continue;
+        /* don't cast if all are disabled by the chairman.
+         * but we still need to cast the chairman's voice. */
+        if( g->discuss.disabled && d != g->chairman )
+          continue;
+
+        /* don't cast if it is prohibited */
+        if( d->discuss.forbidden || !d->discuss.open )
+          continue;
+
+        /* put packet into processing queue */
+        pack->dev = d;
+        if (dev_cast_packet(d, 0, pack) != 0)
+          continue;
+
+        break;
+
+        default :
+        break;
+      }
     }
 
     /* Send any reply here */

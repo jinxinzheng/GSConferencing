@@ -19,6 +19,12 @@ struct pack
 /* for server side */
 typedef struct pack pack_data;
 
+/* packet types */
+enum {
+  PACKET_HBEAT,
+  PACKET_AUDIO,
+};
+
 #define P_HTON(p) \
 do { \
   (p)->id   = htonl((p)->id); \

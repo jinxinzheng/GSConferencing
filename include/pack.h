@@ -11,7 +11,7 @@ struct pack
   uint32_t datalen;
 
   /* reserved, opaque across network */
-  struct list_head q;
+  //struct list_head q;
 
   char data[1];
 };

@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include "util.h"
 #include "net.h"
+#include "../include/pack.h"
 
 /* options */
 int id=0;
@@ -23,17 +24,18 @@ static void *auto_send_udp(void *arg)
 {
   char buf[512], *p;
   int len;
-  uint32_t *phead, s=0;
+  uint32_t s=0;
+  struct pack *pack;
 
-  phead = (uint32_t *)buf;
-  phead[0] = htonl((uint32_t)id);
-  phead[1] = s;
+  pack = (struct pack *)buf;
+  pack->id = htonl((uint32_t)id);
 
-  p = buf+8;
+  p = pack->data;
 
   for(;;)
   {
-    phead[1] = htonl(s++);
+    pack->seq = htonl(s++);
+    pack->type = htons(PACKET_AUDIO);
     len = sprintf(p, "%x", rand());
     len += sizeof(int);
 

@@ -8,6 +8,9 @@ struct vote
   /* count of options */
   int cn_options;
 
+  /* number of voting members */
+  int n_members;
+
   /* accumulated votes for each option indexed starting from 0.
    * support up to 40 options */
   int results[40];

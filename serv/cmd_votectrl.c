@@ -89,6 +89,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     memset(v, 0, sizeof (struct vote));
     INIT_LIST_HEAD(&v->device_head);
     v->cn_options = db[i]->options_count;
+    v->n_members = 0;
 
     /* set the vote object on the master device
      * but do not add to the vote list */
@@ -115,6 +116,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
       {
         d = list_entry(t, struct device, list);
         device_vote_start();
+        ++ v->n_members;
       }
     }
     else
@@ -126,6 +128,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
         if (d) {
           device_vote_start();
         }
+        ++ v->n_members;
       }
     }
 
@@ -203,6 +206,8 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     /* make reply string */
     REP_ADD(cmd, "OK");
+
+    REP_ADD_NUM(cmd, v->n_members);
 
     l = 0;
     for (i=0; i<v->cn_options; i++)

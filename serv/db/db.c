@@ -57,6 +57,7 @@ int db_get_device(struct db_device *dev)
 	const char **values, **columnNames;
 	char *errmsg;
 	int ret, cols, rows;
+  int i;
 	char sqlcmd[64];
 	sqlite_vm *vm;
 
@@ -64,14 +65,18 @@ int db_get_device(struct db_device *dev)
 	strcpy(sqlcmd, "select * from device;");
 	ret = sqlite_compile(db, sqlcmd, NULL, &vm, &errmsg);
 
+  i=0;
 	while (sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW)
 	{
 		rows++;
     memset(dev, 0, sizeof(struct db_device));
-		dev->id = atol(values[0]);
-		strcpy(dev->ip, values[1]);
-		dev->port = atoi(values[2]);
-		dev->tagid = atoi(values[3]);
+    dev->id = atol(values[i++]);
+    strcpy(dev->ip, values[i++]);
+    dev->port = atoi(values[i++]);
+    dev->tagid = atoi(values[i++]);
+    dev->user_card = atoi(values[i++]);
+    strcpy(dev->user_name, values[i++]);
+    dev->user_gender = atoi(values[i++]);
 		dev++;
 /*
         int i;

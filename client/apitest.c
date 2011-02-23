@@ -53,9 +53,7 @@ int main(int argc, char *const argv[])
 
   regist_start(0);
   regist_status(idlist+0, idlist+1);
-  regist_by_key();
-  regist_by_card();
-  regist_by_card_id(0, buf, idlist+0, idlist+1);
+  regist_reg(0, 0, idlist+0, buf, idlist+1);
   regist_stop();
 
 

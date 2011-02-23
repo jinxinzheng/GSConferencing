@@ -419,23 +419,19 @@ int regist_status(int *expect, int *got)
   return 0;
 }
 
-SIMPLE_CMD_0(regist, by_key);
-
-SIMPLE_CMD_0(regist, by_card);
-
-int regist_by_card_id(int cardid, char *name, int *gender, int *num)
+int regist_reg(int mode, int cardid, int *card, char *name, int *gender)
 {
   BASICS;
 
-  l = sprintf(buf, "%d regist by_card_id %d\n", id, cardid);
+  l = sprintf(buf, "%d regist reg %d %d\n", id, mode, cardid);
 
   SEND_CMD();
 
   i = FIND_OK(c);
 
+  *card   = atoi( c.args[++i]);
   strcpy(name,    c.args[++i]);
   *gender = atoi( c.args[++i]);
-  *num    = atoi( c.args[++i]);
 
   return 0;
 }

@@ -1,5 +1,6 @@
 #include "cmd_handler.h"
 #include "include/types.h"
+#include "db/md.h"
 
 static struct {
   int start;
@@ -47,12 +48,11 @@ int handle_cmd_regist(struct cmd *cmd)
 
   SUBCMD("start")
   {
-    regist.start = 1;
-
     NEXT_ARG(p);
     regist.mode = atoi(p);
 
-    regist.expect = 10;
+    regist.start = 1;
+    regist.expect = md_get_device_count();
     regist.arrive = 0;
 
     REP_OK(cmd);
@@ -77,55 +77,41 @@ int handle_cmd_regist(struct cmd *cmd)
     REP_END(cmd);
   }
 
-  SUBCMD("by_key")
+  SUBCMD("reg")
   {
-    if( regist.mode != REGIST_KEY )
-    {
-      return ERR_OTHER;
-    }
-    REP_OK(cmd);
-
-    regist.arrive ++;
-  }
-
-  SUBCMD("by_card")
-  {
-    if( regist.mode != REGIST_CARD_ANY )
-    {
-      return ERR_OTHER;
-    }
-    REP_OK(cmd);
-
-    regist.arrive ++;
-  }
-
-  SUBCMD("by_card_id")
-  {
+    int mode;
     int cid;
+    struct db_device *dd;
+
+    NEXT_ARG(p);
+    mode = atoi(p);
+
     NEXT_ARG(p);
     cid = atoi(p);
 
-    if( regist.mode != REGIST_CARD_ID )
+    if( !regist.start ||
+        regist.mode != mode )
     {
       return ERR_OTHER;
     }
 
-    for (i=0; i<regist.expect; i++)
-    {
-      if (regist.users[i].id == cid)
-      {
-        break;
-      }
-    }
-    if( i>regist.expect )
+    if( !(dd=md_find_device(d->id)) )
     {
       return ERR_OTHER;
+    }
+
+    if( REGIST_CARD_ID == mode )
+    {
+      if( cid != dd->user_card )
+      {
+        return ERR_OTHER;
+      }
     }
 
     REP_ADD(cmd, "OK");
-    REP_ADD(cmd, regist.users[i].name);
-    REP_ADD_NUM(cmd, regist.users[i].gender);
-    REP_ADD_NUM(cmd, regist.users[i].id);
+    REP_ADD_NUM(cmd, dd->user_card);
+    REP_ADD    (cmd, dd->user_name);
+    REP_ADD_NUM(cmd, dd->user_gender);
     REP_END(cmd);
 
     regist.arrive ++;

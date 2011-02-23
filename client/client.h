@@ -112,18 +112,20 @@ int send_audio_end(int len);
 
 /* user register */
 
-/* type: see enum REGIST_* */
+/* mode: see enum REGIST_* */
 int regist_start(int mode);
 
 int regist_stop();
 
 int regist_status(__out int *expect, __out int *got);
 
-int regist_by_key();
-
-int regist_by_card();
-
-int regist_by_card_id(int cardid, __out char *name, __out int *gender, __out int *num);
+/* mode: enum REGIST_*
+ * cardid: only used when mode==REGIST_CARD_ID.
+ * card: returns the user's card id when mode!=REGIST_CARD_ID.
+ * name: returns the user's name.
+ * gender: returns the user's gender. 1 for man, 0 for woman.
+ * */
+int regist_reg(int mode, int cardid, __out int *card, __out char *name, __out int *gender);
 
 /* discussion controling */
 

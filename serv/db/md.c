@@ -31,6 +31,7 @@ struct md_##type                    \
 \
 static LIST_HEAD(list_##type);                       \
 static struct md_##type *hash_##type[HASH_SZ];       \
+static int n_##type = 0; \
 \
 static void _add_##type(struct db_##type *p)  \
 {                                             \
@@ -40,6 +41,7 @@ static void _add_##type(struct db_##type *p)  \
   m->id = m->data.id;                         \
   list_add_tail(&m->l, &list_##type);         \
   hash_id(hash_##type, m);                    \
+  ++ n_##type;                                \
 }                                             \
 \
 static void _del_##type(int id)   \
@@ -51,6 +53,7 @@ static void _del_##type(int id)   \
     list_del(&m->l);               \
     unhash_id(m);                 \
     free(m);                      \
+    -- n_##type;                  \
   }                               \
 }                                 \
 \
@@ -69,6 +72,11 @@ static int _list_to_array_##type(struct list_head *list, struct db_##type *array
   array[i] = NULL;        \
                           \
   return i;               \
+}                         \
+\
+int md_get_##type##_count() \
+{                         \
+  return n_##type;        \
 }                         \
 \
 /* get a 'snapshot' of the data */ \

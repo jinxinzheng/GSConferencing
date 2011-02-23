@@ -10,6 +10,9 @@ create table device
        ip varchar(15),
        port int,
        tagid int,
+       user_card int,
+       user_name varchar(64),
+       user_gender int,
        foreign key (tagid) references tag(id)
 );
 
@@ -39,10 +42,10 @@ insert into tag(name) values('French');
 insert into tag(name) values('Japanese');
 insert into tag(name) values('Spanish');
 
-insert into device(id, ip, port, tagid) values(101, '192.168.1.100', 12345, 1);
-insert into device(id, ip, port, tagid) values(102, '192.168.1.101', 12345, 1);
-insert into device(id, ip, port, tagid) values(103, '192.168.1.102', 12345, 2);
-insert into device(id, ip, port, tagid) values(104, '192.168.1.103', 12345, 3);
+insert into device(id, ip, port, tagid, user_card, user_name, user_gender) values(101, '192.168.1.100', 12345, 1, 0, 'u101', 1);
+--insert into device(id, ip, port, tagid) values(102, '192.168.1.101', 12345, 1);
+--insert into device(id, ip, port, tagid) values(103, '192.168.1.102', 12345, 2);
+--insert into device(id, ip, port, tagid) values(104, '192.168.1.103', 12345, 3);
 
 insert into vote(name, type, options_count, members) values('vote_1', 1, 2, '101,102,103');
 insert into vote(name, type, options_count, members) values('vote_2', 2, 2, '101,102');

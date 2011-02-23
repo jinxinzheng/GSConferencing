@@ -1,5 +1,6 @@
 #include "sys.h"
 #include "db/md.h"
+#include <stdio.h>
 
 void dev_heartbeat(struct device *d)
 {
@@ -39,6 +40,7 @@ static void *run_heartbeat_god(void *arg)
           if (dbd = md_find_device(d->id))
             dbd->online = 0;
           d->active = 0;
+          fprintf(stderr, "dev %d is dead\n", (int)d->id);
         }
       }
     }

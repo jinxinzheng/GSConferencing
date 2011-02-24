@@ -98,6 +98,11 @@ void *tag_run_casting(void *tag)
     pack = tag_out_dev_mixed(t);
     trace("got mixed pack=%x from tag\n", (uint32_t)pack);
 
+    /* the pack might be NULL since it could be
+     * returned from a canceled wait. */
+    if( !pack )
+      continue;
+
     tag_cast_pack(t, pack);
 
     //((char*)pack->data)[pack->len]=0;

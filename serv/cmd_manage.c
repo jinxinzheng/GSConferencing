@@ -16,7 +16,9 @@
 
 
 #define write_device(d) \
-  append("%d:%s:%d:%d:%d\n", (int)d->id, d->ip, d->port, d->tagid, d->online)
+  append("%d:%s:%d:%d:%d:%d:%s:%d\n", \
+    (int)d->id, d->ip, d->port, d->tagid, d->online, \
+    d->user_card, d->user_name, d->user_gender)
 
 #define read_device(d, c) \
 do \
@@ -26,6 +28,9 @@ do \
   strcpy( d->ip, shift(c) ); \
   d->port = atoi( shift(c) ); \
   d->tagid = atoi( shift(c) ); \
+  d->user_card = atoi( shift(c) ); \
+  strcpy( d->user_name, shift(c) ); \
+  d->user_gender = atoi( shift(c) ); \
 }while(0)
 
 

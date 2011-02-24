@@ -65,9 +65,9 @@ int db_get_device(struct db_device *dev)
 	strcpy(sqlcmd, "select * from device;");
 	ret = sqlite_compile(db, sqlcmd, NULL, &vm, &errmsg);
 
-  i=0;
 	while (sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW)
 	{
+    i=0;
 		rows++;
     memset(dev, 0, sizeof(struct db_device));
     dev->id = atol(values[i++]);
@@ -106,8 +106,12 @@ int db_update_device(struct db_device *dev)
 	int ret;
 	char sqlcmd[256];
 
-	sprintf(sqlcmd, "UPDATE device SET ip = '%s', port = %d, tagid = %d "
-         "WHERE id = %ld;", dev->ip, dev->port, dev->tagid, dev->id);
+  sprintf(sqlcmd, "UPDATE device SET ip = '%s', port = %d, tagid = %d, \
+    user_card=%d, user_name='%s', user_gender=%d \
+    WHERE id = %ld;",
+    dev->ip, dev->port, dev->tagid,
+    dev->user_card, dev->user_name, dev->user_gender,
+    dev->id);
 
 //  printf("%s\n", sqlcmd);
 
@@ -132,8 +136,9 @@ int db_add_device(struct db_device *dev)
 	int ret;
 	char sqlcmd[256];
 
-	sprintf(sqlcmd, "insert into device(id, ip, port, tagid) values(%ld, '%s', %d, %d);",
-         dev->id, dev->ip, dev->port, dev->tagid);
+  sprintf(sqlcmd, "insert into device(id, ip, port, tagid, user_card, user_name, user_gender) \
+    values(%ld, '%s', %d, %d, %d, '%s', %d);",
+    dev->id, dev->ip, dev->port, dev->tagid, dev->user_card, dev->user_name, dev->user_gender);
 
 //	printf("%s\n", sqlcmd);
 

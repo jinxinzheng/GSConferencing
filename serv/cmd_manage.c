@@ -10,7 +10,16 @@
 
 
 #define shift(c) \
-  (p = (c)->args[a++])
+({ \
+  if( !(p = (c)->args[a++]) ) \
+  { \
+    fprintf(stderr, "bad cmd arg\n"); \
+    append("FAIL 2\n"); \
+    flush(); \
+    break; \
+  } \
+  p; \
+})
 #define argis(arg) \
   (strcmp(p, (arg))==0)
 
@@ -21,7 +30,6 @@
     d->user_card, d->user_name, d->user_gender)
 
 #define read_device(d, c) \
-do \
 { \
   a = 1; \
   d->id = atoi( shift(c) ); \
@@ -31,46 +39,43 @@ do \
   d->user_card = atoi( shift(c) ); \
   strcpy( d->user_name, shift(c) ); \
   d->user_gender = atoi( shift(c) ); \
-}while(0)
+}
 
 
 #define write_tag(t) \
   append("%d:%s\n", (int)t->id, t->name)
 
 #define read_tag(t, c) \
-do \
 { \
   a = 1; \
   t->id = atoi( shift(c) ); \
   strcpy( t->name, shift(c) ); \
-}while(0)
+}
 
 
 #define write_discuss(d) \
   append("%d:%s:%s\n", (int)d->id, d->name, d->members)
 
 #define read_discuss(d, c) \
-do \
 { \
   a = 1; \
   d->id = atoi( shift(c) ); \
   strcpy( d->name, shift(c) ); \
   strcpy( d->members, shift(c) ); \
-}while(0)
+}
 
 
 #define write_vote(v) \
   append("%d:%s:%d:%s\n", (int)v->id, v->name, v->type, v->members)
 
 #define read_vote(v, c) \
-do \
 { \
   a = 1; \
   v->id = atoi( shift(c) ); \
   strcpy( v->name, shift(c) ); \
   v->type = atoi( shift(c) ); \
   strcpy( v->members, shift(c) ); \
-}while(0)
+}
 
 
 #define m_get(type, c) \

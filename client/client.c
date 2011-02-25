@@ -291,7 +291,7 @@ int send_cmd(char *buf, int len, struct cmd *reply)
   return i;
 }
 
-#define SIMPLE_CMD_0(cmd, subcmd) \
+#define SIMPLE_CMD(cmd, subcmd) \
 int cmd##_##subcmd() \
 { \
   BASICS; \
@@ -301,11 +301,11 @@ int cmd##_##subcmd() \
   return 0; \
 }
 
-#define SIMPLE_CMD_1i(cmd, subcmd, i1) \
-int cmd##_##subcmd(int i1) \
+#define SIMPLE_CMD_i(cmd, subcmd, i) \
+int cmd##_##subcmd(int i) \
 { \
   BASICS; \
-  l = sprintf(buf, "%d " #cmd " " #subcmd " %d\n", id, i1); \
+  l = sprintf(buf, "%d " #cmd " " #subcmd " %d\n", id, i); \
   SEND_CMD(); \
   i = FIND_OK(c); \
   return 0; \
@@ -399,9 +399,9 @@ int sub(int tag)
 }
 
 
-SIMPLE_CMD_1i(regist, start, mode);
+SIMPLE_CMD_i(regist, start, mode);
 
-SIMPLE_CMD_0(regist, stop);
+SIMPLE_CMD(regist, stop);
 
 int regist_status(int *expect, int *got)
 {

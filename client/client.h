@@ -51,6 +51,10 @@ enum {
    * arg2: unused */
   EVENT_DISC_FORBID,
 
+  /* arg1: int, 1:forbid, 0:cancel
+   * arg2: unused */
+  EVENT_DISC_FORBIDALL,
+
 
   /* arg1: int, vote number
    * arg2: int, vote type VOTE_* */

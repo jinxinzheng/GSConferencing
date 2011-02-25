@@ -206,6 +206,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
     g->discuss.disabled = i;
 
     REP_OK(cmd);
+
+    SEND_TO_GROUP_ALL(cmd);
   }
 
   else

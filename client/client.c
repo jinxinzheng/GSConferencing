@@ -712,6 +712,8 @@ int servicecall(int request)
 
   SEND_CMD();
 
+  i = FIND_OK(c);
+
   return 0;
 }
 

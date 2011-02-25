@@ -998,13 +998,24 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
   else if (STREQU(c.cmd, "msgctrl"))
   {
     char *sub = c.args[i++];
+
     if (STREQU(sub, "send"))
     {
+      int uid;
       char *ids = c.args[i++];
       char *msg = c.args[i++];
-      if (strcmp(ids,"all")==0 || int_in_str(id, ids))
+      if(STREQU(ids, "all"))
       {
-        event_handler(EVENT_MSG, msg, NULL);
+        uid = 0;
+        event_handler(EVENT_MSG, &uid, msg);
+      }
+      else
+      {
+        uid = c.device_id;
+        if (int_in_str(id, ids))
+        {
+          event_handler(EVENT_MSG, &uid, msg);
+        }
       }
     }
   }

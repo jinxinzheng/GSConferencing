@@ -76,8 +76,8 @@ enum {
    * arg2: int, flag */
   EVENT_VOTE_FORBID,
 
-  /* arg1: char *, msg string
-   * arg2: unused */
+  /* arg1: int *, device id from
+   * arg2: char *, msg string */
   EVENT_MSG,
 
   /* arg1: char *, file data

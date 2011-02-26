@@ -60,7 +60,7 @@ enum {
    * arg2: int, vote type VOTE_* */
   EVENT_VOTE_START,
 
-  /* arg1: int, vote number
+  /* arg1: int, number of members
    * arg2: int[], results */
   EVENT_VOTE_SHOWRESULT,
 

@@ -917,11 +917,13 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
     }
     else if (STREQU(sub, "showresult"))
     {
+      int nmems;
       int results[256];
       vn = atoi(c.args[i++]);
       CHECKOK(c.args[i++]);
+      nmems = atoi(c.args[i++]);
       STR_TO_INT_LIST(c.args[i++], results);
-      event_handler(EVENT_VOTE_SHOWRESULT, (void*)vn, (void*)results);
+      event_handler(EVENT_VOTE_SHOWRESULT, (void*)nmems, (void*)results);
     }
     else if (STREQU(sub, "stop"))
     {

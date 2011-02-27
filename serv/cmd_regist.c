@@ -82,6 +82,7 @@ int handle_cmd_regist(struct cmd *cmd)
     int mode;
     int cid;
     struct db_device *dd;
+    const char *uname;
 
     NEXT_ARG(p);
     mode = atoi(p);
@@ -108,9 +109,17 @@ int handle_cmd_regist(struct cmd *cmd)
       }
     }
 
+    /* work around empty user name issue */
+    uname = dd->user_name;
+    uname += strspn(uname, " ");
+    if( uname[0] == 0 )
+    {
+      uname = ".";
+    }
+
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, dd->user_card);
-    REP_ADD    (cmd, dd->user_name);
+    REP_ADD    (cmd, uname);
     REP_ADD_NUM(cmd, dd->user_gender);
     REP_END(cmd);
 

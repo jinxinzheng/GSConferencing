@@ -55,6 +55,10 @@ enum {
    * arg2: unused */
   EVENT_DISC_FORBIDALL,
 
+  /* client is kicked by the server.
+   * arg1, arg2: unused */
+  EVENT_DISC_KICK,
+
 
   /* arg1: int, vote number
    * arg2: int, vote type VOTE_* */

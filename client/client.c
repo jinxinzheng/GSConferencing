@@ -979,6 +979,12 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
       CHECKOK(c.args[i++]);
       event_handler(EVENT_DISC_FORBIDALL, (void*)flag, NULL);
     }
+    else if(STREQU(sub, "kick"))
+    {
+      int kid = atoi(c.args[i++]);
+      if( id == kid )
+        event_handler(EVENT_DISC_KICK, NULL, NULL);
+    }
   }
 
   else if (STREQU(c.cmd, "regist"))

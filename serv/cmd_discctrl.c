@@ -98,6 +98,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
     NEXT_ARG(p);
     open = atoi(p);
 
+    if( d->discuss.open == open )
+      return ERR_OTHER;
+
     REP_OK(cmd);
 
     if( open )
@@ -118,7 +121,12 @@ int handle_cmd_discctrl(struct cmd *cmd)
           list_del(t);
           current.openuser --;
           kick->discuss.open = 0;
-          /* TODO: should notify the kicked user? */
+
+          tag_rm_outstanding(kick->tag, kick);
+
+          /* notify the kicked user */
+          l = sprintf(buf, "%d discctrl kick %d\n", (int)d->id, (int)kick->id);
+          sendto_dev_tcp(buf, l, kick);
         }
         else
         {

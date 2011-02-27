@@ -37,6 +37,7 @@ int dev_register(struct device *dev)
     printf("device %ld already registered, ignoring.\n", dev->id);
     /* should update the properties of the device like the address */
     d->addr = dev->addr;
+    d->fileaddr = d->fileaddr;
     return 1;
   }
 

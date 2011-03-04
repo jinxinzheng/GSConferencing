@@ -116,6 +116,12 @@ int dev_register(struct device *dev)
 
   printf("device %ld registered\n", dev->id);
 
+  /* any client is initially subscribed to tag 1 */
+  t = get_tag(TAGUID(gid, 1));
+  if( !t )
+    t = tag_create(gid, 1);
+  dev_subscribe(dev, t);
+
   return 0;
 }
 

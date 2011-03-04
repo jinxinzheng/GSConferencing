@@ -356,11 +356,15 @@ int reg(const char *passwd)
 #define _MAKE_REG() \
   l = sprintf(buf, "%d reg %d %s %d %s\n", id, devtype, passwd, listenPort, br_addr)
 
+#define _POST_REG() \
+  /*synctime();*/ \
+  subscription = 1;
+
   _MAKE_REG();
 
   SEND_CMD();
 
-  synctime();
+  _POST_REG();
 
   return 0;
 }
@@ -371,7 +375,7 @@ static void try_reg_end(char *reply)
   struct cmd c;
   if( (e = parse_cmd(reply, &c)) == 0 )
   {
-    synctime();
+    _POST_REG();
   }
   event_handler(EVENT_REG_OK, (void *)e, NULL);
 }

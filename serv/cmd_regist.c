@@ -7,26 +7,9 @@ static struct {
   int mode;
   int expect;
   int arrive;
-  struct {
-    int id;
-    char name[64];
-    int gender;
-  } users[100];
 }
 regist ={
   0, 0, 0, 0,
-  {
-    {1, "ma", 1 },
-    {2, "mb", 1 },
-    {3, "mc", 1 },
-    {4, "md", 1 },
-    {5, "me", 1 },
-    {6, "wa", 0 },
-    {7, "wb", 0 },
-    {8, "wc", 0 },
-    {9, "wd", 0 },
-    {10,"we", 0 }
-  }
 };
 
 int handle_cmd_regist(struct cmd *cmd)

@@ -84,6 +84,10 @@ enum {
    * arg2: char *, msg string */
   EVENT_MSG,
 
+  /* arg1: int *, device id from
+   * arg2: char *, msg string */
+  EVENT_BROADCAST_MSG,
+
   /* arg1: char *, file data
    * arg2: int, file length */
   EVENT_FILE,

@@ -1009,17 +1009,15 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
 
     if (STREQU(sub, "send"))
     {
-      int uid;
+      int uid = c.device_id;
       char *ids = c.args[i++];
       char *msg = c.args[i++];
       if(STREQU(ids, "all"))
       {
-        uid = 0;
-        event_handler(EVENT_MSG, &uid, msg);
+        event_handler(EVENT_BROADCAST_MSG, &uid, msg);
       }
       else
       {
-        uid = c.device_id;
         if (int_in_str(id, ids))
         {
           event_handler(EVENT_MSG, &uid, msg);

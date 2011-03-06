@@ -39,6 +39,11 @@ static inline void cfifo_enable_locking(struct cfifo *cf)
   cf->cancel_wait = 0;
 }
 
+static inline int cfifo_len(struct cfifo *cf)
+{
+  return (cf->in+(cf->mask+1)-cf->out) & cf->mask;
+}
+
 static inline int cfifo_full(struct cfifo *cf)
 {
   return ((cf->in+1) & cf->mask == cf->out);

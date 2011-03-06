@@ -72,6 +72,7 @@ static void _dev_in_packet(struct device *d, struct packet *p)
   struct packet **pp = (struct packet **)cfifo_get_in(&d->pack_fifo);
   *pp = p;
   cfifo_in_signal(&d->pack_fifo);
+  trace("avail %d packs in fifo %d\n", cfifo_len(&d->pack_fifo), (int)d->id);
 }
 
 static struct packet *_dev_out_packet(struct device *d)
@@ -134,6 +135,8 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
 
   /* avoid dead lock */
   cfifo_cancel_wait(&d->pack_fifo);
+
+  /* todo: clear the fifo of the dev */
 }
 
 

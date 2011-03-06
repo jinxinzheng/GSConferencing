@@ -1,4 +1,4 @@
-#ARCH=arm-linux
+ARCH=arm-linux
 
 ifdef ARCH
 CC:=$(ARCH)-gcc
@@ -13,7 +13,7 @@ SUBDIRS:=serv client
 all: $(SUBDIRS)
 
 clean:
-	rm -rf sha/*.o
+	rm -rf common/*.o sha/*.o
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
 
 serv:

@@ -21,6 +21,17 @@ struct cfifo
   int cancel_wait;
 };
 
+#define CFIFO(ff, sord, eord) \
+  char ff##_data[(1<<(sord)) * (1<<(eord))]; \
+  struct cfifo ff = \
+  { \
+    0, \
+    0, \
+    (1<<(sord))-1, \
+    eord,  \
+    ff##_data, \
+  }
+
 static inline void cfifo_init(struct cfifo *cf, int size_order, int e_order)
 {
   unsigned int size = 1<<size_order;

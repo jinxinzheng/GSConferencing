@@ -830,21 +830,24 @@ int synctime()
 
 static struct
 {
-  void *data;
   int len;
-} transfile;
+  char data[1024*100];
+} transfile = {0};
 
 static void handle_file(int sock, char *buf, int l)
 {
   if (sock)
   {
+    if( transfile.len + l >= sizeof(transfile.data) )
+      return;
     memcpy(transfile.data+transfile.len, buf, l);
     transfile.len += l;
   }
   else
   {
+    /* file transfer complete */
     event_handler(EVENT_FILE, transfile.data, (void*)transfile.len);
-    free(transfile.data);
+    transfile.len = 0;
   }
 }
 
@@ -1035,8 +1038,9 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
     /* this is a file transfer. need to handle specially. */
     char *p = c.args[i++];
     int len = atoi(p);
-    /* prepare file transfer */
-    transfile.data = malloc(len);
+    /* handle file transfer.
+     * caution: do not assume the order of the file port and
+     * the cmd port. it is random on different archs. */
     transfile.len = 0;
   }
 }

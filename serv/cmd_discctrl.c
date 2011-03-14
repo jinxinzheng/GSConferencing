@@ -81,8 +81,13 @@ int handle_cmd_discctrl(struct cmd *cmd)
       if (d = get_device(atoi(p)))
       {
         //list_add_tail(&d->discuss.l, &current.dev_list);
-        d->discuss.open = 0;
         d->discuss.forbidden = 0;
+        if( d->discuss.open )
+        {
+          /* we may restart from a crash */
+          d->discuss.open = 0;
+          tag_rm_outstanding(d->tag, d);
+        }
         sendto_dev_tcp(cmd->rep, cmd->rl, d);
       }
     }
@@ -99,7 +104,10 @@ int handle_cmd_discctrl(struct cmd *cmd)
     open = atoi(p);
 
     if( d->discuss.open == open )
+    {
+      fprintf(stderr, "dev is already open/closed\n");
       return ERR_OTHER;
+    }
 
     REP_OK(cmd);
 

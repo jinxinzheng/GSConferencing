@@ -221,12 +221,16 @@ struct packet *tag_out_dev_mixed(struct tag *t)
   return pack;
 }
 
+#define min(a,b) ((a)<(b)?(a):(b))
+
 static struct packet *tag_mix_audio(struct tag *t)
 {
   struct device *d;
   struct packet *pp[8], *p;
+  pack_data *aupack;
   short *au[8];
-  int i,c;
+  int mixlen = 1<<18;/* initially a big number is ok */
+  int i,c,l;
 
   c = 0;
   for( i=0 ; i<8 ; i++ )
@@ -240,7 +244,10 @@ static struct packet *tag_mix_audio(struct tag *t)
       continue;
 
     pp[c] = p;
-    au[c] = (short *)( (pack_data *) pp[c]->data )->data;
+    aupack = (pack_data *) p->data;
+    au[c] = (short *) aupack->data;
+    l = ntohl(aupack->datalen);
+    mixlen = min(mixlen, l);
     c++;
   }
 
@@ -257,7 +264,7 @@ static struct packet *tag_mix_audio(struct tag *t)
   {
     /* audio params */
     const int bytes=2;
-    const int aulen = 512/bytes;
+    const int aulen = mixlen/bytes;
 
     const int zero = 1 << ((bytes*8)-1) ;
     register int mix;

@@ -15,20 +15,21 @@ struct tag *tag_create(long gid, long tid)
   tuid = TAGUID(gid, tid);
 
   t = (struct tag *)malloc(sizeof (struct tag));
+  memset(t, 0, sizeof (struct tag));
   t->tid = tid;
   t->id = tuid;
-  t->name[0]=0;
+  //t->name[0]=0;
 
   INIT_LIST_HEAD(&t->device_head);
   INIT_LIST_HEAD(&t->subscribe_head);
 
-  memset(t->mix_devs, 0, sizeof t->mix_devs);
-  t->mix_count = 0;
+  //memset(t->mix_devs, 0, sizeof t->mix_devs);
+  //t->mix_count = 0;
 
   pthread_mutex_init(&t->mut, NULL);
   pthread_cond_init(&t->cnd_nonempty, NULL);
 
-  t->bcast_size = 0;
+  //t->bcast_size = 0;
 
   add_tag(t);
 
@@ -232,6 +233,8 @@ static struct packet *tag_mix_audio(struct tag *t)
   int mixlen = 1<<18;/* initially a big number is ok */
   int i,c,l;
 
+  struct group *g;
+
   c = 0;
   for( i=0 ; i<8 ; i++ )
   {
@@ -240,6 +243,19 @@ static struct packet *tag_mix_audio(struct tag *t)
     if( !d )
       continue;
 
+    /* we need to avoid everything that might
+     * cause the dangerous wait to hung */
+
+    /* all disabled, only the chairman is free */
+    g = d->group;
+    if( g->discuss.disabled && d != g->chairman )
+      continue;
+
+    /* confirm the device is open */
+    if( d->discuss.forbidden || !d->discuss.open )
+      continue;
+
+    t->mix_waiting = d;
     if( !(p = _dev_out_packet(d)) )
       continue;
 

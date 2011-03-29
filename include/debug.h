@@ -31,6 +31,8 @@ do { \
 
 #if DEBUG >= 2
 
+ #define trace2 trace
+
  #define DEBUG_TIME_INIT() struct timespec _s,_e
 
  #define DEBUG_TIME_START() \
@@ -48,6 +50,7 @@ do { \
   }
 
 #else /* DEBUG < 2 */
+ #define trace2(...)
  #define DEBUG_TIME_INIT()
  #define DEBUG_TIME_START()
  #define DEBUG_TIME_STOP(msg)

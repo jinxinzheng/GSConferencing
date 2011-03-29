@@ -140,7 +140,7 @@ int send_audio_end(int len)
   audio_current->seq = ++qseq;
   audio_current->datalen = (uint32_t)len;
 
-  trace("[%s] %d.%d ", __func__, audio_current->id, audio_current->seq);
+  trace2("%d.%d ", audio_current->id, audio_current->seq);
   DEBUG_TIME_NOW();
 
   //enque
@@ -182,7 +182,7 @@ static void udp_recved(char *buf, int len)
   qitem = (struct pack *)buf;
   NTOH(qitem);
 
-  trace("[%s] %d.%d ", __func__, qitem->id, qitem->seq);
+  trace2("%d.%d ", qitem->id, qitem->seq);
   DEBUG_TIME_NOW();
 
   /* broadcasted packet could be sent back */

@@ -267,17 +267,18 @@ static struct packet *tag_mix_audio(struct tag *t)
     c++;
   }
 
-  if( c == 0 )
+  switch (c)
   {
+   case 0:
     return NULL;
-  }
-  else if( c == 1 )
-  {
+
+   case 1:
     /* no need to mix */
     trace("[%s] only 1 outstanding dev, mix not needed.\n", __func__);
-  }
-  else
-  {
+    break;
+
+   default:
+   {
     /* audio params */
     const int bytes=2;
     const int aulen = mixlen/bytes;
@@ -307,6 +308,8 @@ static struct packet *tag_mix_audio(struct tag *t)
     {
       pack_free(pp[i]);
     }
+   }
+   break;
   }
 
   return pp[0];

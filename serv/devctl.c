@@ -109,7 +109,13 @@ int dev_register(struct device *dev)
   dev->subscription = NULL;
   INIT_LIST_HEAD(&dev->subscribe);
 
-  cfifo_init(&dev->pack_fifo, 8, 2); //256 elements of 4 bytes
+  /* 32 elements of 4 bytes in fifo.
+   * if the fifo sends faster than and lagged by other slow devs,
+   * the bufs will be piled at the faster fifo.
+   * if the piled bufs reaches the max 32, they will be auto
+   * discarded. this could eliminate the lagging, but may
+   * produce noticible voice abruption. */
+  cfifo_init(&dev->pack_fifo, 5, 2);
   cfifo_enable_locking(&dev->pack_fifo);
 
   add_device(dev);

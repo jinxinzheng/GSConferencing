@@ -76,9 +76,17 @@ static void _dev_in_packet(struct device *d, struct packet *p)
   trace("avail %d packs in fifo %d\n", cfifo_len(&d->pack_fifo), (int)d->id);
 }
 
-static struct packet *_dev_out_packet(struct device *d)
+/* this must be used when cfifo_empty is false */
+static inline struct packet *__dev_out_packet(struct device *d)
 {
   struct packet *p;
+  p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
+  cfifo__out(&d->pack_fifo);
+  return p;
+}
+
+static struct packet *_dev_out_packet(struct device *d)
+{
   cfifo_wait_empty(&d->pack_fifo);
   if( cfifo_empty(&d->pack_fifo) )
   {
@@ -86,9 +94,7 @@ static struct packet *_dev_out_packet(struct device *d)
        by the cmd thread */
     return NULL;
   }
-  p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
-  cfifo__out(&d->pack_fifo);
-  return p;
+  return __dev_out_packet(d);
 }
 
 
@@ -216,6 +222,8 @@ struct packet *tag_out_dev_mixed(struct tag *t)
   pthread_mutex_lock(&t->mut);
   while( !( t->mix_count > 0 ) )
   {
+    /* this is actually not that useful...
+     * it's just kept as it's not harmful */
     pthread_cond_wait(&t->cnd_nonempty, &t->mut);
   }
   pthread_mutex_unlock(&t->mut);
@@ -234,33 +242,25 @@ static struct packet *tag_mix_audio(struct tag *t)
   pack_data *aupack;
   short *au[8];
   int mixlen = 1<<18;/* initially a big number is ok */
+  int waited = 0;
   int i,c,l;
 
-  struct group *g;
-
+pick:
   c = 0;
   for( i=0 ; i<8 ; i++ )
   {
-    d = t->mix_devs[i];
-
-    if( !d )
+    if( !(d = t->mix_devs[i]) )
       continue;
 
-    /* we need to avoid everything that might
-     * cause the dangerous wait to hung */
-
-    /* all disabled, only the chairman is free */
-    g = d->group;
-    if( g->discuss.disabled && d != g->chairman )
+    /* do not wait, just pick the data or go on.
+     * we do not wait because we can't rely on the
+     * client. consider that if a client claimed it's
+     * sending data, but then it crashed. waiting for
+     * it's data here will lead to endless wait! */
+    if( cfifo_empty(&d->pack_fifo) )
       continue;
 
-    /* confirm the device is open */
-    if( d->discuss.forbidden || !d->discuss.open )
-      continue;
-
-    t->mix_waiting = d;
-    if( !(p = _dev_out_packet(d)) )
-      continue;
+    p = __dev_out_packet(d);
 
     pp[c] = p;
     aupack = (pack_data *) p->data;
@@ -273,11 +273,27 @@ static struct packet *tag_mix_audio(struct tag *t)
   switch (c)
   {
    case 0:
-    return NULL;
+    /* wait for 10ms to allow the data to be queued.
+     * we don't stop sending data until all data is
+     * flushed. then wait for another 10ms to begin
+     * next flush.
+     * this also virtually syncs the clients sending
+     * at different rates. */
+    trace("all data flushed, wait for more data to queue.\n");
+    usleep(10*1000);
+    if( ++waited > 50 )
+    {
+      /* it has been quite a while that there's no
+       * any data. probably all clients has stopped. */
+      trace("no data within timeout. maybe no outstanding.\n");
+      return NULL;
+    }
+    goto pick;
 
    case 1:
     /* no need to mix */
-    trace("[%s] only 1 outstanding dev, mix not needed.\n", __func__);
+    trace("only 1 pack from %d, mix not needed.\n",
+          (int)pp[0]->dev->id);
     break;
 
    default:

@@ -29,7 +29,6 @@ struct tag {
   /* support up to 8 devices mixing audio */
   struct device *mix_devs[8];
   int mix_count;
-  struct device *mix_waiting;
 
   pthread_mutex_t mut;
   pthread_cond_t  cnd_nonempty;

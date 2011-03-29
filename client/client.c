@@ -206,6 +206,8 @@ static void udp_recved(char *buf, int len)
 
   cfifo_in_signal(&udp_rcv_fifo);
 
+  trace("%d packs in fifo\n", cfifo_len(&udp_rcv_fifo));
+
   //tmp: do not put in queue, directly play.
   /*if (qitem->type == TYPE_AUDIO)
   {

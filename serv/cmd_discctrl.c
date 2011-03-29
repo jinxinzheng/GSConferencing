@@ -221,14 +221,6 @@ int handle_cmd_discctrl(struct cmd *cmd)
     g->chairman = d;
     g->discuss.disabled = i;
 
-    if( d->tag->mix_waiting )
-    {
-      /* wake up the tag's thread thus avoid hung.
-       * this is rather jerky, we are still not clear
-       * how to find out the tags we need to wake up. */
-      cfifo_cancel_wait(&d->tag->mix_waiting->pack_fifo);
-    }
-
     REP_OK(cmd);
 
     SEND_TO_GROUP_ALL(cmd);

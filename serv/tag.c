@@ -110,6 +110,9 @@ void tag_add_outstanding(struct tag *t, struct device *d)
       pthread_mutex_unlock(&t->mut);
       pthread_cond_signal(&t->cnd_nonempty);
 
+      /* clear the dev's fifo to avoid early lag. */
+      cfifo_clear(&d->pack_fifo);
+
       break;
     }
   }

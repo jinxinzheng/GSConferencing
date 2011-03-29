@@ -65,6 +65,11 @@ static inline int cfifo_empty(struct cfifo *cf)
   return (cf->out == cf->in);
 }
 
+static inline int cfifo_clear(struct cfifo *cf)
+{
+  cf->out = cf->in;
+}
+
 /* get the buffer pointed to by in.
  * could avoid memcpy. */
 static inline void *cfifo_get_in(struct cfifo *cf)

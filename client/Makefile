@@ -12,7 +12,7 @@ test_client := test-client
 libclient := libclient.a
 endif
 
-all: $(test_client) $(libclient) apitest
+all: $(test_client) $(libclient) libclient.so apitest
 
 $(test_client): main.o net.o
 	$(CC) $(LDFLAGS) -o $@ $^
@@ -20,12 +20,15 @@ $(test_client): main.o net.o
 $(libclient): client.o net.o
 	$(AR) -rcv $@ $^
 
+libclient.so: client.o net.o
+	$(CC) -shared -o $@ $^
+
 .depend: Makefile $(SRCS)
 	@$(CC) $(CFLAGS) -MM $(SRCS) >$@
 sinclude .depend
 
 clean:
-	rm -rf *.o .depend $(test_client) apitest $(libclient)
+	rm -rf *.o .depend $(test_client) apitest $(libclient) libclient.so
 
 apitest: apitest.o $(libclient)
 

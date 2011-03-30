@@ -114,6 +114,8 @@ void tag_add_outstanding(struct tag *t, struct device *d)
       d->mixbit = 1<<i;
       t->mix_mask |= d->mixbit;
 
+      d->timeouts = 0;
+
       pthread_mutex_lock(&t->mut);
       t->mix_count ++;
       pthread_mutex_unlock(&t->mut);
@@ -231,6 +233,34 @@ struct packet *tag_out_dev_mixed(struct tag *t)
   return pack;
 }
 
+static void tag_update_dev_timeouts(struct tag *t)
+{
+  int i;
+  struct device *d;
+
+  for( i=0 ; i<8 ; i++ )
+  {
+    if( d = t->mix_devs[i] )
+    {
+      if( cfifo_empty(&d->pack_fifo) )
+      {
+        if( ++ d->timeouts > 500 )
+        {
+          /* what? this one has been hung for too long...
+           * get this shit out of our way. */
+          fprintf(stderr, "%d seems to be hung, clear it.\n",
+              (int)d->id);
+          tag_rm_outstanding(t, d);
+        }
+      }
+      else
+      {
+        d->timeouts = 0;
+      }
+    }
+  }
+}
+
 #define min(a,b) ((a)<(b)?(a):(b))
 
 static struct packet *tag_mix_audio(struct tag *t)
@@ -246,6 +276,7 @@ static struct packet *tag_mix_audio(struct tag *t)
   /* all outstanding devs must have data on their queue.
    * otherwise clients sending at lower rate may be
    * scattered. */
+  trace("stat %02x, mask %02x\n", t->mix_stat, t->mix_mask);
   while( (t->mix_stat & t->mix_mask) != t->mix_mask )
   {
     /* wait for 10ms to allow the data to be queued.
@@ -253,11 +284,15 @@ static struct packet *tag_mix_audio(struct tag *t)
      * at different rates. */
     usleep(10*1000);
 
+    /* find out who are empty. this should be costless
+     * compared to our wait. */
+    tag_update_dev_timeouts(t);
+
     if( ++waited > 50 )
     {
       /* it has been quite a while that there's no
-       * any data. probably all clients has stopped. */
-      trace("no data within timeout. maybe no outstanding.\n");
+       * any data. probably a client has stopped. */
+      trace("no data within timeout. maybe someone stopped.\n");
       return NULL;
     }
   }
@@ -277,6 +312,10 @@ static struct packet *tag_mix_audio(struct tag *t)
     /* recheck to ensure the fifo is not empty */
     if( cfifo_empty(&d->pack_fifo) )
       continue;
+
+    /* reset this one's timeouts. we can immediately
+     * take data from it's fifo without wait. */
+    d->timeouts = 0;
 
     p = tag_out_dev_packet(t, d);
 

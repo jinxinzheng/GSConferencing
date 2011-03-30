@@ -88,6 +88,7 @@ struct device {
   struct cfifo pack_fifo;
   /* used by the tag mixing code */
   unsigned int mixbit;
+  int timeouts;
 
   struct {
     struct vote *v;

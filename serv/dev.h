@@ -86,6 +86,8 @@ struct device {
 
   /* packet fifo */
   struct cfifo pack_fifo;
+  /* used by the tag mixing code */
+  unsigned int mixbit;
 
   struct {
     struct vote *v;

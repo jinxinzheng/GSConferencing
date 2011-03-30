@@ -111,6 +111,9 @@ void tag_add_outstanding(struct tag *t, struct device *d)
     {
       t->mix_devs[i] = d;
 
+      d->mixbit = 1<<i;
+      t->mix_mask |= d->mixbit;
+
       pthread_mutex_lock(&t->mut);
       t->mix_count ++;
       pthread_mutex_unlock(&t->mut);
@@ -134,6 +137,8 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
     {
       trace("removing dev from outstanding\n");
       t->mix_devs[i] = NULL;
+
+      t->mix_mask &= ~d->mixbit;
 
       pthread_mutex_lock(&t->mut);
       t->mix_count --;
@@ -170,6 +175,8 @@ void tag_clear_outstanding(struct tag *t)
     }
   }
 
+  t->mix_mask = 0;
+
   pthread_mutex_lock(&t->mut);
   t->mix_count = 0;
   pthread_mutex_unlock(&t->mut);
@@ -179,35 +186,26 @@ void tag_clear_outstanding(struct tag *t)
 
 void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
 {
-  int add = 0;
-
-  if( cfifo_empty(&d->pack_fifo) )
-  {
-    /* this fifo will become non-empty */
-    add=1;
-  }
-
   /* put in */
   _dev_in_packet(d, pack);
 
   /* decide state change */
+  t->mix_stat |= d->mixbit;
 }
 
+/* this should only be called when dev's fifo is not empty */
 struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
 {
   struct packet *p;
-  int rm = 0;
 
   /* get out */
-  p = _dev_out_packet(d);
+  p = __dev_out_packet(d);
 
   if( cfifo_empty(&d->pack_fifo) )
   {
     /* this fifo has become empty */
-    rm=1;
+    t->mix_stat &= ~d->mixbit;
   }
-
-  /* decide state change */
 
   return p;
 }
@@ -245,7 +243,25 @@ static struct packet *tag_mix_audio(struct tag *t)
   int waited = 0;
   int i,c,l;
 
-pick:
+  /* all outstanding devs must have data on their queue.
+   * otherwise clients sending at lower rate may be
+   * scattered. */
+  while( (t->mix_stat & t->mix_mask) != t->mix_mask )
+  {
+    /* wait for 10ms to allow the data to be queued.
+     * this virtually syncs the clients sending
+     * at different rates. */
+    usleep(10*1000);
+
+    if( ++waited > 50 )
+    {
+      /* it has been quite a while that there's no
+       * any data. probably all clients has stopped. */
+      trace("no data within timeout. maybe no outstanding.\n");
+      return NULL;
+    }
+  }
+
   c = 0;
   for( i=0 ; i<8 ; i++ )
   {
@@ -257,10 +273,12 @@ pick:
      * client. consider that if a client claimed it's
      * sending data, but then it crashed. waiting for
      * it's data here will lead to endless wait! */
+
+    /* recheck to ensure the fifo is not empty */
     if( cfifo_empty(&d->pack_fifo) )
       continue;
 
-    p = __dev_out_packet(d);
+    p = tag_out_dev_packet(t, d);
 
     pp[c] = p;
     aupack = (pack_data *) p->data;
@@ -273,22 +291,7 @@ pick:
   switch (c)
   {
    case 0:
-    /* wait for 10ms to allow the data to be queued.
-     * we don't stop sending data until all data is
-     * flushed. then wait for another 10ms to begin
-     * next flush.
-     * this also virtually syncs the clients sending
-     * at different rates. */
-    trace("all data flushed, wait for more data to queue.\n");
-    usleep(10*1000);
-    if( ++waited > 50 )
-    {
-      /* it has been quite a while that there's no
-       * any data. probably all clients has stopped. */
-      trace("no data within timeout. maybe no outstanding.\n");
-      return NULL;
-    }
-    goto pick;
+    return NULL;
 
    case 1:
     /* no need to mix */

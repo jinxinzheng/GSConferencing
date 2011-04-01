@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "packet.h"
+#include "pcm.h"
 #include "include/pack.h"
 #include "include/debug.h"
 
@@ -340,35 +341,10 @@ static struct packet *tag_mix_audio(struct tag *t)
 
    default:
    {
-    /* audio params */
-    const int bytes=2;
-    const int aulen = mixlen/bytes;
+     pcm_mix(au, c, mixlen/2);
 
-    const int zero = 1 << ((bytes*8)-1) ;
-    register int mix;
-
-    short **pau;
-    short *au0 = au[0];
-
-    for( i=0 ; i<aulen ; i++ )
-    {
-      mix = 0;
-      for( pau=&au[0] ; pau<&au[c] ; pau++ )
-      {
-        mix += *( (*pau)++ );
-      }
-      mix /= c;
-
-      if(mix > zero-1) mix = zero-1;
-      else if(mix < -zero) mix = -zero;
-
-      au0[i] = (short)mix;
-    }
-
-    for( i=1 ; i<c ; i++ )
-    {
-      pack_free(pp[i]);
-    }
+     for( i=1 ; i<c ; i++ )
+       pack_free(pp[i]);
    }
    break;
   }

@@ -341,7 +341,7 @@ static struct packet *tag_mix_audio(struct tag *t)
 
    default:
    {
-     pcm_mix(au, c, mixlen/2);
+     pcm_mix(au, c, mixlen>>1);
 
      for( i=1 ; i<c ; i++ )
        pack_free(pp[i]);

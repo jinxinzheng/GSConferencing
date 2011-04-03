@@ -89,6 +89,11 @@ struct device {
   /* used by the tag mixing code */
   unsigned int mixbit;
   int timeouts;
+  int flushing;
+
+  struct {
+    int flushed;
+  } stats;
 
   struct {
     struct vote *v;

@@ -298,6 +298,54 @@ static struct packet *tag_mix_audio(struct tag *t)
     }
   }
 
+#define add_mix_pack(p) \
+  { \
+    pp[c] = p; \
+    aupack = (pack_data *) (p)->data; \
+    au[c] = (short *) aupack->data; \
+    l = ntohl(aupack->datalen); \
+    mixlen = min(mixlen, l); \
+    c++; \
+  }
+
+  /* first pass: flush the over-loaded queues */
+  c = 0;
+  for( i=0 ; i<8 ; i++ )
+  {
+    if( !(d = t->mix_devs[i]) )
+      continue;
+
+    if( !d->flushing )
+    {
+      if( cfifo_len(&d->pack_fifo) > 16 )
+      {
+        /* trigger flush this queue */
+        d->flushing = 1;
+        d->stats.flushed ++;
+      }
+      else
+        continue;
+    }
+    else
+    {
+      if( cfifo_len(&d->pack_fifo) < 8 )
+      {
+        /* stop flush this queue */
+        d->flushing = 0;
+        continue;
+      }
+    }
+    printf("flush queue %ld, %d\n", d->id, d->stats.flushed);
+
+    p = tag_out_dev_packet(t, d);
+
+    add_mix_pack(p);
+  }
+
+  if( c > 0 )
+    goto mix;
+
+  /* second pass: normal blending */
   c = 0;
   for( i=0 ; i<8 ; i++ )
   {
@@ -320,14 +368,10 @@ static struct packet *tag_mix_audio(struct tag *t)
 
     p = tag_out_dev_packet(t, d);
 
-    pp[c] = p;
-    aupack = (pack_data *) p->data;
-    au[c] = (short *) aupack->data;
-    l = ntohl(aupack->datalen);
-    mixlen = min(mixlen, l);
-    c++;
+    add_mix_pack(p);
   }
 
+mix:
   switch (c)
   {
    case 0:

@@ -108,6 +108,9 @@ int reg(const char *passwd);
  * upon success an EVENT_REG_OK is generated. */
 void start_try_reg(const char *passwd);
 
+/* synchronize local time with the server */
+int synctime();
+
 /* subscribe to a channel/tag.
  * pass 0 to channel if unsubscribing. */
 int sub(int channel);

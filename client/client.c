@@ -797,7 +797,6 @@ int filectrl_select(int file_num)
 }
 
 
-/* hidden cmd */
 int synctime()
 {
   BASICS;

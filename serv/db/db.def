@@ -1,0 +1,31 @@
+table device
+i id
+s ip 32
+i port
+i tagid
+i user_card
+s user_name 64
+i user_gender
+x :int online;
+
+table tag
+i id
+s name 32
+
+table vote
+i id
+s name 32
+i type
+i options_count
+s members 1024
+
+table discuss
+i id
+s name 64
+s members 1024
+
+table video
+i id
+s name 64
+s path 260
+

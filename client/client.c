@@ -70,10 +70,10 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   start_recv_udp(listenPort, udp_recved);
 
   /* udp sending and recving queues */
-  cfifo_init(&udp_snd_fifo, 8, 11); //256 of size and 2K of element size
+  cfifo_init(&udp_snd_fifo, 5, 11); //32 of size and 2K of element size
   cfifo_enable_locking(&udp_snd_fifo);
 
-  cfifo_init(&udp_rcv_fifo, 8, 11);
+  cfifo_init(&udp_rcv_fifo, 5, 11);
   cfifo_enable_locking(&udp_rcv_fifo);
 
   /* udp sender thread */

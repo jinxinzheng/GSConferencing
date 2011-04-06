@@ -25,7 +25,8 @@ void pcm_mix(short *pcm_bufs[], int nbufs, int samples)
     {
       mix += *( (*pbuf)++ );
     }
-    mix /= nbufs;
+    if( nbufs >= 4)
+      mix /= 2;
 
     if(mix > zero-1) mix = zero-1;
     else if(mix < -zero) mix = -zero;

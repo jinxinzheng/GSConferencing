@@ -1,7 +1,7 @@
 create table tag
 (
 	id integer primary key,		--autoincrement field
-	name varchar(10)
+	name varchar(32)
 );
 
 create table device
@@ -54,3 +54,13 @@ insert into vote(name, type, options_count, members) values('vote_4', 3, 2, '104
 
 insert into discuss(name, members) values('test_discuss_1', '101,102,103,104');
 insert into discuss(name, members) values('test_discuss_2', '101,102,103');
+
+create table video
+(
+ id integer primary key,
+ name varchar(64),
+ path varchar(260)
+);
+
+insert into video(name, path) values('video1', '/video1.avi');
+insert into video(name, path) values('video2', '/video2.avi');

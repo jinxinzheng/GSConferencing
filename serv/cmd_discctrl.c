@@ -10,9 +10,6 @@ static struct db_discuss *db[1024];
 static int dbl = 0;
 static struct {
   struct db_discuss *discuss;
-  struct list_head open_list;
-  int maxuser;
-  int openuser;
 } current = {
   0
 };
@@ -25,9 +22,12 @@ int handle_cmd_discctrl(struct cmd *cmd)
   int i,l;
 
   struct device *d;
+  struct tag *tag;
 
   /* require reg() before any cmd */
   THIS_DEVICE(cmd, d);
+
+  tag = d->tag;
 
   NEXT_ARG(subcmd);
 
@@ -71,16 +71,14 @@ int handle_cmd_discctrl(struct cmd *cmd)
     REP_END(cmd);
 
     current.discuss = s;
-    INIT_LIST_HEAD(&current.open_list);
-    current.maxuser = 8;
-    current.openuser = 0;
+    INIT_LIST_HEAD(&tag->discuss.open_list);
+    tag->discuss.openuser = 0;
 
     strcpy(buf, s->members);
     IDLIST_FOREACH_p(buf)
     {
       if (d = get_device(atoi(p)))
       {
-        //list_add_tail(&d->discuss.l, &current.dev_list);
         d->discuss.forbidden = 0;
         if( d->discuss.open )
         {
@@ -113,7 +111,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     if( open )
     {
-      if( current.openuser < current.maxuser )
+      if( tag->discuss.openuser < tag->discuss.maxuser )
       {
         /* can direct put through */
       }
@@ -123,11 +121,11 @@ int handle_cmd_discctrl(struct cmd *cmd)
          * need to find out a way to handle. */
         if( d->group->discuss.mode == DISCMODE_FIFO )
         {
-          struct list_head *t = current.open_list.next;
+          struct list_head *t = tag->discuss.open_list.next;
           struct device *kick = list_entry(t, struct device, discuss.l);
           /* kick one out */
           list_del(t);
-          current.openuser --;
+          tag->discuss.openuser --;
           kick->discuss.open = 0;
 
           tag_rm_outstanding(kick->tag, kick);
@@ -143,8 +141,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
         }
       }
 
-      list_add_tail(&d->discuss.l, &current.open_list);
-      current.openuser ++;
+      list_add_tail(&d->discuss.l, &tag->discuss.open_list);
+      tag->discuss.openuser ++;
 
       tag_add_outstanding(d->tag, d);
     }
@@ -152,7 +150,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
     {
       /* remove it from the open users list */
       list_del(&d->discuss.l);
-      current.openuser --;
+      tag->discuss.openuser --;
 
       tag_rm_outstanding(d->tag, d);
     }
@@ -168,7 +166,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
     REP_ADD(cmd, "OK");
 
     list_TO_NUMLIST (buf,
-      &current.open_list, struct device, discuss.l, id);
+      &tag->discuss.open_list, struct device, discuss.l, id);
     REP_ADD(cmd, buf);
 
     REP_END(cmd);
@@ -179,8 +177,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
     REP_OK(cmd);
 
     current.discuss = NULL;
-    INIT_LIST_HEAD(&current.open_list);
-    current.openuser = 0;
+    INIT_LIST_HEAD(&tag->discuss.open_list);
+    tag->discuss.openuser = 0;
 
     SEND_TO_GROUP_ALL(cmd);
   }

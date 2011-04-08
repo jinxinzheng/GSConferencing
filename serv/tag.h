@@ -35,6 +35,12 @@ struct tag {
   pthread_mutex_t mut;
   pthread_cond_t  cnd_nonempty;
 
+  struct {
+    struct list_head open_list;
+    int maxuser;
+    int openuser;
+  } discuss;
+
   /* broadcast addresses, pointers to device.bcast.
    * support up to 64 */
   struct sockaddr_in *bcasts[64];

@@ -23,5 +23,6 @@ DECLARE(device);
 DECLARE(tag);
 DECLARE(vote);
 DECLARE(discuss);
+DECLARE(video);
 
 #endif

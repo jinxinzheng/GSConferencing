@@ -203,7 +203,7 @@ int msgctrl_send(int idlist[], const char *msg);
 
 int videoctrl_query(__out char *vidlist);
 
-int videoctrl_select(int vid_num);
+int videoctrl_select(int vid_num, __out char *path);
 
 /* file transfer */
 

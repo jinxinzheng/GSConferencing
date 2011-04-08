@@ -755,7 +755,7 @@ int videoctrl_query(char *vidlist)
   return 0;
 }
 
-int videoctrl_select(int vid_num)
+int videoctrl_select(int vid_num, char *path)
 {
   BASICS;
 
@@ -763,7 +763,9 @@ int videoctrl_select(int vid_num)
 
   SEND_CMD();
 
-  FIND_OK(c);
+  i = FIND_OK(c);
+
+  strcpy(path, c.args[i+1]);
 
   return 0;
 }

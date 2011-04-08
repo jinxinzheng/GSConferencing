@@ -60,6 +60,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
   SUBCMD("select")
   {
     struct db_discuss *s;
+    int memberids[1024];
+    int nmembers=0;
+
     NEXT_ARG(p);
     i = atoi(p);
     if( i>=dbl )
@@ -69,17 +72,45 @@ int handle_cmd_discctrl(struct cmd *cmd)
     s = db[i];
 
     REP_ADD(cmd, "OK");
+
     REP_ADD(cmd, s->members);
+
+    /* get user names */
+    {
+      char tmp[2048];
+      struct db_device *dbd;
+      int mid;
+
+      strcpy(buf, s->members);
+      l = 0;
+      IDLIST_FOREACH_p(buf)
+      {
+        mid = atoi(p);
+        memberids[nmembers++] = mid;
+
+        if( dbd = md_find_device(mid) )
+        {
+          LIST_ADD(tmp, l, dbd->user_name);
+        }
+        else
+        {
+          LIST_ADD(tmp, l, "?");
+        }
+      }
+      LIST_END(tmp, l);
+
+      REP_ADD(cmd, tmp);
+    }
+
     REP_END(cmd);
 
     current.discuss = s;
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
 
-    strcpy(buf, s->members);
-    IDLIST_FOREACH_p(buf)
+    for( i=0 ; i<nmembers ; i++ )
     {
-      if (d = get_device(atoi(p)))
+      if (d = get_device(memberids[i]))
       {
         d->discuss.forbidden = 0;
         if( d->discuss.open )

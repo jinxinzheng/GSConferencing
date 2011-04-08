@@ -471,7 +471,7 @@ int discctrl_query(char *disclist)
   return 0;
 }
 
-int discctrl_select(int disc_num, int *idlist)
+int discctrl_select(int disc_num, int *idlist, char *users_list)
 {
   BASICS;
 
@@ -481,7 +481,9 @@ int discctrl_select(int disc_num, int *idlist)
 
   i = FIND_OK(c);
 
-  STR_TO_INT_LIST(c.args[i+1], idlist);
+  STR_TO_INT_LIST(c.args[++i], idlist);
+
+  strcpy(users_list, c.args[++i]);
 
   return 0;
 }

@@ -153,7 +153,7 @@ int discctrl_set_mode(int mode);
 
 int discctrl_query(__out char *disclist);
 
-int discctrl_select(int disc_num, __out int *idlist);
+int discctrl_select(int disc_num, __out int *idlist, __out char *users_list);
 
 /* open: 1 open, 0 close. */
 int discctrl_request(int open);

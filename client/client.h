@@ -37,6 +37,10 @@ enum {
   /* arg1, arg2: unused */
   EVENT_REGIST_STOP,
 
+  /* arg1: int, mode, enum DISCMODE_*
+   * arg2: unused */
+  EVENT_DISC_SETMODE,
+
   /* arg1: int, discussion number
    * arg2: unused */
   EVENT_DISC_OPEN,

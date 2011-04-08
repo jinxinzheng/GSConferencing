@@ -961,7 +961,13 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
   else if (STREQU(c.cmd, "discctrl"))
   {
     char *sub = c.args[i++];
-    if (STREQU(sub, "select"))
+    if( STREQU(sub, "setmode") )
+    {
+      int mode = atoi(c.args[i++]);
+      CHECKOK(c.args[i++]);
+      event_handler(EVENT_DISC_SETMODE, (void*)mode, NULL);
+    }
+    else if( STREQU(sub, "select") )
     {
       int dn = atoi(c.args[i++]);
       CHECKOK(c.args[i++]);

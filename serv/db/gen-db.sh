@@ -146,7 +146,7 @@ int db_add_"table"(struct db_"table" *data)\n\
   char sqlcmd[2048];\n\
 \n\
   sprintf(sqlcmd, \"insert into "table" \"\n\
-    \""addf"\"\n\
+    \"("addf")\"\n\
     \" values("addv");\",\n\
     "adds"\n\
     0/*no harm*/);\n\

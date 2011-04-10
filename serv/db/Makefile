@@ -1,5 +1,5 @@
 
-db.c: db.def
+db.c: db.def gen-db.sh
 	./gen-db.sh < $<
 
 clean:

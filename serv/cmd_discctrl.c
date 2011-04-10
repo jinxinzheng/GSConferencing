@@ -128,8 +128,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
   {
     int open;
 
-    if( !current.discuss )
-      return ERR_OTHER;
+    // allow test opening
+    //if( !current.discuss )
+    //  return ERR_OTHER;
 
     NEXT_ARG(p);
     open = atoi(p);

@@ -70,7 +70,7 @@ int main(int argc, char *const argv[])
   if (s)
   {
     discctrl_query(buf);
-    discctrl_select(0, idlist);
+    discctrl_select(0, idlist, buf);
     discctrl_request(1);
   }
 

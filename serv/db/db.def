@@ -13,19 +13,19 @@ i id
 s name 32
 
 table vote
-i id
+i id auto
 s name 32
 i type
 i options_count
 s members 1024
 
 table discuss
-i id
+i id auto
 s name 64
 s members 1024
 
 table video
-i id
+i id auto
 s name 64
 s path 260
 

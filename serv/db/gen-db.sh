@@ -56,6 +56,7 @@ $1=="table"{
   updates="";
   addf=""
   addv=""
+  adds=""
 }
 t&&$1=="i"{
   printf " int %s;\n", $2 >>hfile;
@@ -64,8 +65,12 @@ t&&$1=="i"{
   {
     updatef=updatef $2"=%d,";
     updates=updates "data->"$2",";
+  }
+  if( $3 != "auto" )
+  {
     addf=addf $2",";
     addv=addv "%d,";
+    adds=adds "data->"$2",";
   }
 }
 t&&$1=="s"{
@@ -75,6 +80,7 @@ t&&$1=="s"{
   updates=updates "data->"$2",";
   addf=addf $2",";
   addv=addv "'%s',";
+  adds=adds "data->"$2",";
 }
 t&&$1=="x"{
   # extra fields not in db
@@ -88,7 +94,6 @@ t&&/^$/{
   updatef=substr(updatef, 0, length(updatef)-1);
   addf=substr(addf,0,length(addf)-1);
   addv=substr(addv,0,length(addv)-1);
-  adds=updates;
 
   print "\
 int db_get_"table"(struct db_"table" *table)\n\

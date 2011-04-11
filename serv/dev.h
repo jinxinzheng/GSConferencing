@@ -48,6 +48,8 @@ struct group {
   } discuss;
 };
 
+struct db_device;
+
 struct device {
   long id;
   /*unsigned long ip;
@@ -60,6 +62,8 @@ struct device {
   int mode;
   int privilege;
   int active :1;
+
+  struct db_device *db_data;
 
   int hbeat;
 

@@ -79,7 +79,11 @@ int dev_register(struct device *dev)
       md_add_device(&tmp);
 
       tid = tmp.tagid;
+
+      dbd = md_find_device(dev->id);
     }
+
+    dev->db_data = dbd;
   }
 
   /* tag unique id */

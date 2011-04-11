@@ -79,7 +79,7 @@ int handle_cmd_regist(struct cmd *cmd)
       return ERR_OTHER;
     }
 
-    if( !(dd=md_find_device(d->id)) )
+    if( !(dd = d->db_data) )
     {
       return ERR_OTHER;
     }

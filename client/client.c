@@ -404,6 +404,19 @@ int sub(int tag)
   return 0;
 }
 
+int switch_tag(int tag)
+{
+  BASICS;
+
+  l = sprintf(buf, "%d %s %d\n", id, __func__, tag);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  return 0;
+}
+
 
 SIMPLE_CMD_i(regist, start, mode);
 

@@ -11,6 +11,7 @@ static struct cmd_handler_entry cmdhandlers[] = {
   CMD_HANDLER_INIT(debug),
   CMD_HANDLER_INIT(reg),
   CMD_HANDLER_INIT(sub),
+  CMD_HANDLER_INIT(switch_tag),
   CMD_HANDLER_INIT(regist),
   CMD_HANDLER_INIT(discctrl),
   CMD_HANDLER_INIT(votectrl),

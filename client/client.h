@@ -119,6 +119,9 @@ int synctime();
  * pass 0 to channel if unsubscribing. */
 int sub(int channel);
 
+/* switch to another channel/tag */
+int switch_tag(int tag);
+
 /* data casting */
 
 /* fill audio in the buffer returned by send_audio_start(),

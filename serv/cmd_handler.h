@@ -84,19 +84,36 @@ do { \
   if (!(d = get_device((cmd)->device_id))) \
     return ERR_NOT_REG;
 
+static inline void send_to_group_all(struct cmd *cmd, struct group *g)
+{
+  struct device *d;
+  struct list_head *e;
+
+  list_for_each(e, &g->device_head)
+  {
+    d = list_entry(e, struct device, list);
+    sendto_dev_tcp(cmd->rep, cmd->rl, d);
+  }
+}
+
 #define SEND_TO_GROUP_ALL(cmd) \
 do { \
-  struct group *_g; \
   struct device *_d; \
-  struct list_head *_t; \
   THIS_DEVICE(cmd, _d); \
-  _g = _d->group; \
-  list_for_each(_t, &_g->device_head) \
-  { \
-    _d = list_entry(_t, struct device, list); \
-    sendto_dev_tcp((cmd)->rep, (cmd)->rl, _d); \
-  } \
+  send_to_group_all(cmd, _d->group); \
 } while(0)
+
+static inline void send_to_tag_all(struct cmd *cmd, struct tag *t)
+{
+  struct device *d;
+  struct list_head *e;
+
+  list_for_each(e, &t->device_head)
+  {
+    d = list_entry(e, struct device, tlist);
+    sendto_dev_tcp(cmd->rep, cmd->rl, d);
+  }
+}
 
 /* char *p must be defined before using this.
  * idlist is modified during iteration.
@@ -107,13 +124,20 @@ do { \
     p; \
     p = strtok(NULL, ","))
 
-#define SEND_TO_IDLIST(cmd, idlist) \
-  IDLIST_FOREACH_p(idlist) \
-  { \
-    struct device *_d; \
-    if (_d = get_device(atoi(p))) \
-      sendto_dev_tcp(cmd->rep, cmd->rl, _d); \
+static inline void send_to_idlist(struct cmd *cmd, char *idlist)
+{
+  char *p;
+  struct device *d;
+
+  IDLIST_FOREACH_p(idlist)
+  {
+    if( d = get_device(atoi(p)) )
+      sendto_dev_tcp(cmd->rep, cmd->rl, d);
   }
+}
+
+#define SEND_TO_IDLIST(cmd, idlist) \
+  send_to_idlist(cmd, idlist)
 
 #define MAKE_STRLIST(buf, parr, arrlen, member) \
 do { \

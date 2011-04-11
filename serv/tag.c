@@ -6,6 +6,7 @@
 #include "pcm.h"
 #include "include/pack.h"
 #include "include/debug.h"
+#include "include/types.h"
 
 struct tag *tag_create(long gid, long tid)
 {
@@ -36,6 +37,7 @@ struct tag *tag_create(long gid, long tid)
   pthread_cond_init(&t->cnd_nonempty, NULL);
 
   INIT_LIST_HEAD(&t->discuss.open_list);
+  t->discuss.mode = t->id==1? DISCMODE_AUTO:DISCMODE_FIFO;
   t->discuss.maxuser = t->id==1? 1:8; /* todo: move this hard-code to db */
   t->discuss.openuser = 0;
 

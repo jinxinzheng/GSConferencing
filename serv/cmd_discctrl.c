@@ -38,11 +38,11 @@ int handle_cmd_discctrl(struct cmd *cmd)
     NEXT_ARG(p);
     i = atoi(p);
 
-    d->group->discuss.mode = i;
+    d->tag->discuss.mode = i;
 
     REP_OK(cmd);
 
-    SEND_TO_GROUP_ALL(cmd);
+    send_to_tag_all(cmd, d->tag);
   }
 
   SUBCMD("query")
@@ -153,7 +153,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
       {
         /* opened users reached max count.
          * need to find out a way to handle. */
-        if( d->group->discuss.mode == DISCMODE_FIFO )
+        if( d->tag->discuss.mode == DISCMODE_FIFO )
         {
           struct list_head *t = tag->discuss.open_list.next;
           struct device *kick = list_entry(t, struct device, discuss.l);

@@ -37,6 +37,7 @@ struct tag {
   pthread_cond_t  cnd_nonempty;
 
   struct {
+    int mode;
     struct list_head open_list;
     int maxuser;
     int openuser;

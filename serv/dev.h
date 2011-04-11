@@ -43,7 +43,6 @@ struct group {
   struct device *chairman;
 
   struct {
-    int mode;
     int disabled;
   } discuss;
 };

@@ -60,6 +60,9 @@ int handle_cmd_debug(struct cmd *cmd)
         REP_PRF(cmd, "\n%d", (int)d->id);
         REP_PRF(cmd, "\n addr=%s:%d", inet_ntoa(d->addr.sin_addr), ntohs(d->addr.sin_port));
         REP_PRF(cmd, "\n tag=%d", (int)d->tag->id);
+        REP_PRF(cmd, "\n sub [0]=%d, [1]=%d",
+          d->subscription[0]? (int)d->subscription[0]->id : 0,
+          d->subscription[1]? (int)d->subscription[1]->id : 0 );
       }
     }
     else

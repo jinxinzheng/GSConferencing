@@ -80,9 +80,9 @@ struct device {
 
 
   /* used for cast. currently supports only one tag */
-  struct tag *subscription;
+  struct tag *subscription[MAX_SUB];
 
-  struct list_head subscribe;
+  struct list_head subscribe[MAX_SUB];
 
   /* ID hash table linkage. */
   struct device *hash_next;

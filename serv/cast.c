@@ -39,7 +39,7 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
 {
   struct device *d;
   struct list_head *p, *h;
-  h = &t->subscribe_head;
+  int i;
 
   {
     pack_data *pd = (pack_data *)pack->data;
@@ -54,16 +54,21 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
     return;
   }
 
-  list_for_each(p, h)
+  for( i=0 ; i<MAX_SUB ; i++ )
   {
-    d = list_entry(p, struct device, subscribe);
+    h = &t->subscribe_head[i];
 
-    /* don't send back to the original sender.
-     * this could help to reduce network load. */
-    if (d == pack->dev)
-      continue;
+    list_for_each(p, h)
+    {
+      d = list_entry(p, struct device, subscribe[i]);
 
-    sendto_dev_udp(t->sock, pack->data, pack->len, d);
+      /* don't send back to the original sender.
+       * this could help to reduce network load. */
+      if (d == pack->dev)
+        continue;
+
+      sendto_dev_udp(t->sock, pack->data, pack->len, d);
+    }
   }
 }
 
@@ -117,20 +122,43 @@ void *tag_run_casting(void *tag)
 /* subscribe packets got from the tag */
 int dev_subscribe(struct device *dev, struct tag *tag)
 {
-  if (dev->subscription)
-    list_move(&dev->subscribe, &tag->subscribe_head);
-  else
-    list_add(&dev->subscribe, &tag->subscribe_head);
+  int i;
+  for( i=0 ; i<MAX_SUB ; i++ )
+  {
+    if( !dev->subscription[i] )
+    {
+      break;
+    }
+  }
+  if( i >= MAX_SUB )
+  {
+    /* replace the first sub if they are full */
+    i = 0;
+  }
 
-  dev->subscription = tag;
+  if( dev->subscription[i] )
+    list_move(&dev->subscribe[i], &tag->subscribe_head[i]);
+  else
+    list_add(&dev->subscribe[i], &tag->subscribe_head[i]);
+
+  dev->subscription[i] = tag;
 
   printf("device %ld subscribed to tag %ld\n", dev->id, tag->tid);
 
   return 0;
 }
 
-void dev_unsubscribe(struct device *dev)
+void dev_unsubscribe(struct device *d, struct tag *t)
 {
-  dev->subscription = NULL;
-  list_del(&dev->subscribe);
+  int i;
+
+  for( i=0 ; i<MAX_SUB ; i++ )
+  {
+    if( d->subscription[i] == t )
+    {
+      d->subscription[i] = NULL;
+      list_del(&d->subscribe[i]);
+      break;
+    }
+  }
 }

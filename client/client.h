@@ -115,9 +115,11 @@ void start_try_reg(const char *passwd);
 /* synchronize local time with the server */
 int synctime();
 
-/* subscribe to a channel/tag.
- * pass 0 to channel if unsubscribing. */
-int sub(int channel);
+/* subscribe to a channel/tag. */
+int sub(int tag);
+
+/* unsubscribe a tag */
+int unsub(int tag);
 
 /* switch to another channel/tag */
 int switch_tag(int tag);

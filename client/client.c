@@ -19,7 +19,8 @@ static int devtype;
 static struct sockaddr_in servAddr;
 static int listenPort;
 
-static int subscription = 0;
+static int subscription[2] = {0};
+
 static event_cb event_handler;
 
 static char br_addr[32];
@@ -176,7 +177,7 @@ static void udp_recved(char *buf, int len)
   struct pack *qitem;
 
   /* return immediately when we are not subscribed to any */
-  if (subscription == 0)
+  if (subscription[0] == 0 || subscription[1] == 0)
     return;
 
   qitem = (struct pack *)buf;
@@ -190,7 +191,8 @@ static void udp_recved(char *buf, int len)
   //  return;
 
   /* broadcasted packet needs to be checked by tag */
-  if (qitem->tag != subscription)
+  if( qitem->tag != subscription[0] ||
+      qitem->tag != subscription[1] )
     return;
 
   if (headlen(qitem)+qitem->datalen <= len)
@@ -360,7 +362,7 @@ int reg(const char *passwd)
 
 #define _POST_REG() \
   /*synctime();*/ \
-  subscription = 1;
+  subscription[0] = 1;
 
   _MAKE_REG();
 
@@ -395,11 +397,38 @@ int sub(int tag)
 {
   BASICS;
 
+  if( !subscription[0] )
+    i = 0;
+  else if( !subscription[1] )
+    i = 1;
+  else
+    return 1;
+
   l = sprintf(buf, "%d sub %d\n", id, tag);
 
   SEND_CMD();
 
-  subscription = tag;
+  subscription[i] = tag;
+
+  return 0;
+}
+
+int unsub(int tag)
+{
+  BASICS;
+
+  if( subscription[0] == tag )
+    i = 0;
+  else if( !subscription[1] == tag )
+    i = 1;
+  else
+    return 1;
+
+  l = sprintf(buf, "%d sub -%d\n", id, tag);
+
+  SEND_CMD();
+
+  subscription[i] = 0;
 
   return 0;
 }

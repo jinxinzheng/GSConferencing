@@ -27,6 +27,7 @@ int dev_register(struct device *dev)
   struct group *g;
   struct tag *t;
   long long tuid;
+  int i;
 
   struct device *d;
 
@@ -110,8 +111,12 @@ int dev_register(struct device *dev)
 
   dev->group = g;
   dev->tag = t;
-  dev->subscription = NULL;
-  INIT_LIST_HEAD(&dev->subscribe);
+
+  for( i=0 ; i<MAX_SUB ; i++ )
+  {
+    dev->subscription[i] = NULL;
+    INIT_LIST_HEAD(&dev->subscribe[i]);
+  }
 
   /* 32 elements of 4 bytes in fifo.
    * if the fifo sends faster than and lagged by other slow devs,
@@ -138,10 +143,15 @@ int dev_register(struct device *dev)
 int dev_unregister(struct device *dev)
 {
   struct tag *t;
+  int i;
 
-  if (dev->subscription)
+  for( i=0 ; i<MAX_SUB ; i++ )
   {
-    list_del(&dev->subscribe);
+    if( dev->subscription[i] )
+    {
+      list_del(&dev->subscribe[i]);
+      dev->subscription[i] = NULL;
+    }
   }
 
   if ((t = dev->tag) != NULL)

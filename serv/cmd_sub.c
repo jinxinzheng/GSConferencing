@@ -18,18 +18,32 @@ int handle_cmd_sub(struct cmd *cmd)
     struct tag *t;
     long tid, gid;
     long long tuid;
+    int unsub = 0;
 
     THIS_DEVICE(cmd, d);
 
     gid = d->group->id;
     tid = atoi(p);
+
+    if( tid == 0 )
+    {
+      return ERR_OTHER;
+    }
+
+    if( tid < 0 )
+    {
+      tid = -tid;
+      unsub = 1;
+    }
+
     tuid = TAGUID(gid, tid);
     t = get_tag(tuid);
 
     if (d) {
-      if (0 == tid)
+      if( unsub )
       {
-        dev_unsubscribe(d);
+        if( t )
+          dev_unsubscribe(d, t);
         break;
       }
 

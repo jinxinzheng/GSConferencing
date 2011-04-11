@@ -12,6 +12,7 @@ struct tag *tag_create(long gid, long tid)
   struct tag *t;
   pthread_t thread;
   long long tuid;
+  int i;
 
   tuid = TAGUID(gid, tid);
 
@@ -22,7 +23,11 @@ struct tag *tag_create(long gid, long tid)
   //t->name[0]=0;
 
   INIT_LIST_HEAD(&t->device_head);
-  INIT_LIST_HEAD(&t->subscribe_head);
+
+  for( i=0 ; i<MAX_SUB ; i++ )
+  {
+    INIT_LIST_HEAD(&t->subscribe_head[i]);
+  }
 
   //memset(t->mix_devs, 0, sizeof t->mix_devs);
   //t->mix_count = 0;

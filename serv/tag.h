@@ -6,6 +6,8 @@
 
 struct device;
 
+#define MAX_SUB 2
+
 struct tag {
   long tid;
   /*as tid is not unique, need to use group_id<<16 + tag_id as the unique id. */
@@ -19,8 +21,7 @@ struct tag {
   struct list_head device_head;
 
   /* see device.subscription */
-  //struct device *subscribe_head;
-  struct list_head subscribe_head;
+  struct list_head subscribe_head[MAX_SUB];
 
   /* ID hash table linkage. */
   struct tag *hash_next;

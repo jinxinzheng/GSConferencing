@@ -1,3 +1,10 @@
+create table state
+(
+ id int primary key,
+ name varchar(32),
+ value varchar(32)
+);
+
 create table tag
 (
 	id integer primary key,		--autoincrement field

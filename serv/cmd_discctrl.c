@@ -5,14 +5,10 @@
 #include "db/md.h"
 #include <include/types.h>
 #include <include/debug.h>
+#include "state.h"
 
 static struct db_discuss *db[1024];
 static int dbl = 0;
-static struct {
-  struct db_discuss *discuss;
-} current = {
-  0
-};
 
 int handle_cmd_discctrl(struct cmd *cmd)
 {
@@ -43,6 +39,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
     REP_OK(cmd);
 
     send_to_tag_all(cmd, d->tag);
+
+    set_state_int(STATE_DISC_MODE, i);
   }
 
   SUBCMD("query")
@@ -104,7 +102,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     REP_END(cmd);
 
-    current.discuss = s;
+    d->group->discuss.current = s;
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
 
@@ -122,6 +120,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
         sendto_dev_tcp(cmd->rep, cmd->rl, d);
       }
     }
+
+    set_state_int(STATE_DISC, 1);
+    set_state_int(STATE_DISC_ID, s->id);
   }
 
   SUBCMD("request")
@@ -194,7 +195,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   SUBCMD("status")
   {
-    if( !current.discuss )
+    if( !d->group->discuss.current )
       return ERR_OTHER;
 
     REP_ADD(cmd, "OK");
@@ -210,11 +211,13 @@ int handle_cmd_discctrl(struct cmd *cmd)
   {
     REP_OK(cmd);
 
-    current.discuss = NULL;
+    d->group->discuss.current = NULL;
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
 
     SEND_TO_GROUP_ALL(cmd);
+
+    set_state_int(STATE_DISC, 0);
   }
 
   SUBCMD("forbid")

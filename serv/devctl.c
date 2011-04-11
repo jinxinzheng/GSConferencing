@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include "cast.h"
 #include "db/md.h"
+#include "state.h"
 
 struct group *group_create(long gid)
 {
@@ -16,6 +17,12 @@ struct group *group_create(long gid)
   g->id = gid;
   INIT_LIST_HEAD(&g->device_head);
   add_group(g);
+
+  if( get_state_int(STATE_DISC) )
+  {
+    int i = get_state_int(STATE_DISC_ID);
+    g->discuss.current = md_find_discuss(i);
+  }
 
   printf("group %ld created\n", gid);
   return g;

@@ -30,6 +30,8 @@ enum {
 
 #include "tag.h"
 
+struct db_discuss;
+
 struct group {
   long id;
 
@@ -43,6 +45,7 @@ struct group {
   struct device *chairman;
 
   struct {
+    struct db_discuss *current;
     int disabled;
   } discuss;
 };

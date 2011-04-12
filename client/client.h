@@ -28,13 +28,19 @@ struct tag_info
   char name[32];
 };
 
+struct audio_data
+{
+  void *data;
+  int len;
+};
+
 /* event codes */
 
 enum {
   EVENT_NONE,
 
-  /* arg1: void*, audio data
-   * arg2: int, data length */
+  /* arg1: int, from which tag the audio was sent.
+   * arg2: struct audio_data*, audio data and length. */
   EVENT_AUDIO,
 
   /* arg1: unused

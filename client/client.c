@@ -232,9 +232,11 @@ static void *run_recv_udp(void *arg)
     /* generate event */
     if (qitem->type == PACKET_AUDIO)
     {
+      struct audio_data ad = { qitem->data, qitem->datalen };
+
       event_handler(EVENT_AUDIO,
-        (void*)qitem->data,
-        (void*)qitem->datalen);
+        (void*)(int)qitem->tag,
+        &ad);
     }
 
     //fprintf(stderr, "recv pack %d\n", qitem->seq);

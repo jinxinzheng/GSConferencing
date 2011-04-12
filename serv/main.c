@@ -34,6 +34,8 @@ int main(int argc, char *const argv[])
 
   init();
 
+  recover_server();
+
   start_heartbeat_god();
 
   start_listener_tcp();

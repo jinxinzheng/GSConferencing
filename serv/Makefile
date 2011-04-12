@@ -11,7 +11,7 @@ else
 sys = daya-sys
 endif
 
-SYS_OBJS=main.o opts.o cast.o packet.o devctl.o tag.o network.o sys.o hbeat.o pcm.o \
+SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o tag.o network.o sys.o hbeat.o pcm.o \
 	cmd_handler.o cmd_debug.o cmd_tag.o cmd_reg.o cmd_sub.o cmd_regist.o cmd_discctrl.o cmd_votectrl.o cmd_service.o cmd_msgctrl.o cmd_videoctrl.o cmd_filectrl.o cmd_synctime.o cmd_manage.o \
 	../sha/sha128.o \
 	../common/debug.o \

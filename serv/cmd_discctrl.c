@@ -9,10 +9,8 @@
 static struct db_discuss *db[1024];
 static int dbl = 0;
 
-static void add_open(struct tag *t, struct device *d)
+void add_open(struct tag *t, struct device *d)
 {
-  char buf[1024];
-
   list_add_tail(&d->discuss.l, &t->discuss.open_list);
   t->discuss.openuser ++;
 
@@ -24,10 +22,8 @@ static void add_open(struct tag *t, struct device *d)
   device_save(d);
 }
 
-static void del_open(struct tag *t, struct device *d)
+void del_open(struct tag *t, struct device *d)
 {
-  char buf[1024];
-
   list_del(&d->discuss.l);
   t->discuss.openuser --;
 

@@ -5,6 +5,7 @@
 #include "include/cksum.h"
 #include "../config.h"
 #include "db/md.h"
+#include "state.h"
 
 int handle_cmd_reg(struct cmd *cmd)
 {
@@ -74,10 +75,22 @@ int handle_cmd_reg(struct cmd *cmd)
     /* existing dev ok */
   }
 
-  l = 0;
-  LIST_ADD_FMT(buf, l, "user_name=%s", d->db_data->user_name);
-  LIST_ADD_FMT(buf, l, "tag=%d", d->db_data->tagid);
-  LIST_ADD_FMT(buf, l, "sub=%d+%d", d->db_data->sub1, d->db_data->sub2);
+  {
+    int disc = get_state_int(STATE_DISC);
+    int disc_mode = get_state_int(STATE_DISC_MODE);
+    int disc_id = disc ? get_state_int(STATE_DISC_ID) : 0;
+
+    struct db_device *dd = d->db_data;
+    struct db_discuss *dsc = md_find_discuss(disc_id);
+
+    l = 0;
+    LIST_ADD_FMT(buf, l, "user_name=%s", dd->user_name);
+    LIST_ADD_FMT(buf, l, "tag=%d", dd->tagid);
+    LIST_ADD_FMT(buf, l, "sub=%d+%d", dd->sub1, dd->sub2);
+    LIST_ADD_FMT(buf, l, "discuss_mode=%d", disc_mode);
+    LIST_ADD_FMT(buf, l, "discuss_name=%s", dsc? dsc->name:"0");
+    LIST_ADD_FMT(buf, l, "discuss_open=%d", dd->discuss_open);
+  }
 
   REP_ADD(cmd, "OK");
   REP_ADD(cmd, buf);

@@ -22,6 +22,9 @@ struct dev_info
   char user_name[64];
   int tag;  /* which tag it is in */
   int sub[2];  /* what tags does it subscribe */
+  int discuss_mode; /* discuss mode. (DISCMODE_) */
+  char discuss_name[64]; /* current discuss name. empty if no discuss. */
+  int discuss_open; /* 0/1, whether this client has opened mic. */
 };
 
 struct tag_info

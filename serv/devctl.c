@@ -80,7 +80,8 @@ int dev_register(struct device *dev)
         1, /* tagid */
         0,"?",1, /* user */
         1, /* online */
-        0,0 /* sub */
+        0,0, /* sub */
+        0 /* discuss_open */
       };
       strcpy(tmp.ip, ip);
 

@@ -23,6 +23,7 @@ create table device
        online int,
        sub1 int,
        sub2 int,
+       discuss_open int,
        foreign key (tagid) references tag(id)
 );
 

@@ -14,6 +14,7 @@ i user_gender
 i online
 i sub1
 i sub2
+i discuss_open
 
 table tag
 i id

@@ -398,6 +398,21 @@ static void parse_dev_info(char *str, struct dev_info *info)
       info->sub[0] = atoi(keyval[1]);
       info->sub[1] = atoi(p+1);
     }
+    else if( STREQU(keyval[0], "discuss_mode") )
+    {
+      info->discuss_mode = atoi(keyval[1]);
+    }
+    else if( STREQU(keyval[0], "discuss_name") )
+    {
+      if( STREQU(keyval[1], "0") )
+        info->discuss_name[0] = 0;
+      else
+        strcpy(info->discuss_name, keyval[1]);
+    }
+    else if( STREQU(keyval[0], "discuss_open") )
+    {
+      info->discuss_open = atoi(keyval[1]);
+    }
   }
 }
 

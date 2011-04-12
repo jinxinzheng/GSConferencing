@@ -20,6 +20,9 @@ static void add_open(struct tag *t, struct device *d)
   d->discuss.open = 1;
 
   tag_add_outstanding(t, d);
+
+  d->db_data->discuss_open = 1;
+  md_update_device(d->db_data);
 }
 
 static void del_open(struct tag *t, struct device *d)
@@ -32,6 +35,9 @@ static void del_open(struct tag *t, struct device *d)
   d->discuss.open = 0;
 
   tag_rm_outstanding(t, d);
+
+  d->db_data->discuss_open = 0;
+  md_update_device(d->db_data);
 }
 
 int handle_cmd_discctrl(struct cmd *cmd)

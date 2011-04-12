@@ -21,6 +21,9 @@ int handle_cmd_reg(struct cmd *cmd)
 
   int did = cmd->device_id;
 
+  char buf[1024];
+  int l;
+
   NEXT_ARG(p);
   type = atoi(p);
 
@@ -70,6 +73,13 @@ int handle_cmd_reg(struct cmd *cmd)
   {
     /* existing dev ok */
   }
+
+  l = 0;
+  LIST_ADD_FMT(buf, l, "user_name=%s", d->db_data->user_name);
+
+  REP_ADD(cmd, "OK");
+  REP_ADD(cmd, buf);
+  REP_END(cmd);
 
   return 0;
 }

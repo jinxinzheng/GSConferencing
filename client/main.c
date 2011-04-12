@@ -201,6 +201,8 @@ int main(int argc, char *const argv[])
   if (send_tcp(buf, len, &servAddr) <= 0)
     return 2;
 
+  printf("%s\n", buf);
+
   /* subscribe to tag */
 
   if (subscribe != 0)

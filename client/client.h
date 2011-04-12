@@ -16,6 +16,12 @@ typedef int (*event_cb)(int event, void *arg1, void *arg2);
 void set_event_callback(event_cb);
 
 
+struct dev_info
+{
+  int id;
+  char user_name[64];
+};
+
 struct tag_info
 {
   int id;
@@ -31,7 +37,9 @@ enum {
    * arg2: int, data length */
   EVENT_AUDIO,
 
-  /* arg1, arg2: unused */
+  /* arg1: unused
+   * arg2: struct dev_info*, device info. the pointer
+   *  is only valid until the event handler returns */
   EVENT_REG_OK,
 
   /* arg1, arg2: unused */
@@ -114,7 +122,7 @@ enum {
  * buffers for the __out params. */
 
 /* register client to the server */
-int reg(const char *passwd);
+int reg(const char *passwd, __out struct dev_info *info);
 /* asynchronous reg,
  * upon success an EVENT_REG_OK is generated. */
 void start_try_reg(const char *passwd);

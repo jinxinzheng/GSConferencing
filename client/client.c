@@ -367,9 +367,31 @@ static int str_split(char *s, char *sp[], const char *delim)
 }
 
 
-int reg(const char *passwd)
+static void parse_dev_info(char *str, struct dev_info *info)
+{
+  char *entries[1000];
+  char *keyval[4];
+  int i,l;
+
+  info->id = id;
+
+  l = str_split(str, entries, ",");
+
+  for( i=0 ; i<l ; i++ )
+  {
+    str_split(entries[i], keyval, "=");
+
+    if( STREQU(keyval[0], "user_name") )
+    {
+      strcpy(info->user_name, keyval[1]);
+    }
+  }
+}
+
+int reg(const char *passwd, struct dev_info *info)
 {
   BASICS;
+  char *p;
 
 #define _MAKE_REG() \
   l = sprintf(buf, "%d reg %d %s %d %s\n", id, devtype, passwd, listenPort, br_addr)
@@ -384,6 +406,12 @@ int reg(const char *passwd)
 
   _POST_REG();
 
+  i = FIND_OK(c);
+
+  p = c.args[i+1];
+
+  parse_dev_info(p, info);
+
   return 0;
 }
 
@@ -391,11 +419,22 @@ static void try_reg_end(char *reply)
 {
   int e;
   struct cmd c;
+  int i;
+  char *p;
+  struct dev_info info;
+
   if( (e = parse_cmd(reply, &c)) == 0 )
   {
     _POST_REG();
   }
-  event_handler(EVENT_REG_OK, (void *)e, NULL);
+
+  i = FIND_OK(c);
+
+  p = c.args[i+1];
+
+  parse_dev_info(p, &info);
+
+  event_handler(EVENT_REG_OK, (void *)e, &info);
 }
 
 void start_try_reg(const char *passwd)

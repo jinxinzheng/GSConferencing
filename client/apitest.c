@@ -28,6 +28,8 @@ int main(int argc, char *const argv[])
 
   int id=3;
 
+  struct dev_info dev;
+
   while ((opt = getopt(argc, argv, "srS:")) != -1) {
     switch (opt) {
       case 's':
@@ -48,7 +50,7 @@ int main(int argc, char *const argv[])
 
   set_event_callback(on_event);
 
-  reg("*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&");
+  reg("*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&", &dev);
 
 
   regist_start(0);

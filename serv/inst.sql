@@ -2,7 +2,7 @@ create table state
 (
  id int primary key,
  name varchar(32),
- value varchar(32)
+ value varchar(1024)
 );
 
 create table tag

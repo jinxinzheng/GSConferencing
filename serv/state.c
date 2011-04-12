@@ -11,29 +11,29 @@ state_defaults[] = {
   {NULL, NULL},
   {"discuss",       "0"},
   {"discuss_mode",  "0"},
-  {"discuss_id",    "0"}
+  {"discuss_id",    "0"},
+  {0}
 };
 
-const char *get_state_str(int item)
+static const char *get_state(int id)
 {
   struct db_state *st;
 
-  if( st = md_find_state(item) )
+  if( st = md_find_state(id) )
   {
     return st->value;
   }
   else
   {
-    /* return default value */
-    return state_defaults[item].value;
+    return NULL;
   }
 }
 
-void set_state_str(int item, const char *val)
+static void set_state(int id, const char *name, const char *val)
 {
   struct db_state *st;
 
-  if( st = md_find_state(item) )
+  if( st = md_find_state(id) )
   {
     strcpy(st->value, val);
     md_update_state(st);
@@ -41,14 +41,30 @@ void set_state_str(int item, const char *val)
   else
   {
     struct db_state tmp;
-    struct state_default *def = &state_defaults[item];
 
-    tmp.id = item;
-    strcpy(tmp.name, def->name);
+    tmp.id = id;
+    strcpy(tmp.name, name);
     strcpy(tmp.value, val);
 
     md_add_state(&tmp);
   }
+}
+
+const char *get_state_str(int item)
+{
+  const char *val = get_state(item);
+
+  if( val )
+    return val;
+  else
+    /* return default value */
+    return state_defaults[item].value;
+}
+
+void set_state_str(int item, const char *val)
+{
+  struct state_default *def = &state_defaults[item];
+  set_state(item, def->name, val);
 }
 
 int get_state_int(int item)
@@ -64,3 +80,19 @@ void set_state_int(int item, int val)
   set_state_str(item, a);
 }
 
+const char *get_tag_state(int tid, int item)
+{
+  int statid = (tid | (item << 24));
+
+  return get_state(statid);
+}
+
+void set_tag_state(int tid, int item, const char *val)
+{
+  int statid = (tid | (item << 24));
+  char name[32];
+
+  sprintf(name, "tag %d.%d", tid, item);
+
+  set_state(statid, name, val);
+}

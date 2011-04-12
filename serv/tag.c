@@ -8,6 +8,7 @@
 #include "include/debug.h"
 #include "include/types.h"
 #include "state.h"
+#include "sys.h"
 
 struct tag *tag_create(long gid, long tid)
 {
@@ -48,6 +49,30 @@ struct tag *tag_create(long gid, long tid)
   else
   {
     t->discuss.mode = DISCMODE_FIFO;
+  }
+
+  if( get_state_int(STATE_DISC) )
+  {
+    char tmp[1024];
+    char *p;
+    struct device *d;
+    const char *openlist;
+
+    openlist = get_tag_state(t->id, TAG_STATE_DISC_OPEN);
+    strcpy( tmp, openlist? openlist:"" );
+
+    for (
+        p = strtok(tmp, ",");
+        p;
+        p = strtok(NULL, ",") )
+    {
+      if( d = get_device(atoi(p)) )
+      {
+        list_add_tail(&d->discuss.l, &t->discuss.open_list);
+        t->discuss.openuser ++;
+        d->discuss.open = 1;
+      }
+    }
   }
 
   //t->bcast_size = 0;

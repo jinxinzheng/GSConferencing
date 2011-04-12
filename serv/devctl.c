@@ -28,6 +28,18 @@ struct group *group_create(long gid)
   return g;
 }
 
+struct device *dev_create(long did)
+{
+  struct device *d;
+
+  d = (struct device *)malloc(sizeof (struct device));
+  memset(d, 0, sizeof (struct device));
+
+  d->id = did;
+
+  return d;
+}
+
 int dev_register(struct device *dev)
 {
   long gid, tid;
@@ -35,19 +47,6 @@ int dev_register(struct device *dev)
   struct tag *t;
   long long tuid;
   int i;
-
-  struct device *d;
-
-  if (d = get_device(dev->id))
-  {
-    /* this device has already been registered.
-     * this may be due to a reset of the device or some. */
-    printf("device %ld already registered, ignoring.\n", dev->id);
-    /* should update the properties of the device like the address */
-    d->addr = dev->addr;
-    d->fileaddr = d->fileaddr;
-    return 1;
-  }
 
   dev->active = 1;
 
@@ -93,6 +92,15 @@ int dev_register(struct device *dev)
 
     dev->db_data = dbd;
   }
+
+  if( get_device(dev->id) )
+  {
+    /* this device has already been registered.
+     * this may be due to a reset of the device or some. */
+    printf("device %ld already registered, ignoring.\n", dev->id);
+    return 1;
+  }
+
 
   /* tag unique id */
   tuid = TAGUID(gid, tid);

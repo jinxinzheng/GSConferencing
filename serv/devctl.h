@@ -5,6 +5,8 @@
 
 struct tag *tag_create(long gid, long tid);
 
+struct device *dev_create(long did);
+
 int dev_register(struct device *dev);
 
 int dev_unregister(struct device *dev);

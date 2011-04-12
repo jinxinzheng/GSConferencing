@@ -20,6 +20,8 @@ struct dev_info
 {
   int id;
   char user_name[64];
+  int tag;  /* which tag it is in */
+  int sub[2];  /* what tags does it subscribe */
 };
 
 struct tag_info

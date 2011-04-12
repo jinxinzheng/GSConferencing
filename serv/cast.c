@@ -8,6 +8,7 @@
 #include "packet.h"
 #include "include/pack.h"
 #include "include/debug.h"
+#include "db/md.h"
 
 /* packets sent by devices with the same tag will be queued together.
  * There will be as many queues as the number of existing tags.
@@ -144,6 +145,12 @@ int dev_subscribe(struct device *dev, struct tag *tag)
   dev->subscription[i] = tag;
 
   printf("device %ld subscribed to tag %ld\n", dev->id, tag->tid);
+
+  {
+    int *states[] = { &dev->db_data->sub1, &dev->db_data->sub2 };
+    *(states[i]) = tag->id;
+    md_update_device(dev->db_data);
+  }
 
   return 0;
 }

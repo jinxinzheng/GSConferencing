@@ -79,6 +79,7 @@ int dev_register(struct device *dev)
         port,
         1,
         0,"?",1,
+        0,0,
         1
       };
       strcpy(tmp.ip, ip);

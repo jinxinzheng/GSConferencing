@@ -387,6 +387,17 @@ static void parse_dev_info(char *str, struct dev_info *info)
     {
       strcpy(info->user_name, keyval[1]);
     }
+    else if( STREQU(keyval[0], "tag") )
+    {
+      info->tag = atoi(keyval[1]);
+    }
+    else if( STREQU(keyval[0], "sub") )
+    {
+      char *p = strchr(keyval[1], '+');
+      *p = 0;
+      info->sub[0] = atoi(keyval[1]);
+      info->sub[1] = atoi(p+1);
+    }
   }
 }
 

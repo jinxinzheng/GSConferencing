@@ -76,6 +76,8 @@ int handle_cmd_reg(struct cmd *cmd)
 
   l = 0;
   LIST_ADD_FMT(buf, l, "user_name=%s", d->db_data->user_name);
+  LIST_ADD_FMT(buf, l, "tag=%d", d->db_data->tagid);
+  LIST_ADD_FMT(buf, l, "sub=%d+%d", d->db_data->sub1, d->db_data->sub2);
 
   REP_ADD(cmd, "OK");
   REP_ADD(cmd, buf);

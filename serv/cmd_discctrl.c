@@ -10,6 +10,30 @@
 static struct db_discuss *db[1024];
 static int dbl = 0;
 
+static void add_open(struct tag *t, struct device *d)
+{
+  char buf[1024];
+
+  list_add_tail(&d->discuss.l, &t->discuss.open_list);
+  t->discuss.openuser ++;
+
+  d->discuss.open = 1;
+
+  tag_add_outstanding(t, d);
+}
+
+static void del_open(struct tag *t, struct device *d)
+{
+  char buf[1024];
+
+  list_del(&d->discuss.l);
+  t->discuss.openuser --;
+
+  d->discuss.open = 0;
+
+  tag_rm_outstanding(t, d);
+}
+
 int handle_cmd_discctrl(struct cmd *cmd)
 {
   char *subcmd, *p;
@@ -159,11 +183,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
           struct list_head *t = tag->discuss.open_list.next;
           struct device *kick = list_entry(t, struct device, discuss.l);
           /* kick one out */
-          list_del(t);
-          tag->discuss.openuser --;
-          kick->discuss.open = 0;
-
-          tag_rm_outstanding(kick->tag, kick);
+          del_open(tag, kick);
 
           /* notify the kicked user */
           l = sprintf(buf, "%d discctrl kick %d\n", (int)d->id, (int)kick->id);
@@ -176,21 +196,14 @@ int handle_cmd_discctrl(struct cmd *cmd)
         }
       }
 
-      list_add_tail(&d->discuss.l, &tag->discuss.open_list);
-      tag->discuss.openuser ++;
-
-      tag_add_outstanding(d->tag, d);
+      add_open(tag, d);
     }
     else /* closing */
     {
       /* remove it from the open users list */
-      list_del(&d->discuss.l);
-      tag->discuss.openuser --;
-
-      tag_rm_outstanding(d->tag, d);
+      del_open(tag, d);
     }
 
-    d->discuss.open = open;
   }
 
   SUBCMD("status")

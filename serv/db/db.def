@@ -1,7 +1,7 @@
 table state
 i id
 s name 32
-s value 1024
+s value 32
 
 table device
 i id

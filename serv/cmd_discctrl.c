@@ -20,10 +20,6 @@ static void add_open(struct tag *t, struct device *d)
   d->discuss.open = 1;
 
   tag_add_outstanding(t, d);
-
-  list_TO_NUMLIST (buf,
-      &t->discuss.open_list, struct device, discuss.l, id);
-  set_tag_state(t->id, TAG_STATE_DISC_OPEN, buf);
 }
 
 static void del_open(struct tag *t, struct device *d)
@@ -36,10 +32,6 @@ static void del_open(struct tag *t, struct device *d)
   d->discuss.open = 0;
 
   tag_rm_outstanding(t, d);
-
-  list_TO_NUMLIST (buf,
-      &t->discuss.open_list, struct device, discuss.l, id);
-  set_tag_state(t->id, TAG_STATE_DISC_OPEN, buf);
 }
 
 int handle_cmd_discctrl(struct cmd *cmd)

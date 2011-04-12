@@ -1,6 +1,13 @@
+CFLAGS = -I.. -I../..
 
-db.c: db.def gen-db.sh
+all: db.o md.o
+
+db.c: db.h
+
+db.h: db.def
 	./gen-db.sh < $<
 
+md.o: md.c md.h db.h
+
 clean:
-	rm -f *.o
+	rm -f *.o db.c db.h

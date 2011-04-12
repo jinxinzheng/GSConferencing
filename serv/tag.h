@@ -10,7 +10,7 @@ struct device;
 
 struct tag {
   long tid;
-  /*as tid is not unique, need to use group_id<<16 + tag_id as the unique id. */
+  /*as tid is not unique, need to use group_id<<32 + tag_id as the unique id. */
   long long id;
   char name[64];
 

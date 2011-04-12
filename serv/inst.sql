@@ -1,8 +1,9 @@
-create table state
+create table 'group'
 (
  id int primary key,
  name varchar(32),
- value varchar(32)
+ discuss_mode int,
+ discuss_id int
 );
 
 create table tag
@@ -44,7 +45,8 @@ create table discuss
 );
 
 
---some test data.
+insert into 'group' (id, name, discuss_mode, discuss_id)
+values (1, 'default', 0, 0);
 
 insert into tag(name) values('Original');
 insert into tag(name) values('Chinese');

@@ -5,7 +5,6 @@
 #include "db/md.h"
 #include <include/types.h>
 #include <include/debug.h>
-#include "state.h"
 
 static struct db_discuss *db[1024];
 static int dbl = 0;
@@ -70,7 +69,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     send_to_tag_all(cmd, d->tag);
 
-    set_state_int(STATE_DISC_MODE, i);
+    d->group->db_data->discuss_mode = i;
+    group_save(d->group);
   }
 
   SUBCMD("query")
@@ -151,8 +151,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
       }
     }
 
-    set_state_int(STATE_DISC, 1);
-    set_state_int(STATE_DISC_ID, s->id);
+    d->group->db_data->discuss_id = s->id;
+    group_save(d->group);
   }
 
   SUBCMD("request")
@@ -236,7 +236,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     SEND_TO_GROUP_ALL(cmd);
 
-    set_state_int(STATE_DISC, 0);
+    d->group->db_data->discuss_id = 0;
+    group_save(d->group);
   }
 
   SUBCMD("forbid")

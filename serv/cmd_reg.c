@@ -5,7 +5,6 @@
 #include "include/cksum.h"
 #include "../config.h"
 #include "db/md.h"
-#include "state.h"
 
 int handle_cmd_reg(struct cmd *cmd)
 {
@@ -76,9 +75,9 @@ int handle_cmd_reg(struct cmd *cmd)
   }
 
   {
-    int disc = get_state_int(STATE_DISC);
-    int disc_mode = get_state_int(STATE_DISC_MODE);
-    int disc_id = disc ? get_state_int(STATE_DISC_ID) : 0;
+    struct group *g = d->group;
+    int disc_mode = g->db_data->discuss_mode;
+    int disc_id = g->db_data->discuss_id;
 
     struct db_device *dd = d->db_data;
     struct db_discuss *dsc = md_find_discuss(disc_id);

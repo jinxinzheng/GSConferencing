@@ -5,11 +5,21 @@
 #include <arpa/inet.h>
 #include "cast.h"
 #include "db/md.h"
-#include "state.h"
 
 struct group *group_create(long gid)
 {
   struct group *g;
+  struct db_group *dg;
+
+  if( dg = md_find_group(gid) )
+  {
+    /* any update? */
+  }
+  else
+  {
+    /* todo: insert new group in db. */
+    return NULL;
+  }
 
   g = (struct group *)malloc(sizeof (struct group));
   memset(g, 0, sizeof(struct group));
@@ -18,14 +28,20 @@ struct group *group_create(long gid)
   INIT_LIST_HEAD(&g->device_head);
   add_group(g);
 
-  if( get_state_int(STATE_DISC) )
+  g->db_data = dg;
+
+  if( dg->discuss_id )
   {
-    int i = get_state_int(STATE_DISC_ID);
-    g->discuss.current = md_find_discuss(i);
+    g->discuss.current = md_find_discuss(dg->discuss_id);
   }
 
   printf("group %ld created\n", gid);
   return g;
+}
+
+void group_save(struct group *g)
+{
+  md_update_group(g->db_data);
 }
 
 struct device *dev_create(long did)

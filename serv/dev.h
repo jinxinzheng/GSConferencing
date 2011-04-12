@@ -30,10 +30,13 @@ enum {
 
 #include "tag.h"
 
+struct db_group;
 struct db_discuss;
 
 struct group {
   long id;
+
+  struct db_group *db_data;
 
   //struct device *device_head;
   struct list_head device_head;

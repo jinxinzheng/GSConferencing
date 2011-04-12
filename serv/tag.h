@@ -51,6 +51,8 @@ struct tag {
 
 #define TAGUID(gid,tid) (((long long)gid<<32) ^ tid)
 
+#define TAG_GETGID(tag) ( (long)(((tag->id)>>32)&0xffffffff) )
+
 struct tag *tag_create(long gid, long tid);
 
 struct packet;

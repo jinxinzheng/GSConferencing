@@ -1,7 +1,8 @@
-table state
+table group
 i id
 s name 32
-s value 32
+i discuss_mode
+i discuss_id
 
 table device
 i id

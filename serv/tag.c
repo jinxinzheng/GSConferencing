@@ -7,7 +7,8 @@
 #include "include/pack.h"
 #include "include/debug.h"
 #include "include/types.h"
-#include "state.h"
+#include "sys.h"
+#include "db/md.h"
 
 struct tag *tag_create(long gid, long tid)
 {
@@ -43,7 +44,8 @@ struct tag *tag_create(long gid, long tid)
 
   if( t->id == 1 )
   {
-    t->discuss.mode = get_state_int(STATE_DISC_MODE);
+    struct group *g = get_group(gid);
+    t->discuss.mode = g->db_data->discuss_mode;
   }
   else
   {

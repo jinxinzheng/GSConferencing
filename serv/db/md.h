@@ -19,7 +19,7 @@ int md_add_##type(struct db_##type *p);            \
 int md_del_##type(int id);                         \
 int md_update_##type(struct db_##type *p);         \
 
-DECLARE(state);
+DECLARE(group);
 DECLARE(device);
 DECLARE(tag);
 DECLARE(vote);

@@ -51,27 +51,22 @@ do { \
   (cmd)->rl += 4; \
 } while(0)
 
-#define LIST_ADD(str, l, a) \
+
+#define LIST_ADD_FMT(str, l, fmt, a...) \
 do { \
-  int _j = strlen(a); \
-  strncpy((str)+(l), (a), _j); \
-  (l) += _j; \
-  (str)[(l)++] = ','; \
+  if( l == 0 ) \
+    l += sprintf((str)+(l), fmt, ##a); \
+  else \
+    l += sprintf((str)+(l), "," fmt, ##a); \
 } while(0)
+
+#define LIST_ADD(str, l, a) \
+  LIST_ADD_FMT(str, l, "%s", a)
 
 #define LIST_ADD_NUM(str, l, n) \
-do { \
-  (l) += sprintf((str)+(l), "%d", (n)); \
-  (str)[(l)++] = ','; \
-} while(0)
+  LIST_ADD_FMT(str, l, "%d", n)
 
-/*remove the trailing ',' if necessary */
-#define LIST_END(str,l) \
-do { \
-  if ((l) > 0) \
-    l--; \
-  str[l] = 0; \
-} while(0)
+#define LIST_END(str,l)
 
 
 #define NEXT_ARG(p) \

@@ -353,6 +353,20 @@ static void int_list_to_str(char *s, int list[])
   s[l>0? l-1:0] = 0;
 }
 
+static int str_split(char *s, char *sp[], const char *delim)
+{
+  char *p;
+  int i;
+  i = 0;
+  p = strtok(s, delim);
+  while (p) {
+    sp[i++] = p;
+    p = strtok(NULL, delim);
+  }
+  return i;
+}
+
+
 int reg(const char *passwd)
 {
   BASICS;
@@ -391,6 +405,36 @@ void start_try_reg(const char *passwd)
   _MAKE_REG();
 
   start_try_send_tcp(buf, l, &servAddr, try_reg_end);
+}
+
+
+int get_tags(struct tag_info tags[], int *count)
+{
+  BASICS;
+  char *info;
+  char *sp[100];
+  char *te[10];
+
+  PRINTC("%s", __func__);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  info = c.args[i+1];
+
+  l = str_split(info, sp, ",");
+
+  for( i=0 ; i<l ; i++ )
+  {
+    str_split(sp[i], te, ":");
+    tags[i].id = atoi(te[0]);
+    strcpy(tags[i].name, te[1]);
+  }
+
+  *count = l;
+
+  return 0;
 }
 
 int sub(int tag)

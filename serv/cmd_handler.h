@@ -162,6 +162,7 @@ do { \
 
 int handle_cmd_debug(struct cmd *cmd);
 int handle_cmd_reg(struct cmd *cmd);
+int handle_cmd_get_tags(struct cmd *cmd);
 int handle_cmd_sub(struct cmd *cmd);
 int handle_cmd_switch_tag(struct cmd *cmd);
 int handle_cmd_regist(struct cmd *cmd);

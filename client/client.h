@@ -15,6 +15,13 @@ typedef int (*event_cb)(int event, void *arg1, void *arg2);
 
 void set_event_callback(event_cb);
 
+
+struct tag_info
+{
+  int id;
+  char name[32];
+};
+
 /* event codes */
 
 enum {
@@ -114,6 +121,9 @@ void start_try_reg(const char *passwd);
 
 /* synchronize local time with the server */
 int synctime();
+
+/* get all tag info */
+int get_tags(__out struct tag_info tags[], __out int *count);
 
 /* subscribe to a channel/tag. */
 int sub(int tag);

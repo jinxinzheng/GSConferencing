@@ -425,20 +425,25 @@ int reg(const char *passwd, struct dev_info *info)
   l = sprintf(buf, "%d reg %d %s %d %s\n", id, devtype, passwd, listenPort, br_addr)
 
 #define _POST_REG() \
+{ \
   /*synctime();*/ \
-  subscription[0] = 1;
+  subscription[0] = info->sub[0]; \
+  subscription[1] = info->sub[1]; \
+  if( subscription[0]==0 && subscription[1]==0 ) \
+    subscription[0] = 1; \
+}
 
   _MAKE_REG();
 
   SEND_CMD();
-
-  _POST_REG();
 
   i = FIND_OK(c);
 
   p = c.args[i+1];
 
   parse_dev_info(p, info);
+
+  _POST_REG();
 
   return 0;
 }
@@ -449,20 +454,21 @@ static void try_reg_end(char *reply)
   struct cmd c;
   int i;
   char *p;
-  struct dev_info info;
+  struct dev_info tmp, *info = &tmp;
 
   if( (e = parse_cmd(reply, &c)) == 0 )
   {
-    _POST_REG();
   }
 
   i = FIND_OK(c);
 
   p = c.args[i+1];
 
-  parse_dev_info(p, &info);
+  parse_dev_info(p, info);
 
-  event_handler(EVENT_REG_OK, (void *)e, &info);
+  _POST_REG();
+
+  event_handler(EVENT_REG_OK, (void *)e, info);
 }
 
 void start_try_reg(const char *passwd)

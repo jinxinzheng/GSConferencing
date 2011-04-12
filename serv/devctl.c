@@ -198,6 +198,11 @@ int dev_unregister(struct device *dev)
   }
 }
 
+void device_save(struct device *d)
+{
+  md_update_device(d->db_data);
+}
+
 /* down cast to device */
 int dev_control(struct device *dev, int ctl, void *params)
 {

@@ -72,7 +72,7 @@ int handle_cmd_switch_tag(struct cmd *cmd)
     if( dbd = d->db_data )
     {
       dbd->tagid = tid;
-      md_update_device(dbd);
+      device_save(d);
     }
   }
 

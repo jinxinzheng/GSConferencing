@@ -149,7 +149,7 @@ int dev_subscribe(struct device *dev, struct tag *tag)
   {
     int *states[] = { &dev->db_data->sub1, &dev->db_data->sub2 };
     *(states[i]) = tag->id;
-    md_update_device(dev->db_data);
+    device_save(dev);
   }
 
   return 0;

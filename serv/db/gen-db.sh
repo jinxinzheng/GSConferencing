@@ -106,7 +106,7 @@ int db_get_"table"(struct db_"table" *table)\n\
  sqlite_vm *vm;\n\
 \n\
  rows = 0;\n\
- strcpy(sqlcmd, \"select * from "table";\");\n\
+ strcpy(sqlcmd, \"select * from '"table"';\");\n\
  ret = sqlite_compile(db, sqlcmd, NULL, &vm, &errmsg);\n\
 \n\
  while (sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW)\n\
@@ -130,7 +130,7 @@ int db_update_"table"(struct db_"table" *data)\n\
  int ret;\n\
  char sqlcmd[2048];\n\
 \n\
- sprintf(sqlcmd, \"update "table" set \"\n\
+ sprintf(sqlcmd, \"update '"table"' set \"\n\
    \""updatef"\"\n\
    \" where id=%d;\",\n\
    "updates"\n\
@@ -150,7 +150,7 @@ int db_add_"table"(struct db_"table" *data)\n\
   int ret;\n\
   char sqlcmd[2048];\n\
 \n\
-  sprintf(sqlcmd, \"insert into "table" \"\n\
+  sprintf(sqlcmd, \"insert into '"table"' \"\n\
     \"("addf")\"\n\
     \" values("addv");\",\n\
     "adds"\n\
@@ -170,7 +170,7 @@ int db_del_"table"(int id)\n\
   int ret;\n\
   char sqlcmd[64];\n\
 \n\
-  sprintf(sqlcmd, \"delete from "table" where id=%d;\", id);\n\
+  sprintf(sqlcmd, \"delete from '"table"' where id=%d;\", id);\n\
 \n\
   ret = sqlite_exec(db, sqlcmd, NULL, NULL, &errmsg);\n\
 \n\

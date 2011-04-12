@@ -123,18 +123,30 @@ void *tag_run_casting(void *tag)
 /* subscribe packets got from the tag */
 int dev_subscribe(struct device *dev, struct tag *tag)
 {
+  int found = -1;
   int i;
   for( i=0 ; i<MAX_SUB ; i++ )
   {
+    if( dev->subscription[i] == tag )
+    {
+      return;
+    }
+    else
     if( !dev->subscription[i] )
     {
-      break;
+      /* the first empty place */
+      if( found < 0)
+        found = i;
     }
   }
-  if( i >= MAX_SUB )
+  if( found < 0 )
   {
     /* replace the first sub if they are full */
     i = 0;
+  }
+  else
+  {
+    i = found;
   }
 
   if( dev->subscription[i] )

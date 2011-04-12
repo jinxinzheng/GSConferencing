@@ -11,9 +11,9 @@ i tagid
 i user_card
 s user_name 64
 i user_gender
+i online
 i sub1
 i sub2
-x :int online;
 
 table tag
 i id

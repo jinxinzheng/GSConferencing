@@ -77,10 +77,10 @@ int dev_register(struct device *dev)
         dev->id,
         "",
         port,
-        1,
-        0,"?",1,
-        0,0,
-        1
+        1, /* tagid */
+        0,"?",1, /* user */
+        1, /* online */
+        0,0 /* sub */
       };
       strcpy(tmp.ip, ip);
 

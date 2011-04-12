@@ -10,7 +10,10 @@ void dev_heartbeat(struct device *d)
   {
     struct db_device *dbd;
     if( dbd = d->db_data )
+    {
       dbd->online = 1;
+      md_update_device(dbd);
+    }
     d->active = 1;
   }
 }
@@ -38,7 +41,10 @@ static void *run_heartbeat_god(void *arg)
         {
           struct db_device *dbd;
           if( dbd = d->db_data )
+          {
             dbd->online = 0;
+            md_update_device(dbd);
+          }
           d->active = 0;
           fprintf(stderr, "dev %d is dead\n", (int)d->id);
         }

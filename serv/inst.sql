@@ -20,6 +20,7 @@ create table device
        user_card int,
        user_name varchar(64),
        user_gender int,
+       online int,
        sub1 int,
        sub2 int,
        foreign key (tagid) references tag(id)

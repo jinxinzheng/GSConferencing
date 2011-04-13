@@ -127,7 +127,7 @@ void start_try_send_tcp(void *buf, int len, const struct sockaddr_in *addr, void
 {
   pthread_t thread;
   struct try_send_tcp_param_t *param =
-    (struct try_send_tcp_param_t *)malloc(sizeof(struct try_send_tcp_param_t) + len);
+    (struct try_send_tcp_param_t *)malloc(2048);
   memcpy(param->bytes, buf, len);
   param->buf = param->bytes;
   param->len = len;

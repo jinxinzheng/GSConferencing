@@ -7,14 +7,6 @@
 #include <netinet/in.h>
 #include "vote.h"
 
-enum {
-  DEVTYPE_NONE
-};
-
-enum {
-  MODE_NONE
-};
-
 /* the device linked list design:
  * (d for device, t for tag, g for group)
  *
@@ -28,30 +20,8 @@ enum {
  *
  * */
 
+#include "group.h"
 #include "tag.h"
-
-struct db_group;
-struct db_discuss;
-
-struct group {
-  long id;
-
-  struct db_group *db_data;
-
-  //struct device *device_head;
-  struct list_head device_head;
-
-  /* ID hash table linkage. */
-  struct group *hash_next;
-  struct group **hash_pprev;
-
-  struct device *chairman;
-
-  struct {
-    struct db_discuss *current;
-    int disabled;
-  } discuss;
-};
 
 struct db_device;
 

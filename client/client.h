@@ -19,12 +19,20 @@ void set_event_callback(event_cb);
 struct dev_info
 {
   int id;
-  char user_name[64];
+
+  char user_name[64]; /* user name of this client. */
+  int user_gender; /* 1:man, 0:woman. */
+
   int tag;  /* which tag it is in */
   int sub[2];  /* what tags does it subscribe */
+
   int discuss_mode; /* discuss mode. (DISCMODE_) */
   char discuss_name[64]; /* current discuss name. empty if no discuss. */
   int discuss_open; /* 0/1, whether this client has opened mic. */
+
+  int regist_start; /* 0/1, whether registration has started. */
+  int regist_mode; /* registration mode. (REGIST_) */
+  int regist_reg; /* 0/1, whether this client has done regist. */
 };
 
 struct tag_info

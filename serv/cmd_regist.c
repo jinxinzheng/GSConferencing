@@ -2,16 +2,6 @@
 #include "include/types.h"
 #include "db/md.h"
 
-static struct {
-  int start;
-  int mode;
-  int expect;
-  int arrive;
-}
-regist ={
-  0, 0, 0, 0,
-};
-
 int handle_cmd_regist(struct cmd *cmd)
 {
   char *subcmd;
@@ -19,11 +9,14 @@ int handle_cmd_regist(struct cmd *cmd)
 
   char buf[1024];
   struct device *d;
+  struct group *g;
   char *p;
   int i;
 
   /* require reg() before any cmd */
   THIS_DEVICE(cmd, d);
+
+  g = d->group;
 
   NEXT_ARG(subcmd);
 
@@ -32,11 +25,13 @@ int handle_cmd_regist(struct cmd *cmd)
   SUBCMD("start")
   {
     NEXT_ARG(p);
-    regist.mode = atoi(p);
 
-    regist.start = 1;
-    regist.expect = md_get_device_count();
-    regist.arrive = 0;
+    g->db_data->regist_start = 1;
+    g->db_data->regist_mode = atoi(p);
+    group_save(g);
+
+    g->regist.expect = md_get_device_count();
+    g->regist.arrive = 0;
 
     REP_OK(cmd);
 
@@ -45,7 +40,8 @@ int handle_cmd_regist(struct cmd *cmd)
 
   SUBCMD("stop")
   {
-    regist.start = 0;
+    g->db_data->regist_start = 0;
+    group_save(g);
 
     REP_OK(cmd);
 
@@ -55,8 +51,8 @@ int handle_cmd_regist(struct cmd *cmd)
   SUBCMD("status")
   {
     REP_ADD(cmd, "OK");
-    REP_ADD_NUM(cmd, regist.expect);
-    REP_ADD_NUM(cmd, regist.arrive);
+    REP_ADD_NUM(cmd, g->regist.expect);
+    REP_ADD_NUM(cmd, g->regist.arrive);
     REP_END(cmd);
   }
 
@@ -73,8 +69,8 @@ int handle_cmd_regist(struct cmd *cmd)
     NEXT_ARG(p);
     cid = atoi(p);
 
-    if( !regist.start ||
-        regist.mode != mode )
+    if( !g->db_data->regist_start ||
+         g->db_data->regist_mode != mode )
     {
       return ERR_OTHER;
     }
@@ -106,7 +102,9 @@ int handle_cmd_regist(struct cmd *cmd)
     REP_ADD_NUM(cmd, dd->user_gender);
     REP_END(cmd);
 
-    regist.arrive ++;
+    g->regist.arrive ++;
+
+    d->regist.reg = 1;
   }
 
   else return 2; /*sub cmd not found*/

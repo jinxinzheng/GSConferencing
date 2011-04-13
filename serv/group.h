@@ -26,6 +26,11 @@ struct group {
     struct db_discuss *current;
     int disabled;
   } discuss;
+
+  struct {
+    int expect;
+    int arrive;
+  } regist;
 };
 
 

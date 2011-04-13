@@ -86,6 +86,10 @@ struct device {
     int open;
     int forbidden;
   } discuss;
+
+  struct {
+    int reg;
+  } regist;
 };
 
 #endif

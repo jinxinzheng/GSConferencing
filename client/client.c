@@ -383,36 +383,47 @@ static void parse_dev_info(char *str, struct dev_info *info)
   {
     str_split(entries[i], keyval, "=");
 
-    if( STREQU(keyval[0], "user_name") )
-    {
-      strcpy(info->user_name, keyval[1]);
-    }
-    else if( STREQU(keyval[0], "tag") )
-    {
-      info->tag = atoi(keyval[1]);
-    }
-    else if( STREQU(keyval[0], "sub") )
+#define info_str(m) \
+    if( STREQU(keyval[0], #m) ) \
+    { \
+      strcpy(info->m, keyval[1]); \
+    } else
+
+#define info_int(m) \
+    if( STREQU(keyval[0], #m) ) \
+    { \
+      info->m = atoi(keyval[1]); \
+    } else
+
+    info_str(user_name)
+    info_int(user_gender)
+
+    info_int(tag)
+
+    if( STREQU(keyval[0], "sub") )
     {
       char *p = strchr(keyval[1], '+');
       *p = 0;
       info->sub[0] = atoi(keyval[1]);
       info->sub[1] = atoi(p+1);
-    }
-    else if( STREQU(keyval[0], "discuss_mode") )
-    {
-      info->discuss_mode = atoi(keyval[1]);
-    }
-    else if( STREQU(keyval[0], "discuss_name") )
+    } else
+
+    info_int(discuss_mode)
+
+    if( STREQU(keyval[0], "discuss_name") )
     {
       if( STREQU(keyval[1], "0") )
         info->discuss_name[0] = 0;
       else
         strcpy(info->discuss_name, keyval[1]);
-    }
-    else if( STREQU(keyval[0], "discuss_open") )
-    {
-      info->discuss_open = atoi(keyval[1]);
-    }
+    } else
+
+    info_int(discuss_open)
+
+    info_int(regist_start)
+    info_int(regist_mode)
+    info_int(regist_reg)
+    ;
   }
 }
 

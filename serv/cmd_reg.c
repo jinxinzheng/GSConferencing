@@ -6,6 +6,28 @@
 #include "../config.h"
 #include "db/md.h"
 
+static void get_client_info(char *info, const struct device *d)
+{
+  int l = 0;
+  struct group *g = d->group;
+  struct db_device *dd = d->db_data;
+  struct db_group *dg = g->db_data;
+
+  int disc_id = dg->discuss_id;
+  struct db_discuss *dsc = md_find_discuss(disc_id);
+
+  LIST_ADD_FMT(info, l, "user_name=%s", dd->user_name);
+  LIST_ADD_FMT(info, l, "user_gender=%d", dd->user_gender);
+  LIST_ADD_FMT(info, l, "tag=%d", dd->tagid);
+  LIST_ADD_FMT(info, l, "sub=%d+%d", dd->sub1, dd->sub2);
+  LIST_ADD_FMT(info, l, "discuss_mode=%d", dg->discuss_mode);
+  LIST_ADD_FMT(info, l, "discuss_name=%s", dsc? dsc->name:"0");
+  LIST_ADD_FMT(info, l, "discuss_open=%d", dd->discuss_open);
+  LIST_ADD_FMT(info, l, "regist_start=%d", dg->regist_start);
+  LIST_ADD_FMT(info, l, "regist_mode=%d", dg->regist_mode);
+  LIST_ADD_FMT(info, l, "regist_reg=%d", d->regist.reg);
+}
+
 int handle_cmd_reg(struct cmd *cmd)
 {
   int a=0;
@@ -22,7 +44,6 @@ int handle_cmd_reg(struct cmd *cmd)
   int did = cmd->device_id;
 
   char buf[1024];
-  int l;
 
   NEXT_ARG(p);
   type = atoi(p);
@@ -76,22 +97,7 @@ int handle_cmd_reg(struct cmd *cmd)
     /* existing dev ok */
   }
 
-  {
-    struct group *g = d->group;
-    int disc_mode = g->db_data->discuss_mode;
-    int disc_id = g->db_data->discuss_id;
-
-    struct db_device *dd = d->db_data;
-    struct db_discuss *dsc = md_find_discuss(disc_id);
-
-    l = 0;
-    LIST_ADD_FMT(buf, l, "user_name=%s", dd->user_name);
-    LIST_ADD_FMT(buf, l, "tag=%d", dd->tagid);
-    LIST_ADD_FMT(buf, l, "sub=%d+%d", dd->sub1, dd->sub2);
-    LIST_ADD_FMT(buf, l, "discuss_mode=%d", disc_mode);
-    LIST_ADD_FMT(buf, l, "discuss_name=%s", dsc? dsc->name:"0");
-    LIST_ADD_FMT(buf, l, "discuss_open=%d", dd->discuss_open);
-  }
+  get_client_info(buf, d);
 
   REP_ADD(cmd, "OK");
   REP_ADD(cmd, buf);

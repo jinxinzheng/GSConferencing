@@ -1,10 +1,17 @@
-create table 'group'
+create table [group]
 (
- id int primary key,
+ id int,
  name varchar(32),
  discuss_mode int,
- discuss_id int
+ discuss_id int,
+ regist_start int,
+ regist_mode int,
+ primary key (id)
 );
+
+insert into [group] (id, name, discuss_mode, discuss_id, regist_start, regist_mode)
+values (1, 'default', 0, 0, 0, 0);
+
 
 create table tag
 (
@@ -44,9 +51,6 @@ create table discuss
 	members varchar(1024)
 );
 
-
-insert into 'group' (id, name, discuss_mode, discuss_id)
-values (1, 'default', 0, 0);
 
 insert into tag(name) values('Original');
 insert into tag(name) values('Chinese');

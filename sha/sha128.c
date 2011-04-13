@@ -5,7 +5,9 @@
 #include "sha128.h"
 
 //Whether machine is little-endian or not
+#ifndef LITTLE_ENDIAN
 #define LITTLE_ENDIAN
+#endif
 
 //THE SHA f() FUNCTION
 

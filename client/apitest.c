@@ -13,7 +13,7 @@ int on_event(int event, void *arg1, void *arg2)
     printf("file 'transfer' saved\n");
   }
   else
-    printf("e: %d, %s, %d\n", event, (char*)arg1, (int)arg2);
+    printf("e: %d, %p, %p\n", event, arg1, arg2);
 }
 
 int main(int argc, char *const argv[])
@@ -50,7 +50,8 @@ int main(int argc, char *const argv[])
 
   set_event_callback(on_event);
 
-  reg("*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&", &dev);
+  start_try_reg("*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&");
+  sleep(1);
 
 
   regist_start(0);

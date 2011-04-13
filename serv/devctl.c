@@ -56,24 +56,17 @@ struct device *dev_create(long did)
   return d;
 }
 
-int dev_register(struct device *dev)
+void dev_update_data(struct device *dev)
 {
-  long gid, tid;
-  struct group *g;
-  struct tag *t;
-  long long tuid;
-  int i;
 
   dev->active = 1;
 
-  /* update the device database and
-   * set up group, tag */
+  /* update the device database */
   {
     struct db_device *dbd;
     char *ip = inet_ntoa(dev->addr.sin_addr);
     int port = ntohs(dev->addr.sin_port);
 
-    gid = 1;
     if (dbd = md_find_device(dev->id))
     {
       dbd->online = 1;
@@ -84,8 +77,6 @@ int dev_register(struct device *dev)
 
         md_update_device(dbd);
       }
-
-      tid = dbd->tagid;
     }
     else
     {
@@ -103,13 +94,20 @@ int dev_register(struct device *dev)
 
       md_add_device(&tmp);
 
-      tid = tmp.tagid;
-
       dbd = md_find_device(dev->id);
     }
 
     dev->db_data = dbd;
   }
+}
+
+int dev_register(struct device *dev)
+{
+  long gid, tid;
+  struct group *g;
+  struct tag *t;
+  long long tuid;
+  int i;
 
   if( get_device(dev->id) )
   {
@@ -119,6 +117,8 @@ int dev_register(struct device *dev)
     return 1;
   }
 
+  gid = 1;
+  tid = dev->db_data->tagid;
 
   /* tag unique id */
   tuid = TAGUID(gid, tid);

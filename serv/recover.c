@@ -64,6 +64,7 @@ static void recover_devs()
     d = dev_create(dd->id);
 
     set_dev_from_data(d, dd);
+    d->db_data = dd;
 
     dev_register(d);
 

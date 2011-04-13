@@ -2,9 +2,9 @@ CFLAGS = -I.. -I../..
 
 all: db.o md.o
 
-db.c: db.h
+db.h: db.c
 
-db.h: db.def
+db.c: db.def
 	./gen-db.sh < $<
 
 md.o: md.c md.h db.h

@@ -20,18 +20,18 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o tag.o network.o sys.o 
 
 all: $(sys)
 
-$(sys): db $(SYS_OBJS)
+$(sys): $(SYS_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(SYS_OBJS)
 
-db:
+db/db.c: db/db.def
 	make -C db
 
-.depend: Makefile $(SRCS)
-	@$(CC) $(CFLAGS) -MM $(SRCS) >$@
+.depend: Makefile $(SRCS) db/db.c
+	$(CC) $(CFLAGS) -MM $(SRCS) >$@
 sinclude .depend
 
 clean:
-	rm -f *.o .depend $(sys) db/*.o
 	make -C db clean
+	rm -f *.o .depend $(sys) db/*.o
 
-.PHONY: db
+#.PHONY: db

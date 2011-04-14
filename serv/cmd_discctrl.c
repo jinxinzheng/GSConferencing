@@ -134,16 +134,15 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     for( i=0 ; i<nmembers ; i++ )
     {
-      if (d = get_device(memberids[i]))
+      struct device *m;
+      if (m = get_device(memberids[i]))
       {
-        d->discuss.forbidden = 0;
-        if( d->discuss.open )
+        m->discuss.forbidden = 0;
+        if( m->discuss.open )
         {
-          /* we may restart from a crash */
-          d->discuss.open = 0;
-          tag_rm_outstanding(d->tag, d);
+          del_open(m->tag, m);
         }
-        sendto_dev_tcp(cmd->rep, cmd->rl, d);
+        sendto_dev_tcp(cmd->rep, cmd->rl, m);
       }
     }
 

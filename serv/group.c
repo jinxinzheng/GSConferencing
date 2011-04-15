@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "group.h"
 #include "db/md.h"
+#include "vote.h"
 
 struct group *group_create(long gid)
 {
@@ -28,9 +29,23 @@ struct group *group_create(long gid)
 
   g->db_data = dg;
 
+  /* restore states from db */
+
   if( dg->discuss_id )
   {
     g->discuss.current = md_find_discuss(dg->discuss_id);
+  }
+
+  if( dg->vote_id )
+  {
+    struct db_vote *dv;
+    if( dv = md_find_vote(dg->vote_id) )
+    {
+      g->vote.current = dv;
+
+      g->vote.v = vote_new();
+      g->vote.v->cn_options = dv->options_count;
+    }
   }
 
   printf("group %ld created\n", gid);

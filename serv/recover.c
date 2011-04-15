@@ -1,6 +1,8 @@
 #include "db/md.h"
 #include "sys.h"
 #include "devctl.h"
+#include <string.h>
+#include "cmd_handler.h"
 
 static inline void set_dev_from_data(struct device *d, const struct db_device *data)
 {
@@ -50,6 +52,53 @@ static inline void restore_discuss(struct device *d)
   add_open(d->tag, d);
 }
 
+static inline void restore_vote(struct device *d)
+{
+  struct db_vote *dv = d->group->vote.current;
+  struct vote *v = d->group->vote.v;
+  struct db_device *dd = d->db_data;
+  int ismember = 0;
+
+  if( !dv )
+    return;
+
+  if( dd->vote_master )
+  {
+    d->vote.v = v;
+  }
+
+  if( strcmp(dv->members, "all")==0 )
+  {
+    ismember = 1;
+  }
+  else
+  {
+    char buf[1024];
+    char *p;
+
+    strcpy(buf, dv->members);
+
+    IDLIST_FOREACH_p(buf)
+    {
+      if( d->id == atoi(p) )
+      {
+        ismember=1;
+        break;
+      }
+    }
+  }
+
+  if( ismember )
+  {
+    vote_add_device(v, d);
+    d->vote.v = v;
+    ++ v->n_members;
+
+    d->vote.choice = dd->vote_choice;
+  }
+
+}
+
 /* recover all devices.
  * groups and tags will be
  * auto created on demand. */
@@ -72,6 +121,8 @@ static void recover_devs()
     restore_sub(d);
 
     restore_discuss(d);
+
+    restore_vote(d);
   }
 }
 

@@ -7,6 +7,15 @@
 #include "sys.h"
 #include "db/md.h"
 
+struct vote *vote_new()
+{
+  struct vote *v;
+
+  v = (struct vote *)malloc(sizeof (struct vote));
+  memset(v, 0, sizeof (struct vote));
+  INIT_LIST_HEAD(&v->device_head);
+}
+
 void vote_results_to_str( char *str, const struct vote *v )
 {
   /* results are separated by ',' */
@@ -104,9 +113,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     REP_END(cmd);
 
     /* create new vote */
-    v = (struct vote *)malloc(sizeof (struct vote));
-    memset(v, 0, sizeof (struct vote));
-    INIT_LIST_HEAD(&v->device_head);
+    v = vote_new(dv);
     v->cn_options = dv->options_count;
     v->n_members = 0;
 

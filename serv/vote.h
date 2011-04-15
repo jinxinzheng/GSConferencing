@@ -19,4 +19,6 @@ struct vote
 #define vote_add_device(v, d) \
   list_add_tail(&(d)->vote.l, &(v)->device_head)
 
+struct vote *vote_new();
+
 #endif

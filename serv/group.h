@@ -35,6 +35,7 @@ struct group {
 
   struct {
     struct db_vote *current;
+    struct vote *v; /* for recover use */
   } vote;
 };
 

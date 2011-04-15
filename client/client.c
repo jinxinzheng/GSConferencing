@@ -377,7 +377,7 @@ static void parse_dev_info(char *str, struct dev_info *info)
 
   info->id = id;
 
-  l = str_split(str, entries, ",");
+  l = str_split(str, entries, ":");
 
   for( i=0 ; i<l ; i++ )
   {
@@ -395,18 +395,18 @@ static void parse_dev_info(char *str, struct dev_info *info)
       info->m = atoi(keyval[1]); \
     } else
 
+#define info_int_list(m) \
+    if( STREQU(keyval[0], #m) ) \
+    { \
+      str_to_int_list(keyval[1], info->m); \
+    }
+
     info_str(user_name)
     info_int(user_gender)
 
     info_int(tag)
 
-    if( STREQU(keyval[0], "sub") )
-    {
-      char *p = strchr(keyval[1], '+');
-      *p = 0;
-      info->sub[0] = atoi(keyval[1]);
-      info->sub[1] = atoi(p+1);
-    } else
+    info_int_list(sub)
 
     info_int(discuss_mode)
 
@@ -433,7 +433,7 @@ static void parse_dev_info(char *str, struct dev_info *info)
     } else
     info_int(vote_type)
     info_int(vote_total)
-    //todo vote_results
+    info_int_list(vote_results)
     info_int(vote_choice)
     ;
   }

@@ -9,13 +9,13 @@
 
 void vote_results_to_str( char *str, const struct vote *v )
 {
-  /* results are separated by '+' */
+  /* results are separated by ',' */
 
   int i, l=0;
 
   for( i=0; i<v->cn_options; i++ )
   {
-    SEP_ADD(str, l, "+", "%d", v->results[i]);
+    LIST_ADD_NUM(str, l, v->results[i]);
   }
 }
 

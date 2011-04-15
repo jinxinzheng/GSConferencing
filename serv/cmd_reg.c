@@ -13,19 +13,28 @@ static void get_client_info(char *info, const struct device *d)
   struct db_device *dd = d->db_data;
   struct db_group *dg = g->db_data;
 
-  int disc_id = dg->discuss_id;
-  struct db_discuss *dsc = md_find_discuss(disc_id);
+  struct db_discuss *dsc = g->discuss.current;
+
+  struct db_vote *dvt = d->vote.v ? NULL : g->vote.current;
 
   LIST_ADD_FMT(info, l, "user_name=%s", dd->user_name);
   LIST_ADD_FMT(info, l, "user_gender=%d", dd->user_gender);
   LIST_ADD_FMT(info, l, "tag=%d", dd->tagid);
   LIST_ADD_FMT(info, l, "sub=%d+%d", dd->sub1, dd->sub2);
+
   LIST_ADD_FMT(info, l, "discuss_mode=%d", dg->discuss_mode);
   LIST_ADD_FMT(info, l, "discuss_name=%s", dsc? dsc->name:"0");
   LIST_ADD_FMT(info, l, "discuss_open=%d", dd->discuss_open);
+
   LIST_ADD_FMT(info, l, "regist_start=%d", dg->regist_start);
   LIST_ADD_FMT(info, l, "regist_mode=%d", dg->regist_mode);
   LIST_ADD_FMT(info, l, "regist_reg=%d", d->regist.reg);
+
+  LIST_ADD_FMT(info, l, "vote_name=%s", dvt? dvt->name:"0");
+  LIST_ADD_FMT(info, l, "vote_type=%d", dvt? dvt->type:0);
+  LIST_ADD_FMT(info, l, "vote_total=%d", d->vote.v? d->vote.v->n_members:0);
+  LIST_ADD_FMT(info, l, "vote_results=%s", dg->vote_results);
+  LIST_ADD_FMT(info, l, "vote_choice=%d", dd->vote_choice);
 }
 
 int handle_cmd_reg(struct cmd *cmd)

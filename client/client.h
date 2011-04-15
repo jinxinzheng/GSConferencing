@@ -33,6 +33,12 @@ struct dev_info
   int regist_start; /* 0/1, whether registration has started. */
   int regist_mode; /* registration mode. (REGIST_) */
   int regist_reg; /* 0/1, whether this client has done regist. */
+
+  char vote_name[64]; /* current vote name. empty if no vote. */
+  int vote_type; /* vote type. (VOTE_) */
+  int vote_total; /* total members count of vote. */
+  int vote_results[40]; /* vote results */
+  int vote_choice; /* choice of this client. -1 if not chosen. */
 };
 
 struct tag_info

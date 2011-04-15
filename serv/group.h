@@ -5,6 +5,7 @@
 
 struct db_group;
 struct db_discuss;
+struct db_vote;
 
 struct device;
 
@@ -31,6 +32,10 @@ struct group {
     int expect;
     int arrive;
   } regist;
+
+  struct {
+    struct db_vote *current;
+  } vote;
 };
 
 

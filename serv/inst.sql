@@ -6,11 +6,13 @@ create table [group]
  discuss_id int,
  regist_start int,
  regist_mode int,
+ vote_id int,
+ vote_results varchar(256),
  primary key (id)
 );
 
-insert into [group] (id, name, discuss_mode, discuss_id, regist_start, regist_mode)
-values (1, 'default', 0, 0, 0, 0);
+insert into [group] (id, name, discuss_mode, discuss_id, regist_start, regist_mode, vote_id, vote_results)
+values (1, 'default', 0, 0, 0, 0, 0, '0');
 
 
 create table tag
@@ -32,6 +34,8 @@ create table device
        sub1 int,
        sub2 int,
        discuss_open int,
+       vote_master int,
+       vote_choice int,
        foreign key (tagid) references tag(id)
 );
 

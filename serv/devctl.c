@@ -51,7 +51,9 @@ void dev_update_data(struct device *dev)
         0,"?",1, /* user */
         1, /* online */
         0,0, /* sub */
-        0 /* discuss_open */
+        0, /* discuss_open */
+        0, /* vote_master */
+        -1, /* vote_choice */
       };
       strcpy(tmp.ip, ip);
 

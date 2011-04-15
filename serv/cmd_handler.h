@@ -52,13 +52,16 @@ do { \
 } while(0)
 
 
-#define LIST_ADD_FMT(str, l, fmt, a...) \
+#define SEP_ADD(str, l, sep, fmt, a...) \
 do { \
   if( l == 0 ) \
     l += sprintf((str)+(l), fmt, ##a); \
   else \
-    l += sprintf((str)+(l), "," fmt, ##a); \
+    l += sprintf((str)+(l), sep fmt, ##a); \
 } while(0)
+
+#define LIST_ADD_FMT(str, l, fmt, a...) \
+  SEP_ADD(str, l, ",", fmt, ##a)
 
 #define LIST_ADD(str, l, a) \
   LIST_ADD_FMT(str, l, "%s", a)

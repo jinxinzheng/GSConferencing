@@ -423,6 +423,18 @@ static void parse_dev_info(char *str, struct dev_info *info)
     info_int(regist_start)
     info_int(regist_mode)
     info_int(regist_reg)
+
+    if( STREQU(keyval[0], "vote_name") )
+    {
+      if( STREQU(keyval[1], "0") )
+        info->vote_name[0] = 0;
+      else
+        strcpy(info->vote_name, keyval[1]);
+    } else
+    info_int(vote_type)
+    info_int(vote_total)
+    //todo vote_results
+    info_int(vote_choice)
     ;
   }
 }

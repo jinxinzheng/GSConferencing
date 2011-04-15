@@ -5,6 +5,8 @@ i discuss_mode
 i discuss_id
 i regist_start
 i regist_mode
+i vote_id
+s vote_results 256
 
 table device
 i id
@@ -18,6 +20,8 @@ i online
 i sub1
 i sub2
 i discuss_open
+i vote_master
+i vote_choice
 
 table tag
 i id

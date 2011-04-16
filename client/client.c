@@ -191,7 +191,7 @@ static void udp_recved(char *buf, int len)
   //  return;
 
   /* broadcasted packet needs to be checked by tag */
-  if( qitem->tag != subscription[0] ||
+  if( qitem->tag != subscription[0] &&
       qitem->tag != subscription[1] )
     return;
 

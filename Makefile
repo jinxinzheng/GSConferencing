@@ -22,4 +22,7 @@ serv:
 client:
 	$(MAKE) -C $@
 
+daya.tar:
+	git archive -o daya.tar --prefix daya/ HEAD
+
 .PHONY: $(SUBDIRS)

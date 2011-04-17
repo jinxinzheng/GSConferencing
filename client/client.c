@@ -307,11 +307,11 @@ int cmd##_##subcmd() \
   return 0; \
 }
 
-#define SIMPLE_CMD_i(cmd, subcmd, i) \
-int cmd##_##subcmd(int i) \
+#define SIMPLE_CMD_i(cmd, subcmd) \
+int cmd##_##subcmd(int arg) \
 { \
   BASICS; \
-  l = sprintf(buf, "%d " #cmd " " #subcmd " %d\n", id, i); \
+  l = sprintf(buf, "%d " #cmd " " #subcmd " %d\n", id, arg); \
   SEND_CMD(); \
   i = FIND_OK(c); \
   return 0; \
@@ -587,7 +587,7 @@ int switch_tag(int tag)
 }
 
 
-SIMPLE_CMD_i(regist, start, mode);
+SIMPLE_CMD_i(regist, start);
 
 SIMPLE_CMD(regist, stop);
 
@@ -749,6 +749,9 @@ int discctrl_disable_all(int flag)
 
   return 0;
 }
+
+
+SIMPLE_CMD_i(interp, set_mode);
 
 
 int votectrl_query(char *votelist)
@@ -1184,6 +1187,17 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
       int kid = atoi(c.args[i++]);
       if( id == kid )
         event_handler(EVENT_DISC_KICK, NULL, NULL);
+    }
+  }
+
+  else if (STREQU(c.cmd, "interp"))
+  {
+    char *sub = c.args[i++];
+    if( STREQU(sub, "set_mode") )
+    {
+      int mode = atoi(c.args[i++]);
+      CHECKOK(c.args[i++]);
+      event_handler(EVENT_INTERP_MODE, (void*)mode, NULL);
     }
   }
 

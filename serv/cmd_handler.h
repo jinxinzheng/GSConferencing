@@ -170,6 +170,7 @@ int handle_cmd_sub(struct cmd *cmd);
 int handle_cmd_switch_tag(struct cmd *cmd);
 int handle_cmd_regist(struct cmd *cmd);
 int handle_cmd_discctrl(struct cmd *cmd);
+int handle_cmd_interp(struct cmd *cmd);
 int handle_cmd_votectrl(struct cmd *cmd);
 int handle_cmd_servicecall(struct cmd *cmd);
 int handle_cmd_msgctrl(struct cmd *cmd);

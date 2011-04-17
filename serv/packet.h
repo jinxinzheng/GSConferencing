@@ -22,4 +22,6 @@ struct packet *pack_get_new();
 
 void pack_free(struct packet *p);
 
+struct packet *pack_dup(struct packet *p);
+
 #endif

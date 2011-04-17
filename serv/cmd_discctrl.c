@@ -20,6 +20,9 @@ void add_open(struct tag *t, struct device *d)
 
   d->db_data->discuss_open = 1;
   device_save(d);
+
+  /* update interp */
+  d->tag->interp.curr_dev = d;
 }
 
 void del_open(struct tag *t, struct device *d)
@@ -33,6 +36,9 @@ void del_open(struct tag *t, struct device *d)
 
   d->db_data->discuss_open = 0;
   device_save(d);
+
+  /* do we need to set interp curr_dev to null?
+   * no! we need it there to do the audio dup. */
 }
 
 int handle_cmd_discctrl(struct cmd *cmd)

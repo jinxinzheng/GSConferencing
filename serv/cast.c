@@ -7,6 +7,7 @@
 #include "opts.h"
 #include "packet.h"
 #include "include/pack.h"
+#include "include/types.h"
 #include "include/debug.h"
 #include "db/md.h"
 
@@ -31,6 +32,12 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
 
   /* enque packet to device's fifo */
   tag_in_dev_packet(t, dev, pack);
+
+  /* dup packet for interpreting */
+  if( !list_empty(&t->interp.dup_head) )
+  {
+    interp_dup_pack(t, pack);
+  }
 
   return 0;
 }
@@ -162,6 +169,13 @@ int dev_subscribe(struct device *dev, struct tag *tag)
     int *states[] = { &dev->db_data->sub1, &dev->db_data->sub2 };
     *(states[i]) = tag->id;
     device_save(dev);
+  }
+
+  /* update the interp dup */
+  if( dev->tag->interp.mode == INTERP_RE &&
+      dev->tag->interp.curr_dev == dev )
+  {
+    interp_add_dup_tag(dev->tag, tag);
   }
 
   return 0;

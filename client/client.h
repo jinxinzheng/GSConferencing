@@ -103,6 +103,10 @@ enum {
    * arg1, arg2: unused */
   EVENT_DISC_KICK,
 
+  /* interpreting mode change.
+   * arg1: int, mode (INTERP_*).
+   * arg2: unused. */
+  EVENT_INTERP_MODE,
 
   /* arg1: int, vote number
    * arg2: int, vote type VOTE_* */
@@ -216,6 +220,11 @@ int discctrl_forbid(int id);
 
 /* flag: 1 disable, 0 enable. */
 int discctrl_disable_all(int flag);
+
+/* interpreting control */
+
+/* mode: enum INTERP_* */
+int interp_set_mode(int mode);
 
 /* vote controling */
 

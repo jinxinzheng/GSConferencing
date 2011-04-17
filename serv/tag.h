@@ -43,6 +43,19 @@ struct tag {
     int openuser;
   } discuss;
 
+  struct {
+    int mode;
+    struct device *curr_dev;
+    /* dup tag list head. */
+    struct list_head dup_head;
+    /* dup tag */
+    struct tag *dup;
+    /* dup tag list member. */
+    struct list_head dup_l;
+    /* mutex to protect from cmd thread and cast thread. */
+    pthread_mutex_t mx;
+  } interp;
+
   /* broadcast addresses, pointers to device.bcast.
    * support up to 64 */
   struct sockaddr_in *bcasts[64];

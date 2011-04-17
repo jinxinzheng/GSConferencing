@@ -16,6 +16,13 @@ enum {
   DISCMODE_VOICE,
 };
 
+/* interpreting mode */
+enum {
+  INTERP_NO,
+  INTERP_OR,
+  INTERP_RE,
+};
+
 /* vote types */
 enum {
   VOTE_COMMON,

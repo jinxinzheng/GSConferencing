@@ -1,6 +1,8 @@
 #ifndef _PACK_H_
 #define _PACK_H_
 
+#include <stdint.h>
+
 /* for client side */
 struct pack
 {

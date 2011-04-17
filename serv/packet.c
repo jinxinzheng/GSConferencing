@@ -1,5 +1,6 @@
 #include "packet.h"
 #include <stdlib.h>
+#include <string.h>
 #include "include/cfifo.h"
 
 /* packet objects are pooled/recycled
@@ -27,4 +28,14 @@ void pack_free(struct packet *p)
   struct packet **pp = (struct packet **)cfifo_get_in(&free_fifo);
   *pp = p;
   cfifo__in(&free_fifo);
+}
+
+struct packet *pack_dup(struct packet *p)
+{
+  struct packet *newp = pack_get_new();
+
+  memcpy(newp->data, p->data, p->len);
+  newp->len = p->len;
+
+  return newp;
 }

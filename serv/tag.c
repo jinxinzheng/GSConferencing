@@ -52,6 +52,10 @@ struct tag *tag_create(long gid, long tid)
     t->discuss.mode = DISCMODE_FIFO;
   }
 
+  t->interp.mode = INTERP_NO;
+  INIT_LIST_HEAD(&t->interp.dup_head);
+  pthread_mutex_init(&t->interp.mx, NULL);
+
   //t->bcast_size = 0;
 
   add_tag(t);

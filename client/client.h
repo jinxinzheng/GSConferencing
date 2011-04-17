@@ -139,6 +139,10 @@ enum {
   /* arg1: char *, file data
    * arg2: int, file length */
   EVENT_FILE,
+
+  /* arg1: char *, pantilt cmd
+   * arg2: unused */
+  EVENT_PTC,
 };
 
 

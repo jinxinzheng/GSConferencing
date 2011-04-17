@@ -22,6 +22,8 @@ i sub2
 i discuss_open
 i vote_master
 i vote_choice
+i ptc_id
+s ptc_cmd 256
 
 table tag
 i id

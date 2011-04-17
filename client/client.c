@@ -1250,4 +1250,10 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
      * the cmd port. it is random on different archs. */
     transfile.len = 0;
   }
+
+  else if (STREQU(c.cmd, "ptc"))
+  {
+    char *ptcmd = c.args[i++];
+    event_handler(EVENT_PTC, ptcmd, NULL);
+  }
 }

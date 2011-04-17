@@ -36,6 +36,8 @@ create table device
        discuss_open int,
        vote_master int,
        vote_choice int,
+       ptc_id int,
+       ptc_cmd varchar(256),
        foreign key (tagid) references tag(id)
 );
 

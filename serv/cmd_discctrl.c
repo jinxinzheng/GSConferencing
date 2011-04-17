@@ -204,6 +204,20 @@ int handle_cmd_discctrl(struct cmd *cmd)
       }
 
       add_open(tag, d);
+
+      /* send the pantilt control cmd */
+      {
+        struct device *ptc;
+        if( ptc = get_device(d->db_data->ptc_id) )
+        {
+          char *ptcmd = d->db_data->ptc_cmd;
+          if( ptcmd[0] )
+          {
+            l = sprintf(buf, "%d ptc %s\n", (int)d->id, ptcmd);
+            sendto_dev_tcp(buf, l, ptc);
+          }
+        }
+      }
     }
     else /* closing */
     {

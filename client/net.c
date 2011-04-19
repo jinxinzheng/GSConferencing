@@ -9,6 +9,7 @@
 #include <string.h>
 #include <pthread.h>
 #include "util.h"
+#include "include/encode.h"
 #include "../config.h"
 
 void get_broadcast_addr(char *addr)
@@ -76,7 +77,10 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
     fail("connect()");
   }
 
-  if (send(sock, buf, len, 0) < 0)
+  /* encode the data before sending out */
+  l = encode(tmp, buf, len);
+
+  if (send(sock, tmp, l, 0) < 0)
   {
     close(sock);
     fail("send()");
@@ -85,7 +89,10 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
   /* recv any reply here */
   l=recv(sock, tmp, sizeof tmp, 0);
   if (l > 0)
-    memcpy(buf, tmp, l);
+  {
+    /* decode the reply and store in origin buf */
+    l = decode(buf, tmp, l);
+  }
   else if(l==0)
     fprintf(stderr, "(no repsponse)\n");
   else
@@ -367,9 +374,15 @@ static void *run_recv_tcp(void *arg)
 
     while ((l = recv(conn_sock, buf, sizeof buf, 0)) > 0)
     {
-      buf[l] = 0;
       if( !isfile )
+      {
+        /* decode received data */
+        char tmp[4096];
+        l = decode(tmp, buf, l);
+        memcpy(buf, tmp, l);
+        buf[l] = 0;
         fprintf(stderr, "%s", buf);
+      }
 
       /* call the recv handler */
       if (tcp_recved)

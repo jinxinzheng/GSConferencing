@@ -12,6 +12,7 @@
 #include "cmd/cmd.h"
 #include "include/pack.h"
 #include "include/debug.h"
+#include "include/encode.h"
 #include "../config.h"
 
 #define die(s) do {perror(s); exit(1);} while(0)
@@ -112,6 +113,29 @@ void run_listener_tcp(int port)
   /* NOT REACHED */
 }
 
+static int do_recv(int sock, void *buf, int len)
+{
+  char tmp[BUFLEN];
+  int l;
+
+  if( (l = recv(sock, tmp, len, 0)) <= 0 )
+    return l;
+
+  l = decode(buf, tmp, l);
+
+  return l;
+}
+
+static int do_send(int sock, const void *buf, int len)
+{
+  char tmp[BUFLEN];
+  int l;
+
+  l = encode(tmp, buf, len);
+
+  return send(sock, tmp, l, 0);
+}
+
 void *run_proceed_connection(void *arg)
 {
   struct connection *c;
@@ -127,10 +151,11 @@ void *run_proceed_connection(void *arg)
 
     /* proceed with the connected socket */
 
-    while ((cmdl=recv(c->sock, buf, BUFLEN, 0)) > 0)
+    while( (cmdl=do_recv(c->sock, buf, BUFLEN)) > 0 )
     {
       struct cmd cmd;
       char rep[BUFLEN];
+      int rl;
 
       buf[cmdl]=0;
       printf("recved cmd: %s\n", buf);
@@ -168,7 +193,7 @@ void *run_proceed_connection(void *arg)
 
       /* send response */
       if( cmd.rl > 0 )
-        send(c->sock, cmd.rep, cmd.rl, 0);
+        do_send(c->sock, cmd.rep, cmd.rl);
 
       /* the handler can choose to 'persist' the connection:
        * the socket will be used in a thread created by the
@@ -186,7 +211,7 @@ void *run_proceed_connection(void *arg)
 CMDERR:
       /* whatever error we must send the response
        * or the client hangs and so the server does!  */
-      send(c->sock, rep, strlen(rep), 0);
+      do_send(c->sock, rep, strlen(rep));
       break;
     }
 
@@ -382,7 +407,7 @@ int broadcast(struct tag *t, const void *buf, size_t len)
   }
 
 #define _SEND(sock, buf, len) \
-  if (send(sock, buf, len, 0) < 0) \
+  if (do_send(sock, buf, len) < 0) \
   { \
     perror("send()"); \
     goto END; \
@@ -395,7 +420,7 @@ void sendto_dev_tcp(const void *buf, size_t len, struct device *dev)
    * for the tcp socket could be connect()ed only once. */
   int sock;
 
-  fprintf(stderr, "sendto_dev_tcp( '%s', %d, %d )\n", (char*)buf, len, (int)dev->id);
+  fprintf(stderr, "%s( '%s', %d, %d )\n", __func__, (char*)buf, len, (int)dev->id);
 
   _CONNECT_DEV(dev, sock);
 

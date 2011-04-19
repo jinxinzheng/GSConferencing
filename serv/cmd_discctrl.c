@@ -198,7 +198,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
         }
         else
         {
-          trace("too many open users\n");
+          trace_warn("too many open users\n");
           return ERR_REJECTED;
         }
       }

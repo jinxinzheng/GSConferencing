@@ -22,7 +22,7 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   pack_data *p = (pack_data *)pack->data;
   struct tag *t;
 
-  trace2("%d.%d ", ntohl(p->id), ntohl(p->seq));
+  trace_verb("%d.%d ", ntohl(p->id), ntohl(p->seq));
   DEBUG_TIME_NOW();
 
   t = dev->tag;
@@ -51,7 +51,7 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
 
   {
     pack_data *pd = (pack_data *)pack->data;
-    trace2("%d.%d ", ntohl(pd->id), ntohl(pd->seq));
+    trace_verb("%d.%d ", ntohl(pd->id), ntohl(pd->seq));
     DEBUG_TIME_NOW();
   }
 
@@ -109,7 +109,7 @@ void *tag_run_casting(void *tag)
 
     /* mix packs from different devices */
     pack = tag_out_dev_mixed(t);
-    trace("got mixed pack=%x from tag\n", (uint32_t)pack);
+    trace_dbg("got mixed pack=%x from tag\n", (uint32_t)pack);
 
     /* the pack might be NULL since it could be
      * returned from a canceled wait. */

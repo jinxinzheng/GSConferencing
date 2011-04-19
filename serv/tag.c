@@ -100,7 +100,7 @@ static void _dev_in_packet(struct device *d, struct packet *p)
   struct packet **pp = (struct packet **)cfifo_get_in(&d->pack_fifo);
   *pp = p;
   cfifo_in_signal(&d->pack_fifo);
-  trace("avail %d packs in fifo %d\n", cfifo_len(&d->pack_fifo), (int)d->id);
+  trace_dbg("avail %d packs in fifo %d\n", cfifo_len(&d->pack_fifo), (int)d->id);
 }
 
 /* this must be used when cfifo_empty is false */
@@ -128,7 +128,7 @@ static struct packet *_dev_out_packet(struct device *d)
 void tag_add_outstanding(struct tag *t, struct device *d)
 {
   int i;
-  trace("adding dev to outstanding\n");
+  trace_dbg("adding dev to outstanding\n");
   /* find a place in the mix_devs,
    * we do not put all the non-empty fifos together at top
    * because we found it too tricky to sync them. */
@@ -164,7 +164,7 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
   {
     if( d == t->mix_devs[i] )
     {
-      trace("removing dev from outstanding\n");
+      trace_dbg("removing dev from outstanding\n");
       t->mix_devs[i] = NULL;
 
       t->mix_mask &= ~d->mixbit;
@@ -303,7 +303,7 @@ static struct packet *tag_mix_audio(struct tag *t)
   /* all outstanding devs must have data on their queue.
    * otherwise clients sending at lower rate may be
    * scattered. */
-  trace("stat %02x, mask %02x\n", t->mix_stat, t->mix_mask);
+  trace_dbg("stat %02x, mask %02x\n", t->mix_stat, t->mix_mask);
   while( (t->mix_stat & t->mix_mask) != t->mix_mask )
   {
     /* wait for 10ms to allow the data to be queued.
@@ -319,7 +319,7 @@ static struct packet *tag_mix_audio(struct tag *t)
     {
       /* it has been quite a while that there's no
        * any data. probably a client has stopped. */
-      trace("no data within timeout. maybe someone stopped.\n");
+      trace_warn("no data within timeout. maybe someone stopped.\n");
       return NULL;
     }
   }
@@ -405,7 +405,7 @@ mix:
 
    case 1:
     /* no need to mix */
-    trace("only 1 pack from %d, mix not needed.\n",
+    trace_dbg("only 1 pack from %d, mix not needed.\n",
           (int)pp[0]->dev->id);
     break;
 

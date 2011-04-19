@@ -11,8 +11,14 @@
  * 4: verbose debug.
  * */
 
+#undef PREFIX_TRACE
+
 #ifdef DEBUG
- #define trace(fmt, a...) fprintf(stderr, "[%s:%d] [%s] " fmt, __FILE__, __LINE__, __func__, ##a)
+ #ifdef PREFIX_TRACE
+  #define trace(fmt, a...) fprintf(stderr, "[%s:%d] [%s] " fmt, __FILE__, __LINE__, __func__, ##a)
+ #else
+  #define trace(fmt, a...) fprintf(stderr, fmt, ##a)
+ #endif
  #define debug(expr) expr
 #else
  #define trace(...)

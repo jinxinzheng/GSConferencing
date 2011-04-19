@@ -169,7 +169,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     if( d->discuss.open == open )
     {
-      fprintf(stderr, "dev is already open/closed\n");
+      trace_warn("dev is already open/closed\n");
       return ERR_OTHER;
     }
 

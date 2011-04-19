@@ -163,7 +163,7 @@ int dev_subscribe(struct device *dev, struct tag *tag)
 
   dev->subscription[i] = tag;
 
-  printf("device %ld subscribed to tag %ld\n", dev->id, tag->tid);
+  trace_info("device %ld subscribed to tag %ld\n", dev->id, tag->tid);
 
   {
     int *states[] = { &dev->db_data->sub1, &dev->db_data->sub2 };

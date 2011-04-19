@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <string.h>
 #include "db/md.h"
+#include "include/debug.h"
 
 #define BUFLEN 2048
 
@@ -13,7 +14,7 @@
 ({ \
   if( !(p = (c)->args[a++]) ) \
   { \
-    fprintf(stderr, "bad cmd arg\n"); \
+    trace_err("bad cmd arg\n"); \
     append("FAIL 2\n"); \
     flush(); \
     break; \
@@ -171,7 +172,7 @@ static void *serv_manage(void *arg)
   while( (l=recv(s, buf, 2048, 0)) > 0 )
   {
     buf[l]=0;
-    fprintf(stderr, "manager cmd: %s\n", buf);
+    trace_info("manager cmd: %s\n", buf);
     parse_cmd(buf, &c);
 
     op = c.cmd;
@@ -212,7 +213,7 @@ static void *serv_manage(void *arg)
   }
 
   close(s);
-  fprintf(stderr, "manager client closed\n");
+  trace_info("manager client closed\n");
   return NULL;
 }
 

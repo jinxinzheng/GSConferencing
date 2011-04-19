@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "include/types.h"
+#include "include/debug.h"
 #include "dev.h"
 #include "sys.h"
 #include "db/md.h"
@@ -75,7 +76,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     i = atoi(p);
     if (i >= dbl) {
-      fprintf(stderr, "invalid vote select number.\n");
+      trace_warn("invalid vote select number.\n");
       return 1;
     }
 
@@ -99,7 +100,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     i = atoi(p);
     if (i >= dbl) {
-      fprintf(stderr, "invalid vote start number.\n");
+      trace_warn("invalid vote start number.\n");
       return 1;
     }
 

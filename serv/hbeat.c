@@ -1,6 +1,7 @@
 #include "sys.h"
 #include "db/md.h"
 #include <stdio.h>
+#include "include/debug.h"
 
 void dev_heartbeat(struct device *d)
 {
@@ -46,7 +47,7 @@ static void *run_heartbeat_god(void *arg)
             device_save(d);
           }
           d->active = 0;
-          fprintf(stderr, "dev %d is dead\n", (int)d->id);
+          trace_warn("dev %d is dead\n", (int)d->id);
         }
       }
     }

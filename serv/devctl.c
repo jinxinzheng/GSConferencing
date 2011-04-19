@@ -6,6 +6,7 @@
 #include "cast.h"
 #include "db/md.h"
 #include "group.h"
+#include "include/debug.h"
 
 struct device *dev_create(long did)
 {
@@ -79,7 +80,7 @@ int dev_register(struct device *dev)
   {
     /* this device has already been registered.
      * this may be due to a reset of the device or some. */
-    printf("device %ld already registered, ignoring.\n", dev->id);
+    trace_info("device %ld already registered, ignoring.\n", dev->id);
     return 1;
   }
 
@@ -128,7 +129,7 @@ int dev_register(struct device *dev)
 
   add_device(dev);
 
-  printf("device %ld registered\n", dev->id);
+  trace_info("device %ld registered\n", dev->id);
 
   if( dev->db_data->sub1 == 0 &&
       dev->db_data->sub2 == 0 )

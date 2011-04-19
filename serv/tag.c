@@ -63,7 +63,7 @@ struct tag *tag_create(long gid, long tid)
   /* create the tag's casting queue thread */
   pthread_create(&thread, NULL, tag_run_casting, t);
 
-  printf("tag %ld:%ld created\n", gid, tid);
+  trace_info("tag %ld:%ld created\n", gid, tid);
   return t;
 }
 
@@ -80,7 +80,7 @@ void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast)
 
   if (t->bcast_size >= sizeof(t->bcasts)/sizeof(t->bcasts[0]))
   {
-    fprintf(stderr, "warning: tag %d exceeding max broadcast addresses!\n", (int)t->tid);
+    trace_err("tag %d exceeding max broadcast addresses!\n", (int)t->tid);
     return;
   }
 
@@ -275,7 +275,7 @@ static void tag_update_dev_timeouts(struct tag *t)
         {
           /* what? this one has been hung for too long...
            * get this shit out of our way. */
-          fprintf(stderr, "%d seems to be hung, clear it.\n",
+          trace_err("%d seems to be hung, clear it.\n",
               (int)d->id);
           tag_rm_outstanding(t, d);
         }
@@ -361,7 +361,7 @@ static struct packet *tag_mix_audio(struct tag *t)
         continue;
       }
     }
-    printf("flush queue %ld, %d\n", d->id, d->stats.flushed);
+    trace_warn("flush queue %ld, %d\n", d->id, d->stats.flushed);
 
     p = tag_out_dev_packet(t, d);
 

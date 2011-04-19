@@ -4,6 +4,7 @@
 #include "group.h"
 #include "db/md.h"
 #include "vote.h"
+#include "include/debug.h"
 
 struct group *group_create(long gid)
 {
@@ -48,7 +49,7 @@ struct group *group_create(long gid)
     }
   }
 
-  printf("group %ld created\n", gid);
+  trace_info("group %ld created\n", gid);
   return g;
 }
 

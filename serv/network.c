@@ -158,7 +158,7 @@ void *run_proceed_connection(void *arg)
       int rl;
 
       buf[cmdl]=0;
-      printf("recved cmd: %s\n", buf);
+      trace_info("recved cmd: %s\n", buf);
 
       /* copy the command for reply use */
       strcpy(rep, buf);
@@ -167,7 +167,7 @@ void *run_proceed_connection(void *arg)
 
       if (parse_cmd(buf, &cmd) != 0)
       {
-        fprintf(stderr, "cmd parse error.\n");
+        trace_err("cmd parse error.\n");
         sprintf(rep, "FAIL %d parse error\n", ERR_PARSE);
         goto CMDERR;
       }
@@ -180,13 +180,13 @@ void *run_proceed_connection(void *arg)
       i = handle_cmd(&cmd);
       if (i < 0)
       {
-        fprintf(stderr, "invalid cmd.\n");
+        trace_err("invalid cmd.\n");
         sprintf(rep, "FAIL %d invalid cmd\n", ERR_BAD_CMD);
         goto CMDERR;
       }
       else if (i > 0)
       {
-        fprintf(stderr, "cmd handle error.\n");
+        trace_err("cmd handle error.\n");
         sprintf(rep, "FAIL %d handling cmd error\n", i);
         goto CMDERR;
       }
@@ -420,7 +420,7 @@ void sendto_dev_tcp(const void *buf, size_t len, struct device *dev)
    * for the tcp socket could be connect()ed only once. */
   int sock;
 
-  fprintf(stderr, "%s( '%s', %d, %d )\n", __func__, (char*)buf, len, (int)dev->id);
+  trace_info("%s( '%s', %d, %d )\n", __func__, (char*)buf, len, (int)dev->id);
 
   _CONNECT_DEV(dev, sock);
 
@@ -441,7 +441,7 @@ void send_file_to_dev(const char *path, struct device *dev)
   char buf[1024];
   int l;
 
-  fprintf(stderr, "send_file_to_dev( '%s', %d )\n", path, (int)dev->id);
+  trace_info("%s( '%s', %d )\n", __func__, path, (int)dev->id);
 
   if (!(f = fopen(path, "r")))
   {

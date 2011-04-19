@@ -3,6 +3,7 @@
 #include <string.h>
 #include "devctl.h"
 #include "include/cksum.h"
+#include "include/debug.h"
 #include "../config.h"
 #include "db/md.h"
 
@@ -73,7 +74,7 @@ int handle_cmd_reg(struct cmd *cmd)
   cksum(&n, sizeof n, sum);
   if (strcmp(pass, sum) != 0)
   {
-    fprintf(stderr, "authenticate fail\n");
+    trace_warn("authenticate fail\n");
     return 1;
   }
 

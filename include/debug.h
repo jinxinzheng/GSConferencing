@@ -1,7 +1,7 @@
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
-#undef DEBUG
+#define DEBUG 2
 
 /* debug trace levels:
  * 0: error.

@@ -41,6 +41,15 @@ void del_open(struct tag *t, struct device *d)
    * no! we need it there to do the audio dup. */
 }
 
+static void kick_user(struct device *d, struct device *kick)
+{
+  char buf[256];
+  int l;
+
+  l = sprintf(buf, "%d discctrl kick %d\n", (int)d->id, (int)kick->id);
+  sendto_dev_tcp(buf, l, kick);
+}
+
 int handle_cmd_discctrl(struct cmd *cmd)
 {
   char *subcmd, *p;
@@ -193,8 +202,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
           del_open(tag, kick);
 
           /* notify the kicked user */
-          l = sprintf(buf, "%d discctrl kick %d\n", (int)d->id, (int)kick->id);
-          sendto_dev_tcp(buf, l, kick);
+          kick_user(d, kick);
         }
         else
         {

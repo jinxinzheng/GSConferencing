@@ -191,6 +191,13 @@ void dev_unsubscribe(struct device *d, struct tag *t)
     {
       d->subscription[i] = NULL;
       list_del(&d->subscribe[i]);
+
+      if( 0 == i )
+        d->db_data->sub1 = 0;
+      else if( 1 == i )
+        d->db_data->sub2 = 0;
+      device_save(d);
+
       break;
     }
   }

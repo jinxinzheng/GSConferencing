@@ -4,16 +4,30 @@
 
 int on_event(int event, void *arg1, void *arg2)
 {
-  if (event == EVENT_FILE)
+  switch ( event )
   {
-    FILE *f;
-    f = fopen("transfer", "w");
-    fwrite(arg1, 1, (int)arg2, f);
-    fclose(f);
-    printf("file 'transfer' saved\n");
-  }
-  else
+    case EVENT_AUDIO :
+    {
+      printf("audio from %d\n", (int)arg1);
+    }
+    break;
+
+    case EVENT_FILE :
+    {
+      FILE *f;
+      f = fopen("transfer", "w");
+      fwrite(arg1, 1, (int)arg2, f);
+      fclose(f);
+      printf("file 'transfer' saved\n");
+    }
+    break;
+
+    default :
     printf("e: %d, %p, %p\n", event, arg1, arg2);
+    break;
+  }
+
+  return 0;
 }
 
 int main(int argc, char *const argv[])
@@ -34,11 +48,11 @@ int main(int argc, char *const argv[])
     switch (opt) {
       case 's':
         s=1;
-        id = 101;
+        id = 1001;
         break;
       case 'r':
         r=1;
-        id = 201;
+        id = 2001;
         break;
       case 'S':
         srvaddr = optarg;
@@ -68,10 +82,16 @@ int main(int argc, char *const argv[])
   //synctime();
 
   if (r)
+  {
     sub(1);
+    unsub(1);
+    sub(2);
+  }
 
   if (s)
   {
+    switch_tag(2);
+
     discctrl_query(buf);
     discctrl_select(0, idlist, buf);
     discctrl_request(1);

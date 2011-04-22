@@ -141,7 +141,7 @@ int send_audio_end(int len)
   audio_current->seq = ++qseq;
   audio_current->datalen = (uint32_t)len;
 
-  trace2("%d.%d ", audio_current->id, audio_current->seq);
+  trace_verb("%d.%d ", audio_current->id, audio_current->seq);
   DEBUG_TIME_NOW();
 
   //enque
@@ -183,7 +183,7 @@ static void udp_recved(char *buf, int len)
   qitem = (struct pack *)buf;
   NTOH(qitem);
 
-  trace2("%d.%d ", qitem->id, qitem->seq);
+  trace_verb("%d.%d ", qitem->id, qitem->seq);
   DEBUG_TIME_NOW();
 
   /* broadcasted packet could be sent back */
@@ -208,7 +208,7 @@ static void udp_recved(char *buf, int len)
 
   cfifo_in_signal(&udp_rcv_fifo);
 
-  trace("%d packs in fifo\n", cfifo_len(&udp_rcv_fifo));
+  trace_dbg("%d packs in fifo\n", cfifo_len(&udp_rcv_fifo));
 
   //tmp: do not put in queue, directly play.
   /*if (qitem->type == TYPE_AUDIO)

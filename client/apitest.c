@@ -83,8 +83,9 @@ int main(int argc, char *const argv[])
 
   if (r)
   {
-    sub(1);
     unsub(1);
+    unsub(2);
+    sub(1);
     sub(2);
   }
 

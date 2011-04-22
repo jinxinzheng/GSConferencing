@@ -538,6 +538,12 @@ int sub(int tag)
 {
   BASICS;
 
+  if( subscription[0] == tag ||
+      subscription[1] == tag )
+  {
+    return 1;
+  }
+
   if( !subscription[0] )
     i = 0;
   else if( !subscription[1] )

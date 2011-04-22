@@ -262,6 +262,7 @@ static void *run_recv_udp(void *arg)
     buf[l] = 0; \
     if (_e = parse_cmd(buf, &c)) \
     { \
+      fprintf(stderr, "%s failed: %d\n", __func__, _e); \
       if (_e == ERR_NOT_REG) \
       { \
         event_handler(EVENT_NEED_REG, NULL, NULL); \

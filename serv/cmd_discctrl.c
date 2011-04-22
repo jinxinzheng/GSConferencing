@@ -214,23 +214,15 @@ int handle_cmd_discctrl(struct cmd *cmd)
       add_open(tag, d);
 
       /* send the pantilt control cmd */
-      {
-        struct device *ptc;
-        if( ptc = get_device(d->db_data->ptc_id) )
-        {
-          char *ptcmd = d->db_data->ptc_cmd;
-          if( ptcmd[0] )
-          {
-            l = sprintf(buf, "%d ptc %s\n", (int)d->id, ptcmd);
-            sendto_dev_tcp(buf, l, ptc);
-          }
-        }
-      }
+      ptc_push(d);
     }
     else /* closing */
     {
       /* remove it from the open users list */
       del_open(tag, d);
+
+      /* remove it from the pantilt list */
+      ptc_remove(d);
     }
 
   }

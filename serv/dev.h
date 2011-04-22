@@ -90,6 +90,10 @@ struct device {
   struct {
     int reg;
   } regist;
+
+  struct {
+    struct list_head l;
+  } ptc;
 };
 
 #endif

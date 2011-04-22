@@ -559,7 +559,7 @@ int unsub(int tag)
 
   if( subscription[0] == tag )
     i = 0;
-  else if( !subscription[1] == tag )
+  else if( subscription[1] == tag )
     i = 1;
   else
     return 1;

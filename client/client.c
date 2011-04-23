@@ -410,6 +410,7 @@ static void parse_dev_info(char *str, struct dev_info *info)
     info_int_list(sub)
 
     info_int(discuss_mode)
+    info_int(discuss_chair)
 
     if( STREQU(keyval[0], "discuss_name") )
     {

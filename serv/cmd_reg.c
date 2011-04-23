@@ -26,6 +26,7 @@ static void get_client_info(char *info, const struct device *d)
   ADD_ARG("sub=%d,%d", dd->sub1, dd->sub2);
 
   ADD_ARG("discuss_mode=%d", dg->discuss_mode);
+  ADD_ARG("discuss_chair=%d", g->chairman == d);
   ADD_ARG("discuss_name=%s", dsc? dsc->name:"0");
   ADD_ARG("discuss_open=%d", dd->discuss_open);
 

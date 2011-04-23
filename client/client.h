@@ -27,6 +27,7 @@ struct dev_info
   int sub[2];  /* what tags does it subscribe */
 
   int discuss_mode; /* discuss mode. (DISCMODE_) */
+  int discuss_chair; /* 0/1. if this client is the chair man. */
   char discuss_name[64]; /* current discuss name. empty if no discuss. */
   int discuss_open; /* 0/1, whether this client has opened mic. */
 

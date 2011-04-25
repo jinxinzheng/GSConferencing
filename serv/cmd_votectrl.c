@@ -15,6 +15,8 @@ struct vote *vote_new()
   v = (struct vote *)malloc(sizeof (struct vote));
   memset(v, 0, sizeof (struct vote));
   INIT_LIST_HEAD(&v->device_head);
+
+  return v;
 }
 
 void vote_results_to_str( char *str, const struct vote *v )

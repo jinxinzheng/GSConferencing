@@ -16,7 +16,7 @@ static void get_client_info(char *info, const struct device *d)
 
   struct db_discuss *dsc = g->discuss.current;
 
-  struct db_vote *dvt = d->vote.v ? NULL : g->vote.current;
+  struct db_vote *dvt = d->vote.v ? g->vote.current : NULL;
 
 #define ADD_ARG(fmt, a...) SEP_ADD(info, l, ":", fmt, ##a)
 

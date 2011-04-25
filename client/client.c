@@ -415,6 +415,7 @@ static void parse_dev_info(char *str, struct dev_info *info)
     info_int(discuss_open)
 
     info_int(regist_start)
+    info_int(regist_master)
     info_int(regist_mode)
     info_int(regist_reg)
 

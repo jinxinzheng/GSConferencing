@@ -31,6 +31,7 @@ static void get_client_info(char *info, const struct device *d)
   ADD_ARG("discuss_open=%d", dd->discuss_open);
 
   ADD_ARG("regist_start=%d", dg->regist_start);
+  ADD_ARG("regist_master=%d", dd->regist_master);
   ADD_ARG("regist_mode=%d", dg->regist_mode);
   ADD_ARG("regist_reg=%d", d->regist.reg);
 

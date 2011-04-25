@@ -34,6 +34,7 @@ create table device
        sub1 int,
        sub2 int,
        discuss_open int,
+       regist_master int,
        vote_master int,
        vote_choice int,
        ptc_id int,

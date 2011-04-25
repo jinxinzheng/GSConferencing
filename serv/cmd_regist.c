@@ -30,6 +30,9 @@ int handle_cmd_regist(struct cmd *cmd)
     g->db_data->regist_mode = atoi(p);
     group_save(g);
 
+    d->db_data->regist_master = 1;
+    device_save(d);
+
     g->regist.expect = md_get_device_count();
 
     REP_OK(cmd);
@@ -41,6 +44,9 @@ int handle_cmd_regist(struct cmd *cmd)
   {
     g->db_data->regist_start = 0;
     group_save(g);
+
+    d->db_data->regist_master = 0;
+    device_save(d);
 
     REP_OK(cmd);
 

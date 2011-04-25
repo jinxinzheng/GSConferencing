@@ -32,6 +32,7 @@ struct dev_info
   int discuss_open; /* 0/1, whether this client has opened mic. */
 
   int regist_start; /* 0/1, whether registration has started. */
+  int regist_master; /* 0/1. if this client is the master of the registration. */
   int regist_mode; /* registration mode. (REGIST_) */
   int regist_reg; /* 0/1, whether this client has done regist. */
 

@@ -55,6 +55,7 @@ void dev_update_data(struct device *dev)
         0, /* discuss_open */
         0, /* vote_master */
         -1, /* vote_choice */
+        0, /* regist_master */
         0, "", /* ptc */
       };
       strcpy(tmp.ip, ip);

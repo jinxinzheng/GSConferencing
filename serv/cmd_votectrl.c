@@ -92,19 +92,20 @@ int handle_cmd_votectrl(struct cmd *cmd)
     struct device *m;
     struct vote *v;
     struct db_vote *dv;
+    int num;
 
     /* the vote number */
     p = cmd->args[ai++];
     if (!p)
       return 1;
 
-    i = atoi(p);
-    if (i >= dbl) {
+    num = atoi(p);
+    if (num >= dbl) {
       trace_warn("invalid vote start number.\n");
       return 1;
     }
 
-    dv = db[i];
+    dv = db[num];
 
     REP_ADD(cmd, "OK");
 
@@ -160,6 +161,8 @@ int handle_cmd_votectrl(struct cmd *cmd)
     device_save(d);
 
     g->vote.current = dv;
+    g->vote.curr_num = num;
+
     g->db_data->vote_id = dv->id;
     group_save(g);
   }

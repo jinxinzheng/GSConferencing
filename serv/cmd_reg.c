@@ -26,15 +26,15 @@ static void get_client_info(char *info, const struct device *d)
   ADD_ARG("sub=%d,%d", dd->sub1, dd->sub2);
 
   ADD_ARG("discuss_mode=%d", dg->discuss_mode);
+  ADD_ARG("discuss_num=%d", dsc? g->discuss.curr_num : -1);
   ADD_ARG("discuss_chair=%d", g->chairman == d);
-  ADD_ARG("discuss_name=%s", dsc? dsc->name:"0");
   ADD_ARG("discuss_open=%d", dd->discuss_open);
 
   ADD_ARG("regist_start=%d", dg->regist_start);
   ADD_ARG("regist_mode=%d", dg->regist_mode);
   ADD_ARG("regist_reg=%d", d->regist.reg);
 
-  ADD_ARG("vote_name=%s", dvt? dvt->name:"0");
+  ADD_ARG("vote_num=%d", dvt? g->vote.curr_num : -1);
   ADD_ARG("vote_type=%d", dvt? dvt->type:0);
   ADD_ARG("vote_total=%d", d->vote.v? d->vote.v->n_members:0);
   ADD_ARG("vote_results=%s", dg->vote_results);

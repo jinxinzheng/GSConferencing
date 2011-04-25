@@ -99,16 +99,17 @@ int handle_cmd_discctrl(struct cmd *cmd)
   SUBCMD("select")
   {
     struct db_discuss *s;
+    int num;
     int memberids[1024];
     int nmembers=0;
 
     NEXT_ARG(p);
-    i = atoi(p);
-    if( i>=dbl )
+    num = atoi(p);
+    if( num>=dbl )
     {
       return ERR_OTHER;
     }
-    s = db[i];
+    s = db[num];
 
     REP_ADD(cmd, "OK");
 
@@ -144,6 +145,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
     REP_END(cmd);
 
     d->group->discuss.current = s;
+    d->group->discuss.curr_num = num;
+
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
 

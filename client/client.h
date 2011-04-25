@@ -27,15 +27,15 @@ struct dev_info
   int sub[2];  /* what tags does it subscribe */
 
   int discuss_mode; /* discuss mode. (DISCMODE_) */
+  int discuss_num; /* current discuss number. -1 if no discuss. */
   int discuss_chair; /* 0/1. if this client is the chair man. */
-  char discuss_name[64]; /* current discuss name. empty if no discuss. */
   int discuss_open; /* 0/1, whether this client has opened mic. */
 
   int regist_start; /* 0/1, whether registration has started. */
   int regist_mode; /* registration mode. (REGIST_) */
   int regist_reg; /* 0/1, whether this client has done regist. */
 
-  char vote_name[64]; /* current vote name. empty if no vote. */
+  int vote_num; /* current vote number. -1 if no vote. */
   int vote_type; /* vote type. (VOTE_) */
   int vote_total; /* total members count of vote. */
   int vote_results[40]; /* vote results */

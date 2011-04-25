@@ -25,6 +25,7 @@ struct group {
 
   struct {
     struct db_discuss *current;
+    int curr_num;
     int disabled;
   } discuss;
 
@@ -35,6 +36,7 @@ struct group {
 
   struct {
     struct db_vote *current;
+    int curr_num;
     struct vote *v; /* for recover use */
   } vote;
 };

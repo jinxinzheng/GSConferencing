@@ -36,6 +36,7 @@ struct dev_info
   int regist_reg; /* 0/1, whether this client has done regist. */
 
   int vote_num; /* current vote number. -1 if no vote. */
+  int vote_master; /* 0/1. if this client is the master of the vote. */
   int vote_type; /* vote type. (VOTE_) */
   int vote_total; /* total members count of vote. */
   int vote_results[40]; /* vote results */

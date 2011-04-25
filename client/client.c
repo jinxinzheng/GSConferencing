@@ -419,6 +419,7 @@ static void parse_dev_info(char *str, struct dev_info *info)
     info_int(regist_reg)
 
     info_int(vote_num)
+    info_int(vote_master)
     info_int(vote_type)
     info_int(vote_total)
     info_int_list(vote_results)

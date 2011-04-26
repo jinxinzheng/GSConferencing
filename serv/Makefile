@@ -1,5 +1,5 @@
 #CC:=arm-linux-gcc
-CFLAGS:=-I. -I..
+CFLAGS:=-I. -I.. -O2
 LDFLAGS:=-lpthread -lrt -lsqlite
 
 SRCS := $(wildcard *.c)

@@ -1,4 +1,4 @@
-CFLAGS = -I.. -I../..
+CFLAGS = -I.. -I../.. -O2
 
 all: db.o md.o
 

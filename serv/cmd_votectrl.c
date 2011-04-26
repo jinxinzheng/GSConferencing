@@ -31,6 +31,51 @@ void vote_results_to_str( char *str, const struct vote *v )
   }
 }
 
+#define add_vote_member(g, mid, l) \
+{ \
+  struct db_device *dd; \
+  g->vote.memberids[g->vote.nmembers ++] = mid; \
+\
+  if( dd = md_find_device(mid) ) \
+    LIST_ADD(g->vote.membernames, l, dd->user_name); \
+  else \
+    LIST_ADD(g->vote.membernames, l, "?"); \
+}
+
+void group_setup_vote(struct group *g, struct db_vote *dv)
+{
+  char buf[1024];
+  int l;
+  char *p;
+
+  strcpy(buf, dv->members);
+  l = 0;
+  if (strcmp(buf, "all")==0)
+  {
+    struct list_head *e;
+    struct device *m;
+
+    /* loop through all within this group */
+    /* TODO: make it work in server recovery */
+    list_for_each(e, &g->device_head)
+    {
+      m = list_entry(e, struct device, list);
+      add_vote_member(g, m->id, l);
+    }
+  }
+  else
+  {
+    /* loop through only the specified members */
+    IDLIST_FOREACH_p(buf)
+    {
+      int mid = atoi(p);
+      add_vote_member(g, mid, l);
+    }
+  }
+
+  g->vote.current = dv;
+}
+
 int handle_cmd_votectrl(struct cmd *cmd)
 {
   char *scmd, *p;
@@ -122,6 +167,9 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     REP_END(cmd);
 
+    group_setup_vote(g, dv);
+    g->vote.curr_num = num;
+
     /* create new vote */
     v = vote_new(dv);
     v->cn_options = dv->options_count;
@@ -132,10 +180,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
     d->vote.v = v;
 
     /*send vote start cmd to the members*/
-    strcpy(buf, dv->members);
-    if (strcmp(buf, "all")==0)
-    {
-      struct list_head *t;
 
 #define device_vote_start() do { \
       sendto_dev_tcp(cmd->rep, cmd->rl, m); \
@@ -144,32 +188,16 @@ int handle_cmd_votectrl(struct cmd *cmd)
       m->vote.choice = -1; \
       } while (0)
 
-      /*send to all within this group*/
-      list_for_each(t, &g->device_head)
-      {
-        m = list_entry(t, struct device, list);
-        device_vote_start();
-        ++ v->n_members;
-      }
-    }
-    else
+    for( i=0 ; i<g->vote.nmembers ; i++ )
     {
-      /*send to only the specified members*/
-      IDLIST_FOREACH_p(buf)
+      if (m = get_device(g->vote.memberids[i]))
       {
-        m = get_device(atoi(p));
-        if (m) {
-          device_vote_start();
-        }
-        ++ v->n_members;
+        device_vote_start();
       }
     }
 
     d->db_data->vote_master = 1;
     device_save(d);
-
-    g->vote.current = dv;
-    g->vote.curr_num = num;
 
     g->db_data->vote_id = dv->id;
     group_save(g);

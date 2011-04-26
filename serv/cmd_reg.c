@@ -39,6 +39,9 @@ static void get_client_info(char *info, const struct device *d)
   ADD_ARG("regist_reg=%d", d->regist.reg);
 
   ADD_ARG("vote_num=%d", dvt? g->vote.curr_num : -1);
+  ADD_ARG("vote_nmembers=%d", g->vote.nmembers);
+  ADD_ARG("vote_idlist=%s", dvt? dvt->members : "0");
+  ADD_ARG("vote_userlist=%s", dvt? g->vote.membernames : "0");
   ADD_ARG("vote_master=%d", dvt? dd->vote_master:0);
   ADD_ARG("vote_type=%d", dvt? dvt->type:0);
   ADD_ARG("vote_total=%d", d->vote.v? d->vote.v->n_members:0);

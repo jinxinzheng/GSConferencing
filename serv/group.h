@@ -40,6 +40,9 @@ struct group {
   struct {
     struct db_vote *current;
     int curr_num;
+    int nmembers;
+    int memberids[1024];
+    char membernames[2048];
     struct vote *v; /* for recover use */
   } vote;
 };

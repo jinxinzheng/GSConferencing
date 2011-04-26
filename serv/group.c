@@ -46,7 +46,7 @@ struct group *group_create(long gid)
     struct db_vote *dv;
     if( dv = md_find_vote(dg->vote_id) )
     {
-      g->vote.current = dv;
+      group_setup_vote(g, dv);
 
       g->vote.v = vote_new();
       g->vote.v->cn_options = dv->options_count;

@@ -9,6 +9,38 @@
 static struct db_discuss *db[1024];
 static int dbl = 0;
 
+void group_setup_discuss(struct group *g, struct db_discuss *s)
+{
+  char buf[1024];
+  int l;
+  char *p;
+  struct db_device *dbd;
+  int mid;
+
+  /* setup members */
+
+  g->discuss.nmembers = 0;
+
+  strcpy(buf, s->members);
+  l = 0;
+  IDLIST_FOREACH_p(buf)
+  {
+    mid = atoi(p);
+    g->discuss.memberids[g->discuss.nmembers ++] = mid;
+
+    if( dbd = md_find_device(mid) )
+    {
+      LIST_ADD(g->discuss.membernames, l, dbd->user_name);
+    }
+    else
+    {
+      LIST_ADD(g->discuss.membernames, l, "?");
+    }
+  }
+
+  g->discuss.current = s;
+}
+
 void add_open(struct tag *t, struct device *d)
 {
   list_add_tail(&d->discuss.l, &t->discuss.open_list);
@@ -102,8 +134,6 @@ int handle_cmd_discctrl(struct cmd *cmd)
   {
     struct db_discuss *s;
     int num;
-    int memberids[1024];
-    int nmembers=0;
 
     /* only one discuss could open. */
     if( g->discuss.current )
@@ -119,49 +149,26 @@ int handle_cmd_discctrl(struct cmd *cmd)
     }
     s = db[num];
 
+    group_setup_discuss(g, s);
+
+    g->discuss.curr_num = num;
+
     REP_ADD(cmd, "OK");
 
     REP_ADD(cmd, s->members);
 
-    /* get user names */
-    {
-      char tmp[2048];
-      struct db_device *dbd;
-      int mid;
-
-      strcpy(buf, s->members);
-      l = 0;
-      IDLIST_FOREACH_p(buf)
-      {
-        mid = atoi(p);
-        memberids[nmembers++] = mid;
-
-        if( dbd = md_find_device(mid) )
-        {
-          LIST_ADD(tmp, l, dbd->user_name);
-        }
-        else
-        {
-          LIST_ADD(tmp, l, "?");
-        }
-      }
-      LIST_END(tmp, l);
-
-      REP_ADD(cmd, tmp);
-    }
+    REP_ADD(cmd, g->discuss.membernames);
 
     REP_END(cmd);
 
-    g->discuss.current = s;
-    g->discuss.curr_num = num;
 
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
 
-    for( i=0 ; i<nmembers ; i++ )
+    for( i=0 ; i<g->discuss.nmembers ; i++ )
     {
       struct device *m;
-      if (m = get_device(memberids[i]))
+      if (m = get_device(g->discuss.memberids[i]))
       {
         m->discuss.forbidden = 0;
         if( m->discuss.open )

@@ -26,6 +26,9 @@ struct group {
   struct {
     struct db_discuss *current;
     int curr_num;
+    int nmembers;
+    int memberids[1024];
+    char membernames[2048];
     int disabled;
   } discuss;
 

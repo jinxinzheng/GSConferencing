@@ -28,6 +28,9 @@ struct dev_info
 
   int discuss_mode; /* discuss mode. (DISCMODE_) */
   int discuss_num; /* current discuss number. -1 if no discuss. */
+  int discuss_nmembers; /* number of members */
+  int discuss_idlist[1024]; /* member IDs */
+  char discuss_userlist[2048]; /* member names. comma separated. */
   int discuss_chair; /* 0/1. if this client is the chair man. */
   int discuss_open; /* 0/1, whether this client has opened mic. */
 

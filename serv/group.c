@@ -34,7 +34,11 @@ struct group *group_create(long gid)
 
   if( dg->discuss_id )
   {
-    g->discuss.current = md_find_discuss(dg->discuss_id);
+    struct db_discuss *dsc;
+    if( dsc = md_find_discuss(dg->discuss_id) )
+    {
+      group_setup_discuss(g, dsc);
+    }
   }
 
   if( dg->vote_id )

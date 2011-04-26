@@ -103,6 +103,12 @@ int handle_cmd_discctrl(struct cmd *cmd)
     int memberids[1024];
     int nmembers=0;
 
+    /* only one discuss could open. */
+    if( d->group->discuss.current )
+    {
+      return ERR_OTHER;
+    }
+
     NEXT_ARG(p);
     num = atoi(p);
     if( num>=dbl )
@@ -248,6 +254,11 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   SUBCMD("close")
   {
+    if( !d->group->discuss.current )
+    {
+      return ERR_OTHER;
+    }
+
     REP_OK(cmd);
 
     d->group->discuss.current = NULL;

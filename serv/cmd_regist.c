@@ -24,6 +24,11 @@ int handle_cmd_regist(struct cmd *cmd)
 
   SUBCMD("start")
   {
+    if( g->db_data->regist_start )
+    {
+      return ERR_OTHER;
+    }
+
     NEXT_ARG(p);
 
     g->db_data->regist_start = 1;
@@ -42,6 +47,11 @@ int handle_cmd_regist(struct cmd *cmd)
 
   SUBCMD("stop")
   {
+    if( !g->db_data->regist_start )
+    {
+      return ERR_OTHER;
+    }
+
     g->db_data->regist_start = 0;
     group_save(g);
 

@@ -96,6 +96,12 @@ int handle_cmd_votectrl(struct cmd *cmd)
     struct db_vote *dv;
     int num;
 
+    /* only one vote could be open at the one time. */
+    if( g->vote.current )
+    {
+      return ERR_OTHER;
+    }
+
     /* the vote number */
     p = cmd->args[ai++];
     if (!p)
@@ -232,6 +238,11 @@ int handle_cmd_votectrl(struct cmd *cmd)
   {
     struct vote *v;
     struct list_head *t;
+
+    if( !g->vote.current )
+    {
+      return ERR_OTHER;
+    }
 
     /* the vote number */
     p = cmd->args[ai++];

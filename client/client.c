@@ -177,7 +177,7 @@ static void udp_recved(char *buf, int len)
   struct pack *qitem;
 
   /* return immediately when we are not subscribed to any */
-  if (subscription[0] == 0 || subscription[1] == 0)
+  if (subscription[0] == 0 && subscription[1] == 0)
     return;
 
   qitem = (struct pack *)buf;

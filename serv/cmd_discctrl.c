@@ -59,11 +59,13 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   struct device *d;
   struct tag *tag;
+  struct group *g;
 
   /* require reg() before any cmd */
   THIS_DEVICE(cmd, d);
 
   tag = d->tag;
+  g = d->group;
 
   NEXT_ARG(subcmd);
 
@@ -80,8 +82,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     send_to_tag_all(cmd, d->tag);
 
-    d->group->db_data->discuss_mode = i;
-    group_save(d->group);
+    g->db_data->discuss_mode = i;
+    group_save(g);
   }
 
   SUBCMD("query")
@@ -104,7 +106,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
     int nmembers=0;
 
     /* only one discuss could open. */
-    if( d->group->discuss.current )
+    if( g->discuss.current )
     {
       return ERR_OTHER;
     }
@@ -150,8 +152,8 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     REP_END(cmd);
 
-    d->group->discuss.current = s;
-    d->group->discuss.curr_num = num;
+    g->discuss.current = s;
+    g->discuss.curr_num = num;
 
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
@@ -170,10 +172,10 @@ int handle_cmd_discctrl(struct cmd *cmd)
       }
     }
 
-    d->group->chairman = d;
+    g->chairman = d;
 
-    d->group->db_data->discuss_id = s->id;
-    group_save(d->group);
+    g->db_data->discuss_id = s->id;
+    group_save(g);
   }
 
   SUBCMD("request")
@@ -240,7 +242,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   SUBCMD("status")
   {
-    if( !d->group->discuss.current )
+    if( !g->discuss.current )
       return ERR_OTHER;
 
     REP_ADD(cmd, "OK");
@@ -254,23 +256,23 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   SUBCMD("close")
   {
-    if( !d->group->discuss.current )
+    if( !g->discuss.current )
     {
       return ERR_OTHER;
     }
 
     REP_OK(cmd);
 
-    d->group->discuss.current = NULL;
+    g->discuss.current = NULL;
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
 
     SEND_TO_GROUP_ALL(cmd);
 
-    d->group->chairman = NULL;
+    g->chairman = NULL;
 
-    d->group->db_data->discuss_id = 0;
-    group_save(d->group);
+    g->db_data->discuss_id = 0;
+    group_save(g);
   }
 
   SUBCMD("forbid")
@@ -299,13 +301,10 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
   SUBCMD("disableall")
   {
-    struct group *g;
-
     NEXT_ARG(p);
     i = atoi(p);
 
     /* we assume this cmd is only sent from the 'chairman' device */
-    g = d->group;
     g->chairman = d;
     g->discuss.disabled = i;
 

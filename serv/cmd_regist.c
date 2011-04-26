@@ -39,6 +39,7 @@ int handle_cmd_regist(struct cmd *cmd)
     device_save(d);
 
     g->regist.expect = md_get_device_count();
+    g->regist.arrive = 0;
 
     REP_OK(cmd);
 

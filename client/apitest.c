@@ -15,8 +15,9 @@ int on_event(int event, void *arg1, void *arg2)
     case EVENT_FILE :
     {
       FILE *f;
+      int l;
       f = fopen("transfer", "w");
-      fwrite(arg1, 1, (int)arg2, f);
+      l = fwrite(arg1, 1, (int)arg2, f);
       fclose(f);
       printf("file 'transfer' saved\n");
     }

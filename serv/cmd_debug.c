@@ -45,7 +45,6 @@ int handle_cmd_debug(struct cmd *cmd)
           p = inet_ntoa(t->bcasts[i]->sin_addr);
           LIST_ADD(buf, l, p);
         }
-        LIST_END(buf, l);
 
         REP_ADD(cmd, buf);
       }

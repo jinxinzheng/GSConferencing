@@ -70,8 +70,6 @@ do { \
 #define LIST_ADD_NUM(str, l, n) \
   LIST_ADD_FMT(str, l, "%d", n)
 
-#define LIST_END(str,l)
-
 
 #define NEXT_ARG(p) \
   if (!(p = cmd->args[a++])) return 1;
@@ -145,7 +143,6 @@ do { \
   { \
     LIST_ADD(buf, _l, (parr)[_i]->member); \
   } \
-  LIST_END(buf, _l); \
 } while(0)
 
 #define list_TO_NUMLIST(buf, head, type, lm, member) \
@@ -158,7 +155,6 @@ do { \
     _e = list_entry(_t, type, lm); \
     LIST_ADD_NUM(buf, _l, (int)_e->member); \
   } \
-  LIST_END(buf, _l); \
 } while(0)
 
 /* sub cmd handlers.

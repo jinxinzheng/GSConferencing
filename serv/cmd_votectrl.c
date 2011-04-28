@@ -111,7 +111,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
     {
       LIST_ADD(buf, l, db[i]->name);
     }
-    LIST_END(buf, l);
 
     REP_ADD(cmd, buf);
     REP_END(cmd);
@@ -260,7 +259,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
         LIST_ADD_NUM(buf, l, (int)m->id);
       }
     }
-    LIST_END(buf, l);
 
     REP_ADD(cmd, buf);
     REP_END(cmd);
@@ -295,7 +293,6 @@ int handle_cmd_votectrl(struct cmd *cmd)
     {
       LIST_ADD_NUM(buf, l, v->results[i]);
     }
-    LIST_END(buf, l);
 
     REP_ADD(cmd, buf);
     REP_END(cmd);

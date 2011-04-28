@@ -1,17 +1,16 @@
 #include "cmd_handler.h"
 #include "include/types.h"
 #include "db/md.h"
+#include "devctl.h"
 
 int handle_cmd_regist(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;
 
-  char buf[1024];
   struct device *d;
   struct group *g;
   char *p;
-  int i;
 
   /* require reg() before any cmd */
   THIS_DEVICE(cmd, d);

@@ -3,6 +3,7 @@
 
 #include "cmd/cmd.h"
 #include "sys.h"
+#include "network.h"
 
 struct cmd_handler_entry
 {
@@ -129,7 +130,7 @@ static inline void send_to_idlist(struct cmd *cmd, char *idlist)
 
   IDLIST_FOREACH_p(idlist)
   {
-    if( d = get_device(atoi(p)) )
+    if( (d = get_device(atoi(p))) )
       sendto_dev_tcp(cmd->rep, cmd->rl, d);
   }
 }

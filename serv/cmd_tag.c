@@ -1,5 +1,6 @@
 #include "cmd_handler.h"
 #include "db/md.h"
+#include "devctl.h"
 
 int handle_cmd_get_tags(struct cmd *cmd)
 {
@@ -9,7 +10,7 @@ int handle_cmd_get_tags(struct cmd *cmd)
   int l=0;
 
   md_iterate_tag_begin(&it);
-  while( dt = md_iterate_tag_next(&it) )
+  while( (dt = md_iterate_tag_next(&it)) )
   {
     LIST_ADD_FMT(buf, l, "%d:%s", dt->id, dt->name);
   }
@@ -69,7 +70,7 @@ int handle_cmd_switch_tag(struct cmd *cmd)
   /* update db */
   {
     struct db_device *dbd;
-    if( dbd = d->db_data )
+    if( (dbd = d->db_data) )
     {
       dbd->tagid = tid;
       device_save(d);

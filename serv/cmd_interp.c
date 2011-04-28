@@ -1,5 +1,6 @@
 #include "cmd_handler.h"
 #include "include/types.h"
+#include "interp.h"
 
 int handle_cmd_interp(struct cmd *cmd)
 {

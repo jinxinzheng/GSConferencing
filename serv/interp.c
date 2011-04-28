@@ -42,6 +42,7 @@ void interp_dup_pack(struct tag *dup, struct packet *pack)
   struct tag *t;
   struct list_head *e;
   struct packet *newp;
+  pack_data *pdata;
 
   pthread_mutex_lock(&dup->interp.mx);
 
@@ -65,7 +66,8 @@ void interp_dup_pack(struct tag *dup, struct packet *pack)
 
     newp = pack_dup(pack);
 
-    ((pack_data *)newp->data)->tag = htons((uint16_t)t->id);
+    pdata = (pack_data *)(newp->data);
+    pdata->tag = htons((uint16_t)t->id);
 
     tag_in_dev_packet(t, t->interp.curr_dev, newp);
   }

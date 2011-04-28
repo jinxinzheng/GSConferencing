@@ -76,4 +76,8 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack);
 
 struct packet *tag_out_dev_mixed(struct tag *t);
 
+void tag_add_outstanding(struct tag *t, struct device *d);
+
+void tag_rm_outstanding(struct tag *t, struct device *d);
+
 #endif

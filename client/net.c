@@ -65,7 +65,7 @@ int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)
 int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
 {
   int sock;
-  char tmp[2048];
+  unsigned char tmp[2048];
   int l;
 
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -128,6 +128,8 @@ static void *try_send_tcp(void *arg)
   param->try_end(param->buf);
 
   free(param);
+
+  return NULL;
 }
 
 void start_try_send_tcp(void *buf, int len, const struct sockaddr_in *addr, void (*try_end)(char *))
@@ -241,7 +243,7 @@ static void *run_recv_udp(void *arg)
 static void _recv_udp(int s)
 {
   struct sockaddr_in other;
-  int otherLen;
+  size_t otherLen;
   char buf[4096], *p;
   int len;
 
@@ -281,7 +283,7 @@ static void *run_recv_tcp(void *arg)
   int on;
   struct sockaddr_in loclAddr; /* local address */
   struct sockaddr_in remtAddr; /* remote address */
-  int remtLen;
+  size_t remtLen;
   char buf[2048];
   int l;
 
@@ -327,8 +329,8 @@ static void *run_recv_tcp(void *arg)
 
   for (;;) /* Run forever */
   {
-    int sel;
-    int isfile;
+    int sel = 0;
+    int isfile = 0;
 
     /* Wait for a remote to connect */
 
@@ -377,7 +379,7 @@ static void *run_recv_tcp(void *arg)
       if( !isfile )
       {
         /* decode received data */
-        char tmp[4096];
+        unsigned char tmp[4096];
         l = decode(tmp, buf, l);
         memcpy(buf, tmp, l);
         buf[l] = 0;

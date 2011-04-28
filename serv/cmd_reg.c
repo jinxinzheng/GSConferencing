@@ -1,6 +1,7 @@
 #include "cmd_handler.h"
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h>
 #include "devctl.h"
 #include "include/cksum.h"
 #include "include/debug.h"

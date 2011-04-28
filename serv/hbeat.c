@@ -1,6 +1,8 @@
 #include "sys.h"
+#include "devctl.h"
 #include "db/md.h"
 #include <stdio.h>
+#include <unistd.h>
 #include "include/debug.h"
 
 void dev_heartbeat(struct device *d)
@@ -10,7 +12,7 @@ void dev_heartbeat(struct device *d)
   if( !d->active )
   {
     struct db_device *dbd;
-    if( dbd = d->db_data )
+    if( (dbd = d->db_data) )
     {
       dbd->online = 1;
       device_save(d);
@@ -41,7 +43,7 @@ static void *run_heartbeat_god(void *arg)
         if( d->active )
         {
           struct db_device *dbd;
-          if( dbd = d->db_data )
+          if( (dbd = d->db_data) )
           {
             dbd->online = 0;
             device_save(d);
@@ -52,6 +54,9 @@ static void *run_heartbeat_god(void *arg)
       }
     }
   }
+
+  /* never reached */
+  return 0;
 }
 
 void start_heartbeat_god()

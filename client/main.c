@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
@@ -47,6 +48,8 @@ static void *auto_send_udp(void *arg)
 
     usleep(3000); /*1ms=1000*/
   }
+
+  return NULL;
 }
 
 static void start_auto_udp()

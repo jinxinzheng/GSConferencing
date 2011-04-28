@@ -31,7 +31,7 @@ void dev_update_data(struct device *dev)
     char *ip = inet_ntoa(dev->addr.sin_addr);
     int port = ntohs(dev->addr.sin_port);
 
-    if (dbd = md_find_device(dev->id))
+    if( (dbd = md_find_device(dev->id)) )
     {
       dbd->online = 1;
       if (strcmp(dbd->ip, ip) != 0 || dbd->port != port)
@@ -168,6 +168,8 @@ int dev_unregister(struct device *dev)
   {
     list_del(&dev->list);
   }
+
+  return 0;
 }
 
 void device_save(struct device *d)

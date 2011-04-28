@@ -1,8 +1,10 @@
 #include "cmd_handler.h"
 #include <string.h>
 #include "dev.h"
+#include "devctl.h"
 #include "sys.h"
 #include "db/md.h"
+#include "ptc.h"
 #include <include/types.h>
 #include <include/debug.h>
 
@@ -28,7 +30,7 @@ void group_setup_discuss(struct group *g, struct db_discuss *s)
     mid = atoi(p);
     g->discuss.memberids[g->discuss.nmembers ++] = mid;
 
-    if( dbd = md_find_device(mid) )
+    if( (dbd = md_find_device(mid)) )
     {
       LIST_ADD(g->discuss.membernames, l, dbd->user_name);
     }
@@ -87,7 +89,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
   char *subcmd, *p;
   char buf[1024];
   int a=0;
-  int i,l;
+  int i;
 
   struct device *d;
   struct tag *tag;
@@ -168,7 +170,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
     for( i=0 ; i<g->discuss.nmembers ; i++ )
     {
       struct device *m;
-      if (m = get_device(g->discuss.memberids[i]))
+      if( (m = get_device(g->discuss.memberids[i])) )
       {
         m->discuss.forbidden = 0;
         if( m->discuss.open )
@@ -289,7 +291,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
 
     REP_OK(cmd);
 
-    if (d = get_device(i))
+    if( (d = get_device(i)) )
     {
       d->discuss.forbidden = 1;
       sendto_dev_tcp(cmd->rep, cmd->rl, d);

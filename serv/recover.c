@@ -2,7 +2,10 @@
 #include "sys.h"
 #include "devctl.h"
 #include <string.h>
+#include <arpa/inet.h>
+#include "cast.h"
 #include "cmd_handler.h"
+#include "discuss.h"
 
 static inline void set_dev_from_data(struct device *d, const struct db_device *data)
 {
@@ -29,7 +32,7 @@ static inline void restore_sub(struct device *d)
 
   for( i=0 ; i<2 ; i++ )
   {
-    if( tid = subs[i] )
+    if( (tid = subs[i]) )
     {
       tuid = TAGUID(gid, tid);
       t = get_tag(tuid);
@@ -109,7 +112,7 @@ static void recover_devs()
   struct device *d;
 
   md_iterate_device_begin(&it);
-  while( dd = md_iterate_device_next(&it) )
+  while( (dd = md_iterate_device_next(&it)) )
   {
     d = dev_create(dd->id);
 

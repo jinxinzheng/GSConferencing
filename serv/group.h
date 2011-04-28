@@ -52,4 +52,11 @@ struct group *group_create(long gid);
 
 void group_save(struct group *g);
 
+
+
+void group_setup_discuss(struct group *g, struct db_discuss *s);
+
+void group_setup_vote(struct group *g, struct db_vote *dv);
+
+
 #endif  /*__GROUP_H__*/

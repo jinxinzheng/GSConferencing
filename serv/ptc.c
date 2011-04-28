@@ -4,6 +4,7 @@
 
 #include "dev.h"
 #include "sys.h"
+#include "network.h"
 #include "db/md.h"
 #include <stdio.h>
 
@@ -13,7 +14,7 @@ static void ptc_send(struct device *d)
 {
   struct device *ptc;
 
-  if( ptc = get_device(d->db_data->ptc_id) )
+  if( (ptc = get_device(d->db_data->ptc_id)) )
   {
     char *ptcmd = d->db_data->ptc_cmd;
     if( ptcmd[0] )

@@ -4,12 +4,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "opts.h"
 #include "packet.h"
+#include "network.h"
+#include "devctl.h"
 #include "include/pack.h"
 #include "include/types.h"
 #include "include/debug.h"
 #include "db/md.h"
+#include "interp.h"
 
 /* packets sent by devices with the same tag will be queued together.
  * There will be as many queues as the number of existing tags.
@@ -49,11 +53,13 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   struct list_head *p, *h;
   int i;
 
+#if DEBUG >= 4
   {
     pack_data *pd = (pack_data *)pack->data;
     trace_verb("%d.%d ", ntohl(pd->id), ntohl(pd->seq));
     DEBUG_TIME_NOW();
   }
+#endif
 
   if (opt_broadcast)
   {
@@ -97,7 +103,7 @@ void *tag_run_casting(void *tag)
   {
     int r, optval;
     optval = 1;
-    if (r = setsockopt(t->sock, SOL_SOCKET, SO_BROADCAST, &optval, sizeof optval))
+    if( (r = setsockopt(t->sock, SOL_SOCKET, SO_BROADCAST, &optval, sizeof optval)) )
     {
       perror("setsockopt(SO_BROADCAST)");
       close(t->sock);
@@ -136,7 +142,7 @@ int dev_subscribe(struct device *dev, struct tag *tag)
   {
     if( dev->subscription[i] == tag )
     {
-      return;
+      return 0;
     }
     else
     if( !dev->subscription[i] )

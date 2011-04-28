@@ -1,4 +1,5 @@
 #include "cmd_handler.h"
+#include <unistd.h>
 #include <pthread.h>
 #include <string.h>
 #include "db/md.h"
@@ -88,7 +89,7 @@ do \
   l = 0; \
   md_iterate_##type##_begin(&_it); \
   append("table " #type "\n"); \
-  while( _d = md_iterate_##type##_next(&_it) ) \
+  while( (_d = md_iterate_##type##_next(&_it)) ) \
   { \
     write_##type(_d); \
     if( l>=BUFLEN ) \
@@ -159,7 +160,7 @@ static void *serv_manage(void *arg)
   char buf[BUFLEN+200];
   int l;
 
-  struct cmd c;
+  struct cmd c = {0};
   int a=0;
   char *p;
 

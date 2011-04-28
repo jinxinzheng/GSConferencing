@@ -1,9 +1,11 @@
 #include "client.h"
 #include "net.h"
+#include <unistd.h>
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 #include "cmd/cmd.h"
 #include "include/queue.h"
 #include "include/pack.h"
@@ -121,6 +123,8 @@ static void *run_heartbeat(void *arg)
     /* send heart beat every 3 seconds */
     sleep(3);
   }
+
+  return NULL;
 }
 
 static struct pack *audio_current;
@@ -170,6 +174,8 @@ static void *run_send_udp(void *arg)
     //free
     cfifo__out(&udp_snd_fifo);
   }
+
+  return NULL;
 }
 
 static void udp_recved(char *buf, int len)
@@ -243,6 +249,8 @@ static void *run_recv_udp(void *arg)
 
     cfifo__out(&udp_rcv_fifo);
   }
+
+  return NULL;
 }
 
 /* cmd delegates */
@@ -260,7 +268,7 @@ static void *run_recv_udp(void *arg)
   if (l>0) { \
     int _e;  \
     buf[l] = 0; \
-    if (_e = parse_cmd(buf, &c)) \
+    if( (_e = parse_cmd(buf, &c)) ) \
     { \
       fprintf(stderr, "%s failed: %d\n", __func__, _e); \
       if (_e == ERR_NOT_REG) \
@@ -285,7 +293,7 @@ static void *run_recv_udp(void *arg)
 int send_cmd(char *buf, int len, struct cmd *reply)
 {
   int i,l;
-  struct cmd c;
+  struct cmd c = {0};
 
   l = len;
 
@@ -1017,6 +1025,8 @@ int synctime()
 
   fprintf(stderr, "server time %s.%s\n", c.args[i-1], c.args[i]);
   fprintf(stderr, "client time %d.%d\n", (int)t.tv_sec, (int)t.tv_nsec);
+
+  return 0;
 }
 
 
@@ -1059,7 +1069,7 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
   }
   contex = { 0, 0, NULL, 0 };
 
-  struct cmd c;
+  struct cmd c = {0};
   int i;
 
 

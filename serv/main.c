@@ -5,6 +5,7 @@
 #include "db/md.h"
 #include <unistd.h>
 #include "opts.h"
+#include "recover.h"
 
 void init()
 {
@@ -42,4 +43,6 @@ int main(int argc, char *const argv[])
 
   /* this will execute on the main thread and keep the process alive. */
   listener_udp();
+
+  return 0;
 }

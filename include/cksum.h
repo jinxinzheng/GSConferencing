@@ -23,7 +23,7 @@ static inline void cksum(void *data, int len, char *sum)
   unsigned int *ps = (unsigned int *)sum;
   int i;
 
-  shaHashData(data, len, sum);
+  shaHashData(data, len, (unsigned char *)sum);
 
   for (i=0; i<sizeof(salt)/sizeof(int); i++)
   {

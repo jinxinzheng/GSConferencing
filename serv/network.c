@@ -1,19 +1,24 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/sendfile.h>
 #include "include/queue.h"
 #include "sys.h"
 #include "devctl.h"
 #include "cast.h"
 #include "packet.h"
 #include "cmd/cmd.h"
+#include "cmd_handler.h"
 #include "include/pack.h"
 #include "include/debug.h"
 #include "include/encode.h"
 #include "../config.h"
+#include "hbeat.h"
 
 #define die(s) do {perror(s); exit(1);} while(0)
 #define fail(s) do {perror(s); return -1;} while(0)
@@ -128,7 +133,7 @@ static int do_recv(int sock, void *buf, int len)
 
 static int do_send(int sock, const void *buf, int len)
 {
-  char tmp[BUFLEN];
+  unsigned char tmp[BUFLEN];
   int l;
 
   l = encode(tmp, buf, len);
@@ -143,8 +148,6 @@ void *run_proceed_connection(void *arg)
   int cmdl;
   int i;
 
-  char *p;
-
   for (;;)
   {
     c = deque_connection();
@@ -155,7 +158,6 @@ void *run_proceed_connection(void *arg)
     {
       struct cmd cmd;
       char rep[BUFLEN];
-      int rl;
 
       buf[cmdl]=0;
       trace_info("recved cmd: %s\n", buf);
@@ -215,7 +217,6 @@ CMDERR:
       break;
     }
 
-NEXT:
     if( c->sock )
       close(c->sock);
     free(c);
@@ -232,6 +233,8 @@ void *listener_tcp_proc(void *p)
   port = SERVER_PORT;
 
   run_listener_tcp(port);
+
+  return NULL;
 }
 
 void start_listener_tcp()

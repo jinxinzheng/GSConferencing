@@ -5,6 +5,7 @@
 #include "include/types.h"
 #include "include/debug.h"
 #include "dev.h"
+#include "devctl.h"
 #include "sys.h"
 #include "db/md.h"
 
@@ -36,7 +37,7 @@ void vote_results_to_str( char *str, const struct vote *v )
   struct db_device *dd; \
   g->vote.memberids[g->vote.nmembers ++] = mid; \
 \
-  if( dd = md_find_device(mid) ) \
+  if( (dd = md_find_device(mid)) ) \
     LIST_ADD(g->vote.membernames, l, dd->user_name); \
   else \
     LIST_ADD(g->vote.membernames, l, "?"); \
@@ -190,7 +191,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     for( i=0 ; i<g->vote.nmembers ; i++ )
     {
-      if (m = get_device(g->vote.memberids[i]))
+      if( (m = get_device(g->vote.memberids[i])) )
       {
         device_vote_start();
       }

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "sys.h"
 #include "group.h"
 #include "db/md.h"
 #include "vote.h"
@@ -11,7 +12,7 @@ struct group *group_create(long gid)
   struct group *g;
   struct db_group *dg;
 
-  if( dg = md_find_group(gid) )
+  if( (dg = md_find_group(gid)) )
   {
     /* any update? */
   }
@@ -35,7 +36,7 @@ struct group *group_create(long gid)
   if( dg->discuss_id )
   {
     struct db_discuss *dsc;
-    if( dsc = md_find_discuss(dg->discuss_id) )
+    if( (dsc = md_find_discuss(dg->discuss_id)) )
     {
       group_setup_discuss(g, dsc);
     }
@@ -44,7 +45,7 @@ struct group *group_create(long gid)
   if( dg->vote_id )
   {
     struct db_vote *dv;
-    if( dv = md_find_vote(dg->vote_id) )
+    if( (dv = md_find_vote(dg->vote_id)) )
     {
       group_setup_vote(g, dv);
 

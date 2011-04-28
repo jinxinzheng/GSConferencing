@@ -57,7 +57,7 @@ static inline int cfifo_len(struct cfifo *cf)
 
 static inline int cfifo_full(struct cfifo *cf)
 {
-  return ((cf->in+1) & cf->mask == cf->out);
+  return (((cf->in+1) & cf->mask) == cf->out);
 }
 
 static inline int cfifo_empty(struct cfifo *cf)
@@ -65,7 +65,7 @@ static inline int cfifo_empty(struct cfifo *cf)
   return (cf->out == cf->in);
 }
 
-static inline int cfifo_clear(struct cfifo *cf)
+static inline void cfifo_clear(struct cfifo *cf)
 {
   cf->out = cf->in;
 }

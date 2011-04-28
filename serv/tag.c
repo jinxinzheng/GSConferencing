@@ -2,6 +2,7 @@
 #include "cast.h"
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "packet.h"
 #include "pcm.h"
 #include "include/pack.h"
@@ -84,7 +85,7 @@ void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast)
     return;
   }
 
-  if (p = bsearch(&bcast, t->bcasts, t->bcast_size, sizeof(t->bcasts[0]), sincmp))
+  if( (p = bsearch(&bcast, t->bcasts, t->bcast_size, sizeof(t->bcasts[0]), sincmp)) )
     /* the address is already in the list */
     return;
 
@@ -112,6 +113,8 @@ static inline struct packet *__dev_out_packet(struct device *d)
   return p;
 }
 
+/* not used */
+#if 0
 static struct packet *_dev_out_packet(struct device *d)
 {
   cfifo_wait_empty(&d->pack_fifo);
@@ -123,6 +126,7 @@ static struct packet *_dev_out_packet(struct device *d)
   }
   return __dev_out_packet(d);
 }
+#endif
 
 
 void tag_add_outstanding(struct tag *t, struct device *d)
@@ -195,7 +199,7 @@ void tag_clear_outstanding(struct tag *t)
 
   for( i=0 ; i<8 ; i++ )
   {
-    if( d = t->mix_devs[i] )
+    if( (d = t->mix_devs[i]) )
     {
       t->mix_devs[i] = NULL;
 
@@ -267,7 +271,7 @@ static void tag_update_dev_timeouts(struct tag *t)
 
   for( i=0 ; i<8 ; i++ )
   {
-    if( d = t->mix_devs[i] )
+    if( (d = t->mix_devs[i]) )
     {
       if( cfifo_empty(&d->pack_fifo) )
       {

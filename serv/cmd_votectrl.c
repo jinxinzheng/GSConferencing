@@ -195,6 +195,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
       {
         device_vote_start();
       }
+      ++ v->n_members;
     }
 
     d->db_data->vote_master = 1;

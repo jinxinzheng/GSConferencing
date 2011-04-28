@@ -250,6 +250,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     REP_ADD(cmd, "OK");
 
+    strcpy(buf, "0");
     l = 0;
     list_for_each(t, &v->device_head)
     {

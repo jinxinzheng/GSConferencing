@@ -186,6 +186,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
       vote_add_device(v, m); \
       m->vote.v = v; \
       m->vote.choice = -1; \
+      m->db_data->vote_choice = -1; \
       } while (0)
 
     for( i=0 ; i<g->vote.nmembers ; i++ )

@@ -49,6 +49,8 @@ void group_setup_vote(struct group *g, struct db_vote *dv)
   int l;
   char *p;
 
+  g->vote.nmembers = 0;
+
   strcpy(buf, dv->members);
   l = 0;
   if (strcmp(buf, "all")==0)
@@ -315,6 +317,8 @@ int handle_cmd_votectrl(struct cmd *cmd)
     device_save(d);
 
     g->vote.current = NULL;
+    g->vote.nmembers = 0;
+
     g->db_data->vote_id = 0;
     g->db_data->vote_results[0] = '0';
     g->db_data->vote_results[1] = 0;

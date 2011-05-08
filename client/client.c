@@ -339,9 +339,7 @@ static inline int int_in_str(int i, char *s)
   return 0;
 }
 
-#define STR_TO_INT_LIST str_to_int_list
-
-static void str_to_int_list(char *s, int *list)
+static int _str_to_ints(char *s, int *list)
 {
   char *p;
   int i;
@@ -351,8 +349,16 @@ static void str_to_int_list(char *s, int *list)
     list[i++] = atoi(p);
     p = strtok(NULL, ",");
   }
-  list[i] = 0;
+  return i;
 }
+
+static void str_to_int_list(char *s, int *list)
+{
+  int l = _str_to_ints(s, list);
+  list[l] = 0;
+}
+
+#define STR_TO_INT_LIST str_to_int_list
 
 static void int_list_to_str(char *s, int list[])
 {
@@ -407,7 +413,7 @@ static void parse_dev_info(char *str, struct dev_info *info)
 #define info_int_list(m) \
     if( STREQU(keyval[0], #m) ) \
     { \
-      str_to_int_list(keyval[1], info->m); \
+      _str_to_ints(keyval[1], info->m); \
     }
 
     info_str(user_name)

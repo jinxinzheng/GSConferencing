@@ -24,7 +24,7 @@ struct dev_info
   int user_gender; /* 1:man, 0:woman. */
 
   int tag;  /* which tag it is in */
-  int sub[2];  /* what tags does it subscribe */
+  int sub[1];  /* what tags does it subscribe */
 
   int discuss_mode; /* discuss mode. (DISCMODE_) */
   int discuss_num; /* current discuss number. -1 if no discuss. */

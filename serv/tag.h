@@ -6,7 +6,7 @@
 
 struct device;
 
-#define MAX_SUB 2
+#define MAX_SUB 1
 
 struct tag {
   long tid;

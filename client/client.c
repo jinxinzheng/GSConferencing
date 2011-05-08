@@ -461,7 +461,6 @@ int reg(const char *passwd, struct dev_info *info)
 { \
   /*synctime();*/ \
   subscription[0] = info->sub[0]; \
-  subscription[1] = info->sub[1]; \
   if( subscription[0]==0 && subscription[1]==0 ) \
     subscription[0] = 1; \
 }
@@ -555,8 +554,6 @@ int sub(int tag)
 
   if( !subscription[0] )
     i = 0;
-  else if( !subscription[1] )
-    i = 1;
   else
     return 1;
 
@@ -575,8 +572,6 @@ int unsub(int tag)
 
   if( subscription[0] == tag )
     i = 0;
-  else if( subscription[1] == tag )
-    i = 1;
   else
     return 1;
 

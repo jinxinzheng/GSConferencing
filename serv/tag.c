@@ -338,6 +338,12 @@ static struct packet *tag_mix_audio(struct tag *t)
     c++; \
   }
 
+  if( t->mix_count == 1 )
+  {
+    /* flushing is not needed when there's only 1 queue. */
+    goto normal;
+  }
+
   /* first pass: flush the over-loaded queues */
   c = 0;
   for( i=0 ; i<8 ; i++ )
@@ -375,6 +381,7 @@ static struct packet *tag_mix_audio(struct tag *t)
   if( c > 0 )
     goto mix;
 
+normal:
   /* second pass: normal blending */
   c = 0;
   for( i=0 ; i<8 ; i++ )

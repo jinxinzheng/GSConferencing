@@ -52,6 +52,7 @@ void dev_update_data(struct device *dev)
         0,"?",1, /* user */
         1, /* online */
         0,0, /* sub */
+        0, /* discuss_chair */
         0, /* discuss_open */
         0, /* regist_master */
         0, /* vote_master */

@@ -31,7 +31,7 @@ static void get_client_info(char *info, const struct device *d)
   ADD_ARG("discuss_nmembers=%d", g->discuss.nmembers);
   ADD_ARG("discuss_idlist=%s", dsc? dsc->members : "0");
   ADD_ARG("discuss_userlist=%s", dsc? g->discuss.membernames : "0");
-  ADD_ARG("discuss_chair=%d", g->chairman == d);
+  ADD_ARG("discuss_chair=%d", dd->discuss_chair);
   ADD_ARG("discuss_open=%d", dd->discuss_open);
 
   ADD_ARG("regist_start=%d", dg->regist_start);

@@ -181,6 +181,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
       }
     }
 
+    d->db_data->discuss_chair = 1;
+    device_save(d);
+
     g->chairman = d;
 
     g->db_data->discuss_id = s->id;
@@ -277,6 +280,9 @@ int handle_cmd_discctrl(struct cmd *cmd)
     tag->discuss.openuser = 0;
 
     SEND_TO_GROUP_ALL(cmd);
+
+    d->db_data->discuss_chair = 0;
+    device_save(d);
 
     g->chairman = NULL;
 

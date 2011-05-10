@@ -33,6 +33,7 @@ create table device
        online int,
        sub1 int,
        sub2 int,
+       discuss_chair int,
        discuss_open int,
        regist_master int,
        vote_master int,

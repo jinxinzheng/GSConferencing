@@ -55,6 +55,11 @@ static inline void restore_discuss(struct device *d)
   add_open(d->tag, d);
 }
 
+static inline void restore_regist(struct device *d)
+{
+  d->regist.reg = d->db_data->regist_reg;
+}
+
 static inline void restore_vote(struct device *d)
 {
   struct db_vote *dv = d->group->vote.current;
@@ -124,6 +129,8 @@ static void recover_devs()
     restore_sub(d);
 
     restore_discuss(d);
+
+    restore_regist(d);
 
     restore_vote(d);
   }

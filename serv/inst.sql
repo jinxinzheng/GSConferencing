@@ -6,13 +6,35 @@ create table [group]
  discuss_id int,
  regist_start int,
  regist_mode int,
+ regist_expect int,
+ regist_arrive int,
  vote_id int,
  vote_results varchar(256),
  primary key (id)
 );
 
-insert into [group] (id, name, discuss_mode, discuss_id, regist_start, regist_mode, vote_id, vote_results)
-values (1, 'default', 0, 0, 0, 0, 0, '0');
+insert into [group] (
+  id,
+  name,
+  discuss_mode,
+  discuss_id,
+  regist_start,
+  regist_mode,
+  regist_expect,
+  regist_arrive,
+  vote_id,
+  vote_results)
+values (
+  1,
+  'default',
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  '0');
 
 
 create table tag
@@ -36,6 +58,7 @@ create table device
        discuss_chair int,
        discuss_open int,
        regist_master int,
+       regist_reg int,
        vote_master int,
        vote_choice int,
        ptc_id int,

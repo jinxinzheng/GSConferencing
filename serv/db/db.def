@@ -5,6 +5,8 @@ i discuss_mode
 i discuss_id
 i regist_start
 i regist_mode
+i regist_expect
+i regist_arrive
 i vote_id
 s vote_results 256
 
@@ -22,6 +24,7 @@ i sub2
 i discuss_chair
 i discuss_open
 i regist_master
+i regist_reg
 i vote_master
 i vote_choice
 i ptc_id

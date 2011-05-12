@@ -3,6 +3,26 @@
 #include "db/md.h"
 #include "devctl.h"
 
+static inline void regist_notify_all(struct cmd *cmd, struct group *g)
+{
+  struct list_head *e;
+  struct device *d;
+
+  list_for_each(e, &g->device_head)
+  {
+    d = list_entry(e, struct device, list);
+
+    /* clear regist state each time
+     * regist is started/stopped */
+    d->regist.reg = 0;
+
+    d->db_data->regist_reg = d->regist.reg;
+    device_save(d);
+
+    send_cmd_to_dev(cmd, d);
+  }
+}
+
 int handle_cmd_regist(struct cmd *cmd)
 {
   char *subcmd;
@@ -30,6 +50,12 @@ int handle_cmd_regist(struct cmd *cmd)
 
     NEXT_ARG(p);
 
+    g->regist.expect = md_get_device_count();
+    g->regist.arrive = 0;
+
+    g->db_data->regist_expect = g->regist.expect;
+    g->db_data->regist_arrive = g->regist.arrive;
+
     g->db_data->regist_start = 1;
     g->db_data->regist_mode = atoi(p);
     group_save(g);
@@ -37,12 +63,9 @@ int handle_cmd_regist(struct cmd *cmd)
     d->db_data->regist_master = 1;
     device_save(d);
 
-    g->regist.expect = md_get_device_count();
-    g->regist.arrive = 0;
-
     REP_OK(cmd);
 
-    SEND_TO_GROUP_ALL(cmd);
+    regist_notify_all(cmd, g);
   }
 
   SUBCMD("stop")
@@ -52,6 +75,12 @@ int handle_cmd_regist(struct cmd *cmd)
       return ERR_OTHER;
     }
 
+    g->regist.expect = 0;
+    g->regist.arrive = 0;
+
+    g->db_data->regist_expect = g->regist.expect;
+    g->db_data->regist_arrive = g->regist.arrive;
+
     g->db_data->regist_start = 0;
     group_save(g);
 
@@ -60,7 +89,7 @@ int handle_cmd_regist(struct cmd *cmd)
 
     REP_OK(cmd);
 
-    SEND_TO_GROUP_ALL(cmd);
+    regist_notify_all(cmd, g);
   }
 
   SUBCMD("status")
@@ -119,7 +148,13 @@ int handle_cmd_regist(struct cmd *cmd)
 
     g->regist.arrive ++;
 
+    g->db_data->regist_arrive = g->regist.arrive;
+    group_save(g);
+
     d->regist.reg = 1;
+
+    d->db_data->regist_reg = 1;
+    device_save(d);
   }
 
   else return 2; /*sub cmd not found*/

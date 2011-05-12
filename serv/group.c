@@ -42,6 +42,12 @@ struct group *group_create(long gid)
     }
   }
 
+  if( dg->regist_start )
+  {
+    g->regist.expect = dg->regist_expect;
+    g->regist.arrive = dg->regist_arrive;
+  }
+
   if( dg->vote_id )
   {
     struct db_vote *dv;

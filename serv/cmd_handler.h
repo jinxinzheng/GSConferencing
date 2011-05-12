@@ -81,6 +81,11 @@ do { \
   if (!(d = get_device((cmd)->device_id))) \
     return ERR_NOT_REG;
 
+static inline void send_cmd_to_dev(struct cmd *cmd, struct device *d)
+{
+  sendto_dev_tcp(cmd->rep, cmd->rl, d);
+}
+
 static inline void send_to_group_all(struct cmd *cmd, struct group *g)
 {
   struct device *d;
@@ -89,7 +94,7 @@ static inline void send_to_group_all(struct cmd *cmd, struct group *g)
   list_for_each(e, &g->device_head)
   {
     d = list_entry(e, struct device, list);
-    sendto_dev_tcp(cmd->rep, cmd->rl, d);
+    send_cmd_to_dev(cmd, d);
   }
 }
 
@@ -108,7 +113,7 @@ static inline void send_to_tag_all(struct cmd *cmd, struct tag *t)
   list_for_each(e, &t->device_head)
   {
     d = list_entry(e, struct device, tlist);
-    sendto_dev_tcp(cmd->rep, cmd->rl, d);
+    send_cmd_to_dev(cmd, d);
   }
 }
 
@@ -129,7 +134,7 @@ static inline void send_to_idlist(struct cmd *cmd, char *idlist)
   IDLIST_FOREACH_p(idlist)
   {
     if( (d = get_device(atoi(p))) )
-      sendto_dev_tcp(cmd->rep, cmd->rl, d);
+      send_cmd_to_dev(cmd, d);
   }
 }
 

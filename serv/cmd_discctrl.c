@@ -173,10 +173,6 @@ int handle_cmd_discctrl(struct cmd *cmd)
       if( (m = get_device(g->discuss.memberids[i])) )
       {
         m->discuss.forbidden = 0;
-        if( m->discuss.open )
-        {
-          del_open(m->tag, m);
-        }
         sendto_dev_tcp(cmd->rep, cmd->rl, m);
       }
     }

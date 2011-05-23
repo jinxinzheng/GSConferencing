@@ -173,7 +173,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
       if( (m = get_device(g->discuss.memberids[i])) )
       {
         m->discuss.forbidden = 0;
-        sendto_dev_tcp(cmd->rep, cmd->rl, m);
+        send_cmd_to_dev(cmd, m);
       }
     }
 
@@ -296,7 +296,7 @@ int handle_cmd_discctrl(struct cmd *cmd)
     if( (d = get_device(i)) )
     {
       d->discuss.forbidden = 1;
-      sendto_dev_tcp(cmd->rep, cmd->rl, d);
+      send_cmd_to_dev(cmd, d);
     }
   }
 

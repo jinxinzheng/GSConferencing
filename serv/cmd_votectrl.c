@@ -184,7 +184,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     /*send vote start cmd to the members*/
 
 #define device_vote_start() do { \
-      sendto_dev_tcp(cmd->rep, cmd->rl, m); \
+      send_cmd_to_dev(cmd, m); \
       vote_add_device(v, m); \
       m->vote.v = v; \
       m->vote.choice = -1; \
@@ -304,7 +304,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     list_for_each(t, &v->device_head)
     {
       struct device *m = list_entry(t, struct device, vote.l);
-      sendto_dev_tcp(cmd->rep, cmd->rl, m);
+      send_cmd_to_dev(cmd, m);
       m->vote.v = NULL;
     }
 
@@ -333,7 +333,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     list_for_each(t, &g->device_head)
     {
       struct device *m = list_entry(t, struct device, list);
-      sendto_dev_tcp(cmd->rep, cmd->rl, m);
+      send_cmd_to_dev(cmd, m);
     }
 
     /* clear database snapshot */
@@ -357,7 +357,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
     if (!m)
       return 1;
 
-    sendto_dev_tcp(cmd->rep, cmd->rl, m);
+    send_cmd_to_dev(cmd, m);
   }
   else if (strcmp(scmd, "forbid") == 0)
   {
@@ -385,7 +385,7 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
     m->vote.forbidden = fbd;
 
-    sendto_dev_tcp(cmd->rep, cmd->rl, m);
+    send_cmd_to_dev(cmd, m);
   }
   else
     return 2;

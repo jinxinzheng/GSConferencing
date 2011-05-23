@@ -4,7 +4,7 @@
 
 #include "dev.h"
 #include "sys.h"
-#include "network.h"
+#include "async.h"
 #include "db/md.h"
 #include <stdio.h>
 
@@ -56,7 +56,7 @@ static void ptc_send(struct device *d)
       char buf[256];
       int l;
       l = sprintf(buf, "%d ptc %s\n", (int)d->id, ptcmd);
-      sendto_dev_tcp(buf, l, ptc);
+      async_sendto_dev(buf, l, ptc);
     }
 
     add_ptc(ptc);

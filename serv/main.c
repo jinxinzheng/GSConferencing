@@ -13,6 +13,8 @@ void init()
 
   init_cmd_handlers();
 
+  async_init();
+
   md_load_all();
 }
 

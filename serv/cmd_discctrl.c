@@ -7,6 +7,7 @@
 #include "ptc.h"
 #include <include/types.h>
 #include <include/debug.h>
+#include "async.h"
 
 static struct db_discuss *db[1024];
 static int dbl = 0;
@@ -81,7 +82,7 @@ static void kick_user(struct device *d, struct device *kick)
   int l;
 
   l = sprintf(buf, "%d discctrl kick %d\n", (int)d->id, (int)kick->id);
-  sendto_dev_tcp(buf, l, kick);
+  async_sendto_dev(buf, l, kick);
 }
 
 int handle_cmd_discctrl(struct cmd *cmd)

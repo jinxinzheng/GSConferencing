@@ -1,4 +1,5 @@
 #include "cmd_handler.h"
+#include "network.h"
 
 static struct
 {

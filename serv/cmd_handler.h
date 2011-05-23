@@ -3,7 +3,7 @@
 
 #include "cmd/cmd.h"
 #include "sys.h"
-#include "network.h"
+#include "async.h"
 
 struct cmd_handler_entry
 {
@@ -83,7 +83,7 @@ do { \
 
 static inline void send_cmd_to_dev(struct cmd *cmd, struct device *d)
 {
-  sendto_dev_tcp(cmd->rep, cmd->rl, d);
+  async_sendto_dev(cmd->rep, cmd->rl, d);
 }
 
 static inline void send_to_group_all(struct cmd *cmd, struct group *g)

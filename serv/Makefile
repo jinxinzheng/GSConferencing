@@ -1,6 +1,6 @@
 #CC:=arm-linux-gcc
-CFLAGS:=-I. -I.. -O2 -Wall
-LDFLAGS:=-lpthread -lrt -lsqlite
+CFLAGS := -pipe -I. -I.. -O2 -Wall
+LDFLAGS := -pipe -lpthread -lrt -lsqlite
 
 SRCS := $(wildcard *.c)
 OBJS := $(patsubst %.c,%.o,$(SRCS))

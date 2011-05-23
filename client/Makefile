@@ -1,6 +1,6 @@
 #CC:=arm-linux-gcc
-CFLAGS := -I.. -O2 -Wall -Wno-unused-variable
-LDFLAGS := -lpthread -lrt
+CFLAGS := -pipe -I.. -O2 -Wall -Wno-unused-variable
+LDFLAGS := -pipe -lpthread -lrt
 
 SRCS := $(wildcard *.c)
 

@@ -1238,7 +1238,17 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
     {
       int uid = c.device_id;
       char *ids = c.args[i++];
-      char *msg = c.args[i++];
+   //   char *msg = c.args[i++];
+
+
+      /******************************/
+      char msg[256];
+      int msg_len = 0;
+      for(; strcmp(c.args[i],"OK")||c.args[i+1] ;)//不是OK，或未到NULL
+        msg_len += sprintf(msg + msg_len, " %s",c.args[i++]);
+      /******************************/
+
+
       if(STREQU(ids, "all"))
       {
         event_handler(EVENT_BROADCAST_MSG, &uid, msg);

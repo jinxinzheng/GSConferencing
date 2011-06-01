@@ -294,19 +294,10 @@ static void tag_update_dev_timeouts(struct tag *t)
 
 #define min(a,b) ((a)<(b)?(a):(b))
 
-static struct packet *tag_mix_audio(struct tag *t)
+static inline int wait_all_queues(struct tag *t)
 {
-  struct device *d;
-  struct packet *pp[8], *p;
-  pack_data *aupack;
-  short *au[8];
-  int mixlen = 1<<18;/* initially a big number is ok */
   int waited = 0;
-  int i,c,l;
 
-  /* all outstanding devs must have data on their queue.
-   * otherwise clients sending at lower rate may be
-   * scattered. */
   trace_dbg("stat %02x, mask %02x\n", t->mix_stat, t->mix_mask);
   while( (t->mix_stat & t->mix_mask) != t->mix_mask )
   {
@@ -324,9 +315,21 @@ static struct packet *tag_mix_audio(struct tag *t)
       /* it has been quite a while that there's no
        * any data. probably a client has stopped. */
       trace_warn("no data within timeout. maybe someone stopped.\n");
-      return NULL;
+      return 0;
     }
   }
+
+  return 1;
+}
+
+static struct packet *tag_mix_audio(struct tag *t)
+{
+  struct device *d;
+  struct packet *pp[8], *p;
+  pack_data *aupack;
+  short *au[8];
+  int mixlen = 1<<18;/* initially a big number is ok */
+  int i,c,l;
 
 #define add_mix_pack(p) \
   { \
@@ -379,10 +382,20 @@ static struct packet *tag_mix_audio(struct tag *t)
   }
 
   if( c > 0 )
+    /* flushing activated */
     goto mix;
 
 normal:
   /* second pass: normal blending */
+
+  /* when flushing is not activated, must wait for
+   * all outstanding devs to have data on their queue.
+   * otherwise clients sending at lower rate may be
+   * scattered. */
+  if( !wait_all_queues(t) )
+    return NULL;
+
+
   c = 0;
   for( i=0 ; i<8 ; i++ )
   {

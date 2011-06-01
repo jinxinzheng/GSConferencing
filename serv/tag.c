@@ -172,6 +172,7 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
       t->mix_devs[i] = NULL;
 
       t->mix_mask &= ~d->mixbit;
+      d->mixbit = 0;
 
       pthread_mutex_lock(&t->mut);
       t->mix_count --;

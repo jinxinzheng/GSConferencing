@@ -214,6 +214,15 @@ void tag_clear_outstanding(struct tag *t)
 
 void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
 {
+  /* don't en-queue if the dev is not outstanding.
+   * in the small window when client is opening or
+   * closing the mic. */
+  if( !d->mixbit )
+  {
+    pack_free(pack);
+    return;
+  }
+
   /* put in */
   _dev_in_packet(d, pack);
 

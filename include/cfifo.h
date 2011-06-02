@@ -6,7 +6,7 @@
  * and one writer is using it. */
 
 #include <stdlib.h>
-#include <semaphore.h>
+#include <pthread.h>
 
 struct cfifo
 {
@@ -17,8 +17,8 @@ struct cfifo
   void *data;
 
   /* block the reader if the fifo is empty. */
-  sem_t empty_sem;
-  int cancel_wait;
+  pthread_mutex_t empty_mux;
+  pthread_cond_t empty_cnd;
 };
 
 #define CFIFO(ff, sord, eord) \
@@ -46,8 +46,8 @@ static inline void cfifo_init(struct cfifo *cf, int size_order, int e_order)
 /* use with cfifo_in_signal() in writer and cfifo_wait_empty() in reader. */
 static inline void cfifo_enable_locking(struct cfifo *cf)
 {
-  sem_init(&cf->empty_sem, 0, 0);
-  cf->cancel_wait = 0;
+  pthread_mutex_init(&cf->empty_mux, NULL);
+  pthread_cond_init(&cf->empty_cnd, NULL);
 }
 
 static inline int cfifo_len(struct cfifo *cf)
@@ -97,15 +97,13 @@ static inline int cfifo_in(struct cfifo *cf)
 
 static inline int cfifo_in_signal(struct cfifo *cf)
 {
-  int sig = 0;
-
-  if (cfifo_empty(cf))
-    sig = 1;
+  pthread_mutex_lock(&cf->empty_mux);
 
   cfifo__in(cf);
 
-  if (sig)
-    sem_post(&cf->empty_sem);
+  pthread_cond_signal(&cf->empty_cnd);
+
+  pthread_mutex_unlock(&cf->empty_mux);
 
   return 0;
 }
@@ -135,29 +133,17 @@ static inline int cfifo_out(struct cfifo *cf)
 
 static inline void cfifo_wait_empty(struct cfifo *cf)
 {
-  /* clear unhandled cancel_wait() call made while
-   * no one is waiting. */
-  if( cf->cancel_wait )
+  pthread_mutex_lock(&cf->empty_mux);
+  while( cfifo_empty(cf) )
   {
-    /* down the sem up'ed by the cancel_wait() call */
-    sem_wait(&cf->empty_sem);
-    /* clear cancel wait state */
-    cf->cancel_wait = 0;
+    pthread_cond_wait(&cf->empty_cnd, &cf->empty_mux);
   }
-
-  while( cfifo_empty(cf) && !cf->cancel_wait )
-  {
-    sem_wait(&cf->empty_sem);
-  }
-
-  /* reset cancel wait */
-  cf->cancel_wait = 0;
+  pthread_mutex_unlock(&cf->empty_mux);
 }
 
 static inline void cfifo_cancel_wait(struct cfifo *cf)
 {
-  cf->cancel_wait = 1;
-  sem_post(&cf->empty_sem);
+  /* obsolete */
 }
 
 #endif

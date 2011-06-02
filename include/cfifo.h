@@ -141,9 +141,4 @@ static inline void cfifo_wait_empty(struct cfifo *cf)
   pthread_mutex_unlock(&cf->empty_mux);
 }
 
-static inline void cfifo_cancel_wait(struct cfifo *cf)
-{
-  /* obsolete */
-}
-
 #endif

@@ -182,9 +182,6 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
     }
   }
 
-  /* avoid dead lock */
-  cfifo_cancel_wait(&d->pack_fifo);
-
   /* todo: clear the fifo of the dev */
 }
 
@@ -203,9 +200,6 @@ void tag_clear_outstanding(struct tag *t)
     if( (d = t->mix_devs[i]) )
     {
       t->mix_devs[i] = NULL;
-
-      /* avoid dead lock */
-      cfifo_cancel_wait(&d->pack_fifo);
     }
   }
 

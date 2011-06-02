@@ -2,6 +2,7 @@
 #include "cmd_handler.h"
 #include "hbeat.h"
 #include "network.h"
+#include "packet.h"
 #include "db/md.h"
 #include <unistd.h>
 #include "opts.h"
@@ -12,6 +13,8 @@ void init()
   init_groups();
 
   init_cmd_handlers();
+
+  init_pack_pool();
 
   async_init();
 

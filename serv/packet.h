@@ -3,8 +3,8 @@
 
 #include "dev.h"
 
-/* not exceeding a page */
-#define MAXPACK 4000
+/* not exceeding 2K */
+#define MAXPACK 1800
 
 struct packet
 {
@@ -17,6 +17,8 @@ struct packet
   size_t len; /* length of data */
   char data[MAXPACK];
 };
+
+void init_pack_pool();
 
 struct packet *pack_get_new();
 

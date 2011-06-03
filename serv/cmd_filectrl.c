@@ -1,16 +1,9 @@
 #include "cmd_handler.h"
 #include "network.h"
+#include "db/md.h"
 
-static struct
-{
-  const char *name;
-}
-fa = {"file1.txt"},
-fb = {"file2.txt"},
-fc = {"file3.txt"},
-*files[] = {
-  &fa, &fb, &fc
-};
+static struct db_file *table[1024];
+static int tblen = 0;
 
 int handle_cmd_filectrl(struct cmd *cmd)
 {
@@ -31,7 +24,10 @@ int handle_cmd_filectrl(struct cmd *cmd)
   SUBCMD("query")
   {
     char buf[4096];
-    MAKE_STRLIST(buf, files, sizeof files/sizeof files[0], name);
+
+    tblen = md_get_array_file(table);
+
+    MAKE_STRLIST(buf, table, tblen, path);
 
     REP_ADD(cmd, "OK");
     REP_ADD(cmd, buf);
@@ -43,9 +39,14 @@ int handle_cmd_filectrl(struct cmd *cmd)
     NEXT_ARG(p);
     i = atoi(p);
 
+    if( i >= tblen )
+    {
+      return ERR_OTHER;
+    }
+
     REP_OK(cmd);
 
-    send_file_to_dev(files[i]->name, d);
+    send_file_to_dev(table[i]->path, d);
   }
 
   else return 2; /*sub cmd not found*/

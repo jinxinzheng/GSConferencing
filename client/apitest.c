@@ -82,6 +82,7 @@ int main(int argc, char *const argv[])
   msgctrl_query(idlist);
   msgctrl_send(NULL, "hello");
 
+  filectrl_query(buf);
   filectrl_select(0);
 
   //synctime();

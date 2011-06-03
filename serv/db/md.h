@@ -25,5 +25,6 @@ DECLARE(tag);
 DECLARE(vote);
 DECLARE(discuss);
 DECLARE(video);
+DECLARE(file);
 
 #endif

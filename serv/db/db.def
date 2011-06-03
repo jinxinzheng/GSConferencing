@@ -51,3 +51,7 @@ i id auto
 s name 64
 s path 260
 
+table file
+i id auto
+s path 260
+

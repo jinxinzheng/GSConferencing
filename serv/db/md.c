@@ -146,6 +146,7 @@ SETUP(tag);
 SETUP(vote);
 SETUP(discuss);
 SETUP(video);
+SETUP(file);
 
 void md_load_all()
 {
@@ -174,6 +175,7 @@ void md_load_all()
   LOAD(vote);
   LOAD(discuss);
   LOAD(video);
+  LOAD(file);
 
   free(buf);
 }

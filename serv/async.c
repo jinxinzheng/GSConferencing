@@ -9,6 +9,7 @@
 #include "network.h"
 #include <string.h>
 #include <unistd.h>
+#include <include/debug.h>
 
 #define THREADS 32
 
@@ -44,6 +45,7 @@ void async_sendto_dev(const void *buf, int len, struct device *d)
 
   while( !(args = (struct _send_args *) alloc_block(bp)) )
   {
+    trace_warn("all pooled thread in use. wait for a while..\n");
     /* wait for 100ms to allow some other thread to finish. */
     usleep(100*1000);
   }

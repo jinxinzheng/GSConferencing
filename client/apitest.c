@@ -8,7 +8,11 @@ int on_event(int event, void *arg1, void *arg2)
   {
     case EVENT_AUDIO :
     {
-      printf("audio from %d\n", (int)arg1);
+      static int acount = 0;
+      if( ((++acount) & ((1<<8)-1)) == 0 )
+      {
+        printf("audio from %d, %d\n", (int)arg1, acount);
+      }
     }
     break;
 

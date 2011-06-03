@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "opts.h"
 #include "recover.h"
+#include <config.h>
 
 void init()
 {
@@ -24,6 +25,8 @@ void init()
 int main(int argc, char *const argv[])
 {
   int opt;
+
+  printf("daya server %s\n", VERSION);
 
   while ((opt = getopt(argc, argv, "q:B")) != -1) {
     switch (opt) {

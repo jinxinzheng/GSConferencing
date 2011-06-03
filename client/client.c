@@ -50,6 +50,8 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   int servPort = SERVER_PORT;
   pthread_t thread;
 
+  printf("daya client %s\n", VERSION);
+
   id = dev_id;
 
   devtype = type;

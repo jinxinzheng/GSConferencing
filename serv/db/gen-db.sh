@@ -17,9 +17,11 @@ BEGIN{
 #include <stdlib.h>\n\
 #include <sqlite.h>\n\
 #include <string.h>\n\
+#include <pthread.h>\n\
 #include \""hfile"\"\n\
 \n\
 static sqlite *db = NULL;\n\
+static pthread_mutex_t mut;\n\
 \n\
 int db_init()\n\
 {\n\
@@ -34,6 +36,7 @@ int db_init()\n\
  else\n\
  {\n\
   printf(\"Successfully connected to database.\\n\");\n\
+  pthread_mutex_init(&mut, NULL);\n\
   return SQLITE_OK;\n\
  }\n\
 }\n\
@@ -43,6 +46,14 @@ void db_close()\n\
  sqlite_close(db);\n\
 }\n\
 \n\
+static int exec_locked(const char *sqlcmd, char **perrmsg)\n\
+{\n\
+ int ret;\n\
+ pthread_mutex_lock(&mut);\n\
+ ret = sqlite_exec(db, sqlcmd, NULL, NULL, perrmsg);\n\
+ pthread_mutex_unlock(&mut);\n\
+ return ret;\n\
+}\n\
 " >cfile
 }
 
@@ -136,7 +147,7 @@ int db_update_"table"(struct db_"table" *data)\n\
    "updates"\n\
    data->id);\n\
 \n\
- ret = sqlite_exec(db, sqlcmd, NULL, NULL, &errmsg);\n\
+ ret = exec_locked(sqlcmd, &errmsg);\n\
 \n\
  if (ret != SQLITE_OK)\n\
   fprintf(stderr, \"SQL error: %s\\n\", errmsg);\n\
@@ -156,7 +167,7 @@ int db_add_"table"(struct db_"table" *data)\n\
     "adds"\n\
     0/*no harm*/);\n\
 \n\
-  ret = sqlite_exec(db, sqlcmd, NULL, NULL, &errmsg);\n\
+  ret = exec_locked(sqlcmd, &errmsg);\n\
 \n\
   if (ret != SQLITE_OK)\n\
     fprintf(stderr, \"SQL error: %s\\n\", errmsg);\n\
@@ -172,7 +183,7 @@ int db_del_"table"(int id)\n\
 \n\
   sprintf(sqlcmd, \"delete from '"table"' where id=%d;\", id);\n\
 \n\
-  ret = sqlite_exec(db, sqlcmd, NULL, NULL, &errmsg);\n\
+  ret = exec_locked(sqlcmd, &errmsg);\n\
 \n\
   if (ret != SQLITE_OK)\n\
     fprintf(stderr, \"SQL error: %s\\n\", errmsg);\n\

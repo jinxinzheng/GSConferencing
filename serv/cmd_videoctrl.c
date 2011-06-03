@@ -39,6 +39,11 @@ int handle_cmd_videoctrl(struct cmd *cmd)
     NEXT_ARG(p);
     i = atoi(p);
 
+    if( i >= tblen )
+    {
+      return ERR_OTHER;
+    }
+
     REP_ADD(cmd, "OK");
     REP_ADD(cmd, table[i]->path);
     REP_END(cmd);

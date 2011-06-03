@@ -52,24 +52,29 @@ void *alloc_block(struct block_pool *bp)
 {
   struct block *b;
 
+  pthread_mutex_lock(&bp->m);
+
   if (list_empty(&bp->free_list))
   {
-    if( bp->limited )
-      return NULL;
-    else
-      b = (struct block *) malloc(bp->bsize);
+    b = NULL;
   }
   else
   {
     struct list_head *l;
 
-    pthread_mutex_lock(&bp->m);
-
     l = bp->free_list.next;
     b = list_entry(l, struct block, free);
     list_del(l);
+  }
 
-    pthread_mutex_unlock(&bp->m);
+  pthread_mutex_unlock(&bp->m);
+
+  if( !b )
+  {
+    if( bp->limited )
+      return NULL;
+    else
+      b = (struct block *) malloc(bp->bsize);
   }
 
   return b->data;

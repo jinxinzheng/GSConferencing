@@ -378,7 +378,9 @@ static struct packet *tag_mix_audio(struct tag *t)
         continue;
       }
     }
-    trace_warn("flush queue %ld, %d\n", d->id, d->stats.flushed);
+
+    trace_warn("flush queue %ld, len %d, %d\n",
+      d->id, cfifo_len(&d->pack_fifo), d->stats.flushed);
 
     p = tag_out_dev_packet(t, d);
 

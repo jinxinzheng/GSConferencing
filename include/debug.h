@@ -13,6 +13,8 @@
 
 #undef PREFIX_TRACE
 
+#include <stdio.h>
+
 #ifdef DEBUG
  #ifdef PREFIX_TRACE
   #define trace(fmt, a...) fprintf(stderr, "[%s:%d] [%s] " fmt, __FILE__, __LINE__, __func__, ##a)

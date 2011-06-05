@@ -360,7 +360,7 @@ static struct packet *tag_mix_audio(struct tag *t)
 
     if( !d->flushing )
     {
-      if( cfifo_len(&d->pack_fifo) > 16 )
+      if( cfifo_len(&d->pack_fifo) > 12 )
       {
         /* trigger flush this queue */
         d->flushing = 1;
@@ -384,12 +384,13 @@ static struct packet *tag_mix_audio(struct tag *t)
 
     p = tag_out_dev_packet(t, d);
 
-    add_mix_pack(p);
+    pack_free(p);
+    c++;
   }
 
   if( c > 0 )
     /* flushing activated */
-    goto mix;
+    return NULL;
 
 normal:
   /* second pass: normal blending */
@@ -427,7 +428,6 @@ normal:
     add_mix_pack(p);
   }
 
-mix:
   switch (c)
   {
    case 0:

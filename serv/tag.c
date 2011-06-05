@@ -140,6 +140,9 @@ void tag_add_outstanding(struct tag *t, struct device *d)
   {
     if( !t->mix_devs[i] )
     {
+      /* clear the dev's fifo to avoid early lag. */
+      cfifo_clear(&d->pack_fifo);
+
       t->mix_devs[i] = d;
 
       d->mixbit = 1<<i;
@@ -151,9 +154,6 @@ void tag_add_outstanding(struct tag *t, struct device *d)
       t->mix_count ++;
       pthread_mutex_unlock(&t->mut);
       pthread_cond_signal(&t->cnd_nonempty);
-
-      /* clear the dev's fifo to avoid early lag. */
-      cfifo_clear(&d->pack_fifo);
 
       break;
     }

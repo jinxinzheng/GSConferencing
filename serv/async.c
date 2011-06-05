@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <include/debug.h>
 
-#define THREADS 32
+#define THREADS 64
 
 static threadpool tp;
 static struct block_pool *bp;

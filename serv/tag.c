@@ -449,5 +449,22 @@ mix:
    break;
   }
 
+  /* detect silence packet.
+   * dropping continuous silence packets can
+   * greatly improve the client's performance.*/
+  if( pcm_silent((char *)au[0], mixlen, 51200*c ) )
+  {
+    if( ++(t->mix_silence) > 50 )
+    {
+      pack_free(pp[0]);
+      trace_dbg("dropping silent pack %d\n", t->mix_silence);
+      return NULL;
+    }
+  }
+  else
+  {
+    t->mix_silence = 0;
+  }
+
   return pp[0];
 }

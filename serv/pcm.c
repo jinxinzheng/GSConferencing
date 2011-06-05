@@ -34,3 +34,27 @@ void pcm_mix(short *pcm_bufs[], int nbufs, int samples)
     buf0[i] = (short)mix;
   }
 }
+
+static inline int abs(int i)
+{
+  return i>0 ? i:-i;
+}
+
+int pcm_silent(const char *buf, int len, int energy_threshold)
+{
+  const short *pcm = (const short *)buf;
+  int pcmlen = len>>1;
+  int i;
+  register int e=0;
+
+  for( i=0 ; i<pcmlen ; i++ )
+  {
+    e += abs(pcm[i]);
+    if( e > energy_threshold )
+    {
+      return 0;
+    }
+  }
+
+  return 1;
+}

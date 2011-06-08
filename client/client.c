@@ -227,14 +227,39 @@ static void udp_recved(char *buf, int len)
   }*/
 }
 
+static inline void drop_rcv_queue(int count)
+{
+  int i;
+  for( i=0 ; i<count ; ++i )
+  {
+    cfifo__out(&udp_rcv_fifo);
+  }
+}
+
 static void *run_recv_udp(void *arg)
 {
   struct pack *qitem;
   struct list_head *p;
+  static int count=0;
 
   while (1)
   {
     cfifo_wait_empty(&udp_rcv_fifo);
+
+    /* check periodically */
+    count = (count+1) & ((1<<8)-1);
+    if( !count )
+    {
+      int qlen = cfifo_len(&udp_rcv_fifo);
+      if( qlen > 4 )
+      {
+        int drop = qlen - 4;
+        /* force to drop packets to work around the delay. */
+        trace_warn("dropping %d\n", drop);
+        drop_rcv_queue(drop);
+      }
+    }
+
     qitem = (struct pack *)cfifo_get_out(&udp_rcv_fifo);
 
     /* generate event */

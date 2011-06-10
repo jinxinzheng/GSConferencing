@@ -305,10 +305,10 @@ static inline int wait_all_queues(struct tag *t)
   trace_dbg("stat %02x, mask %02x\n", t->mix_stat, t->mix_mask);
   while( (t->mix_stat & t->mix_mask) != t->mix_mask )
   {
-    /* wait for 10ms to allow the data to be queued.
+    /* wait for 3ms to allow the data to be queued.
      * this virtually syncs the clients sending
      * at different rates. */
-    usleep(10*1000);
+    usleep(3*1000);
 
     /* find out who are empty. this should be costless
      * compared to our wait. */
@@ -360,7 +360,7 @@ static struct packet *tag_mix_audio(struct tag *t)
 
     if( !d->flushing )
     {
-      if( cfifo_len(&d->pack_fifo) > 12 )
+      if( cfifo_len(&d->pack_fifo) > 6 )
       {
         /* trigger flush this queue */
         d->flushing = 1;
@@ -371,7 +371,7 @@ static struct packet *tag_mix_audio(struct tag *t)
     }
     else
     {
-      if( cfifo_len(&d->pack_fifo) < 8 )
+      if( cfifo_len(&d->pack_fifo) < 2 )
       {
         /* stop flush this queue */
         d->flushing = 0;

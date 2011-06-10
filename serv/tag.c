@@ -11,6 +11,8 @@
 #include "sys.h"
 #include "db/md.h"
 
+//#define MIX_DEBUG
+
 struct tag *tag_create(long gid, long tid)
 {
   struct tag *t;
@@ -335,6 +337,11 @@ static struct packet *tag_mix_audio(struct tag *t)
   int mixlen = 1<<18;/* initially a big number is ok */
   int i,c,l;
 
+#ifdef MIX_DEBUG
+  static int count = 0;
+  count = (count+1) & ((1<<8)-1);
+#endif
+
 #define add_mix_pack(p) \
   { \
     pp[c] = p; \
@@ -419,6 +426,13 @@ normal:
     if( cfifo_empty(&d->pack_fifo) )
       continue;
 
+#ifdef MIX_DEBUG
+    if( !count )
+    {
+      printf("%ld: len %d\n", d->id, cfifo_len(&d->pack_fifo));
+    }
+#endif
+
     /* reset this one's timeouts. we can immediately
      * take data from it's fifo without wait. */
     d->timeouts = 0;
@@ -427,6 +441,11 @@ normal:
 
     add_mix_pack(p);
   }
+
+#ifdef MIX_DEBUG
+  if( !count )
+    printf("\n");
+#endif
 
   switch (c)
   {

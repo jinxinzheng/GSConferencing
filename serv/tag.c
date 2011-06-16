@@ -300,6 +300,70 @@ static void tag_update_dev_timeouts(struct tag *t)
 
 #define min(a,b) ((a)<(b)?(a):(b))
 
+static inline int flush_queues(struct tag *t)
+{
+  struct device *d;
+  int i,c,len;
+  struct packet *p;
+
+  c = 0;
+  for( i=0 ; i<8 ; i++ )
+  {
+    if( !(d = t->mix_devs[i]) )
+      continue;
+
+    if( !d->flushing )
+    {
+      len = cfifo_len(&d->pack_fifo);
+      if( len > 6 )
+      {
+        /* this queue is over-loaded.
+         * trigger flush immediately */
+        d->flushing = 1;
+        d->stats.flushed ++;
+      }
+      else if( len > 2 )
+      {
+        /* this queue is high-loaded. */
+        if( ++d->highload > 360 )
+        {
+          /* it's been high-loaded for about 1 second.
+           * trigger flush now. */
+          d->flushing = 1;
+          d->stats.flushed ++;
+        }
+        else
+          continue;
+      }
+      else
+      {
+        /* <=2 is considered safe. */
+        d->highload = 0;
+        continue;
+      }
+    }
+    else
+    {
+      if( cfifo_len(&d->pack_fifo) < 2 )
+      {
+        /* stop flush this queue */
+        d->flushing = 0;
+        continue;
+      }
+    }
+
+    trace_warn("flush queue %ld, len %d, %d\n",
+      d->id, cfifo_len(&d->pack_fifo), d->stats.flushed);
+
+    p = tag_out_dev_packet(t, d);
+
+    pack_free(p);
+    c++;
+  }
+
+  return (c > 0);
+}
+
 static inline int wait_all_queues(struct tag *t)
 {
   int waited = 0;
@@ -359,43 +423,8 @@ static struct packet *tag_mix_audio(struct tag *t)
   }
 
   /* first pass: flush the over-loaded queues */
-  c = 0;
-  for( i=0 ; i<8 ; i++ )
-  {
-    if( !(d = t->mix_devs[i]) )
-      continue;
 
-    if( !d->flushing )
-    {
-      if( cfifo_len(&d->pack_fifo) > 6 )
-      {
-        /* trigger flush this queue */
-        d->flushing = 1;
-        d->stats.flushed ++;
-      }
-      else
-        continue;
-    }
-    else
-    {
-      if( cfifo_len(&d->pack_fifo) < 2 )
-      {
-        /* stop flush this queue */
-        d->flushing = 0;
-        continue;
-      }
-    }
-
-    trace_warn("flush queue %ld, len %d, %d\n",
-      d->id, cfifo_len(&d->pack_fifo), d->stats.flushed);
-
-    p = tag_out_dev_packet(t, d);
-
-    pack_free(p);
-    c++;
-  }
-
-  if( c > 0 )
+  if( flush_queues(t) )
     /* flushing activated */
     return NULL;
 

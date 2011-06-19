@@ -348,6 +348,7 @@ static inline int flush_queues(struct tag *t)
       {
         /* stop flush this queue */
         d->flushing = 0;
+        d->highload = 0;
         continue;
       }
     }

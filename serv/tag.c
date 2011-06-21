@@ -309,6 +309,25 @@ static inline void drop_queue_front(struct device *d)
   pack_free(p);
 }
 
+static inline void flush_all_queues(struct tag *t)
+{
+  struct device *d;
+  int i;
+  int l;
+
+  for( i=0 ; i<8 ; i++ )
+  {
+    if( !(d = t->mix_devs[i]) )
+      continue;
+
+    l = cfifo_len(&d->pack_fifo);
+    for( ; l>1 ; l-- )
+    {
+      drop_queue_front(d);
+    }
+  }
+}
+
 static inline int flush_queues(struct tag *t)
 {
   struct device *d;
@@ -326,9 +345,9 @@ static inline int flush_queues(struct tag *t)
       if( len > 6 )
       {
         /* this queue is over-loaded.
-         * trigger flush immediately */
-        d->flushing = 1;
-        d->stats.flushed ++;
+         * flush all queues immediately */
+        flush_all_queues(t);
+        return 1;
       }
       else if( len > 2 )
       {

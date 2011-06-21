@@ -37,6 +37,8 @@ struct tag {
   pthread_mutex_t mut;
   pthread_cond_t  cnd_nonempty;
 
+  pthread_mutex_t mix_stat_mut;
+
   struct {
     int mode;
     struct list_head open_list;

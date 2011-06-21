@@ -41,6 +41,8 @@ struct tag *tag_create(long gid, long tid)
   pthread_mutex_init(&t->mut, NULL);
   pthread_cond_init(&t->cnd_nonempty, NULL);
 
+  pthread_mutex_init(&t->mix_stat_mut, NULL);
+
   INIT_LIST_HEAD(&t->discuss.open_list);
   t->discuss.maxuser = t->id==1? 1:8; /* todo: move this hard-code to db */
   t->discuss.openuser = 0;
@@ -225,17 +227,23 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
     return;
   }
 
+  pthread_mutex_lock(&t->mix_stat_mut);
+
   /* put in */
   _dev_in_packet(d, pack);
 
   /* decide state change */
   t->mix_stat |= d->mixbit;
+
+  pthread_mutex_unlock(&t->mix_stat_mut);
 }
 
 /* this should only be called when dev's fifo is not empty */
 struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
 {
   struct packet *p;
+
+  pthread_mutex_lock(&t->mix_stat_mut);
 
   /* get out */
   p = __dev_out_packet(d);
@@ -245,6 +253,8 @@ struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
     /* this fifo has become empty */
     t->mix_stat &= ~d->mixbit;
   }
+
+  pthread_mutex_unlock(&t->mix_stat_mut);
 
   return p;
 }

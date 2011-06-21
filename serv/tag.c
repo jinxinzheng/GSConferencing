@@ -300,11 +300,19 @@ static void tag_update_dev_timeouts(struct tag *t)
 
 #define min(a,b) ((a)<(b)?(a):(b))
 
+static inline void drop_queue_front(struct device *d)
+{
+  struct packet *p;
+
+  p = tag_out_dev_packet(d->tag, d);
+
+  pack_free(p);
+}
+
 static inline int flush_queues(struct tag *t)
 {
   struct device *d;
   int i,c,len;
-  struct packet *p;
 
   c = 0;
   for( i=0 ; i<8 ; i++ )
@@ -356,9 +364,8 @@ static inline int flush_queues(struct tag *t)
     trace_warn("flush queue %ld, len %d, %d\n",
       d->id, cfifo_len(&d->pack_fifo), d->stats.flushed);
 
-    p = tag_out_dev_packet(t, d);
+    drop_queue_front(d);
 
-    pack_free(p);
     c++;
   }
 

@@ -141,6 +141,7 @@ int md_update_##type(struct db_##type *p)     \
 
 
 SETUP(group);
+SETUP(user);
 SETUP(device);
 SETUP(tag);
 SETUP(vote);
@@ -170,6 +171,7 @@ void md_load_all()
   } while(0)
 
   LOAD(group);
+  LOAD(user);
   LOAD(device);
   LOAD(tag);
   LOAD(vote);

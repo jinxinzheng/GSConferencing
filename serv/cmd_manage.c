@@ -261,13 +261,6 @@ static void *serv_manage(void *arg)
   return NULL;
 }
 
-static struct {
-  const char *user;
-  const char *pass;
-} userdb[] = {
-  { "admin", "admin" }
-};
-
 int handle_cmd_manage(struct cmd *cmd)
 {
   char *subcmd;
@@ -287,7 +280,9 @@ int handle_cmd_manage(struct cmd *cmd)
   SUBCMD("login")
   {
     char *u, *p;
-    int i,l;
+    int i;
+    iter it;
+    struct db_user *du = NULL;
     pthread_t thread;
 
     /* authenticate user */
@@ -295,16 +290,16 @@ int handle_cmd_manage(struct cmd *cmd)
     NEXT_ARG(u);
     NEXT_ARG(p);
 
-    l = sizeof userdb/sizeof userdb[0];
-    for( i=0 ; i<l ; i++ )
+    md_iterate_user_begin(&it);
+    while( (du = md_iterate_user_next(&it)) )
     {
-      if( strcmp(userdb[i].user, u)==0 &&
-          strcmp(userdb[i].pass, p)==0 )
+      if( strcmp(du->name, u)==0 &&
+          strcmp(du->password, p)==0 )
       {
         break;
       }
     }
-    if( i>=l )
+    if( !du )
     {
       return ERR_REJECTED;
     }

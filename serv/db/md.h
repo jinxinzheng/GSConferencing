@@ -20,6 +20,7 @@ int md_del_##type(int id);                         \
 int md_update_##type(struct db_##type *p);         \
 
 DECLARE(group);
+DECLARE(user);
 DECLARE(device);
 DECLARE(tag);
 DECLARE(vote);

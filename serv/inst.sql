@@ -14,6 +14,15 @@ create table [group]
  primary key (id)
 );
 
+-- 用户管理
+create table [user]
+(
+ id integer,            -- id, autoincrement
+ name varchar(64),      -- 用户名
+ password varchar(64),  -- 密码
+ primary key (id)
+);
+
 -- 语言通道
 create table tag
 (
@@ -103,6 +112,8 @@ values (
   0,
   0,
   '0');
+
+insert into [user] (name,password) values('admin','admin');
 
 insert into tag(name) values('Original');
 insert into tag(name) values('Chinese');

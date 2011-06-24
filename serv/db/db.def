@@ -10,6 +10,11 @@ i regist_arrive
 i vote_id
 s vote_results 256
 
+table user
+i id auto
+s name 64
+s password 64
+
 table device
 i id
 s ip 32

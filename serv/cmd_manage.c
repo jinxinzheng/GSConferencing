@@ -5,7 +5,7 @@
 #include "db/md.h"
 #include "include/debug.h"
 
-#define BUFLEN 2048
+#define BUFLEN 20480
 
 #define append(fmt, a...) l+=sprintf(buf+l,fmt,##a)
 #define flush() send(s, buf, l, 0)
@@ -27,9 +27,27 @@
 
 
 #define write_device(d) \
-  append("%d:%s:%d:%d:%d:%d:%s:%d\n", \
-    (int)d->id, d->ip, d->port, d->tagid, d->online, \
-    d->user_card, d->user_name, d->user_gender)
+  append( \
+  "%d:%s:%d:%d:%d:%s:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%s\n", \
+  d->id, \
+  d->ip, \
+  d->port, \
+  d->tagid, \
+  d->user_card, \
+  d->user_name, \
+  d->user_gender, \
+  d->online, \
+  d->sub1, \
+  d->sub2, \
+  d->discuss_chair, \
+  d->discuss_open, \
+  d->regist_master, \
+  d->regist_reg, \
+  d->vote_master, \
+  d->vote_choice, \
+  d->ptc_id, \
+  d->ptc_cmd \
+  )
 
 #define read_device(d, c) \
 { \
@@ -41,6 +59,17 @@
   d->user_card = atoi( shift(c) ); \
   strcpy( d->user_name, shift(c) ); \
   d->user_gender = atoi( shift(c) ); \
+  d->online = atoi( shift(c) ); \
+  d->sub1 = atoi( shift(c) ); \
+  d->sub2 = atoi( shift(c) ); \
+  d->discuss_chair = atoi( shift(c) ); \
+  d->discuss_open = atoi( shift(c) ); \
+  d->regist_master = atoi( shift(c) ); \
+  d->regist_reg = atoi( shift(c) ); \
+  d->vote_master = atoi( shift(c) ); \
+  d->vote_choice = atoi( shift(c) ); \
+  d->ptc_id = atoi( shift(c) ); \
+  strcpy( d->ptc_cmd, shift(c) ); \
 }
 
 
@@ -68,7 +97,14 @@
 
 
 #define write_vote(v) \
-  append("%d:%s:%d:%s\n", (int)v->id, v->name, v->type, v->members)
+  append( \
+  "%d:%s:%d:%d:%s\n", \
+  v->id, \
+  v->name, \
+  v->type, \
+  v->options_count, \
+  v->members \
+  )
 
 #define read_vote(v, c) \
 { \
@@ -76,6 +112,7 @@
   v->id = atoi( shift(c) ); \
   strcpy( v->name, shift(c) ); \
   v->type = atoi( shift(c) ); \
+  v->options_count = atoi( shift(c) ); \
   strcpy( v->members, shift(c) ); \
 }
 

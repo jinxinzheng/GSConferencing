@@ -195,6 +195,8 @@ static void *serv_manage(void *arg)
         m_update(t, &c); \
       else if( strcmp(op, "delete")==0 ) \
         m_delete(t, &c); \
+      else  \
+        send(s, "FAIL 1\n", 7, 0);  \
     } else
 
     GEN_OP(device)
@@ -209,6 +211,10 @@ static void *serv_manage(void *arg)
         m_get_all(&c);
         send(s, "EOF\n", 4, 0);
       }
+    }
+    else
+    {
+      send(s, "FAIL 1\n", 7, 0);
     }
 
   }

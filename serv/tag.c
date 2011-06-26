@@ -359,10 +359,10 @@ static inline int flush_queues(struct tag *t)
         flush_all_queues(t);
         return 1;
       }
-      else if( len > 2 )
+      else if( len > 1 )
       {
         /* this queue is high-loaded. */
-        if( ++d->highload > 360 )
+        if( ++d->highload > 180 )
         {
           /* it's been high-loaded for about 1 second.
            * trigger flush now. */
@@ -374,7 +374,7 @@ static inline int flush_queues(struct tag *t)
       }
       else
       {
-        /* <=2 is considered safe. */
+        /* <2 is considered safe. */
         d->highload = 0;
         continue;
       }

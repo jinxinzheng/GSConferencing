@@ -26,95 +26,7 @@
   (strcmp(p, (arg))==0)
 
 
-#define write_device(d) \
-  append( \
-  "%d:%s:%d:%d:%d:%s:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%s\n", \
-  d->id, \
-  d->ip, \
-  d->port, \
-  d->tagid, \
-  d->user_card, \
-  d->user_name, \
-  d->user_gender, \
-  d->online, \
-  d->sub1, \
-  d->sub2, \
-  d->discuss_chair, \
-  d->discuss_open, \
-  d->regist_master, \
-  d->regist_reg, \
-  d->vote_master, \
-  d->vote_choice, \
-  d->ptc_id, \
-  d->ptc_cmd \
-  )
-
-#define read_device(d, c) \
-{ \
-  a = 1; \
-  d->id = atoi( shift(c) ); \
-  strcpy( d->ip, shift(c) ); \
-  d->port = atoi( shift(c) ); \
-  d->tagid = atoi( shift(c) ); \
-  d->user_card = atoi( shift(c) ); \
-  strcpy( d->user_name, shift(c) ); \
-  d->user_gender = atoi( shift(c) ); \
-  d->online = atoi( shift(c) ); \
-  d->sub1 = atoi( shift(c) ); \
-  d->sub2 = atoi( shift(c) ); \
-  d->discuss_chair = atoi( shift(c) ); \
-  d->discuss_open = atoi( shift(c) ); \
-  d->regist_master = atoi( shift(c) ); \
-  d->regist_reg = atoi( shift(c) ); \
-  d->vote_master = atoi( shift(c) ); \
-  d->vote_choice = atoi( shift(c) ); \
-  d->ptc_id = atoi( shift(c) ); \
-  strcpy( d->ptc_cmd, shift(c) ); \
-}
-
-
-#define write_tag(t) \
-  append("%d:%s\n", (int)t->id, t->name)
-
-#define read_tag(t, c) \
-{ \
-  a = 1; \
-  t->id = atoi( shift(c) ); \
-  strcpy( t->name, shift(c) ); \
-}
-
-
-#define write_discuss(d) \
-  append("%d:%s:%s\n", (int)d->id, d->name, d->members)
-
-#define read_discuss(d, c) \
-{ \
-  a = 1; \
-  d->id = atoi( shift(c) ); \
-  strcpy( d->name, shift(c) ); \
-  strcpy( d->members, shift(c) ); \
-}
-
-
-#define write_vote(v) \
-  append( \
-  "%d:%s:%d:%d:%s\n", \
-  v->id, \
-  v->name, \
-  v->type, \
-  v->options_count, \
-  v->members \
-  )
-
-#define read_vote(v, c) \
-{ \
-  a = 1; \
-  v->id = atoi( shift(c) ); \
-  strcpy( v->name, shift(c) ); \
-  v->type = atoi( shift(c) ); \
-  v->options_count = atoi( shift(c) ); \
-  strcpy( v->members, shift(c) ); \
-}
+#include "db/mng.h"
 
 
 #define m_get(type, c) \
@@ -280,7 +192,6 @@ int handle_cmd_manage(struct cmd *cmd)
   SUBCMD("login")
   {
     char *u, *p;
-    int i;
     iter it;
     struct db_user *du = NULL;
     pthread_t thread;

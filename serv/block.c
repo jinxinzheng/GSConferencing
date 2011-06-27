@@ -4,12 +4,14 @@
 #include "block.h"
 #include <stdlib.h>
 #include <pthread.h>
+#include <include/debug.h>
 
 struct block_pool
 {
   struct list_head free_list;
   pthread_mutex_t m;
   int bsize; /* block size */
+  int count; /* total count for blocks ever alloced */
   int limited; /* is resource limited to initial count? */
 };
 
@@ -30,6 +32,7 @@ struct block_pool *init_block_pool(int block_size, int init_count, int limited)
   INIT_LIST_HEAD(&pool->free_list);
   pthread_mutex_init(&pool->m, NULL);
   pool->bsize = block_size;
+  pool->count = init_count;
   pool->limited = limited;
 
   if( init_count > 0 )
@@ -74,7 +77,15 @@ void *alloc_block(struct block_pool *bp)
     if( bp->limited )
       return NULL;
     else
+    {
+      int c;
       b = (struct block *) malloc(bp->bsize);
+      c = ++ bp->count;
+      if( (c & ((1<<9)-1)) == 0 )
+      {
+        trace_warn("hitting %d blocks\n", c);
+      }
+    }
   }
 
   return b->data;

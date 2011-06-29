@@ -144,9 +144,6 @@ void tag_add_outstanding(struct tag *t, struct device *d)
   {
     if( !t->mix_devs[i] )
     {
-      /* clear the dev's fifo to avoid early lag. */
-      cfifo_clear(&d->pack_fifo);
-
       t->mix_devs[i] = d;
 
       d->mixbit = 1<<i;

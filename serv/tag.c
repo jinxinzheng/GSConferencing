@@ -1,6 +1,7 @@
 #include "tag.h"
 #include "cast.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include "packet.h"
@@ -100,37 +101,24 @@ void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast)
 }
 
 
+/* the following two mustn't be called simultaneously,
+ * lock protecting is necessary. */
 static void _dev_in_packet(struct device *d, struct packet *p)
 {
-  struct packet **pp = (struct packet **)cfifo_get_in(&d->pack_fifo);
-  *pp = p;
-  cfifo_in_signal(&d->pack_fifo);
-  trace_dbg("avail %d packs in fifo %d\n", cfifo_len(&d->pack_fifo), (int)d->id);
+  enque(&d->pack_queue.head, &p->queue_l);
+  ++ d->pack_queue.len;
+  trace_dbg("avail %d packs in queue %d\n", &d->pack_queue.len, (int)d->id);
 }
 
-/* this must be used when cfifo_empty is false */
+/* this must be used when list_empty is false */
 static inline struct packet *__dev_out_packet(struct device *d)
 {
   struct packet *p;
-  p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
-  cfifo__out(&d->pack_fifo);
+  struct list_head *e = deque(&d->pack_queue.head);
+  -- d->pack_queue.len;
+  p = list_entry(e, struct packet, queue_l);
   return p;
 }
-
-/* not used */
-#if 0
-static struct packet *_dev_out_packet(struct device *d)
-{
-  cfifo_wait_empty(&d->pack_fifo);
-  if( cfifo_empty(&d->pack_fifo) )
-  {
-    /* this is important as the wait could be canceled
-       by the cmd thread */
-    return NULL;
-  }
-  return __dev_out_packet(d);
-}
-#endif
 
 
 void tag_add_outstanding(struct tag *t, struct device *d)
@@ -138,7 +126,7 @@ void tag_add_outstanding(struct tag *t, struct device *d)
   int i;
   trace_dbg("adding dev to outstanding\n");
   /* find a place in the mix_devs,
-   * we do not put all the non-empty fifos together at top
+   * we do not put all the non-empty queues together at top
    * because we found it too tricky to sync them. */
   for( i=0 ; i<8 ; i++ )
   {
@@ -183,7 +171,7 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
     }
   }
 
-  /* todo: clear the fifo of the dev */
+  /* todo: clear the queue of the dev */
 }
 
 void tag_clear_outstanding(struct tag *t)
@@ -235,7 +223,7 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
   pthread_mutex_unlock(&t->mix_stat_mut);
 }
 
-/* this should only be called when dev's fifo is not empty */
+/* this should only be called when dev's queue is not empty */
 struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
 {
   struct packet *p;
@@ -245,9 +233,9 @@ struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
   /* get out */
   p = __dev_out_packet(d);
 
-  if( cfifo_empty(&d->pack_fifo) )
+  if( list_empty(&d->pack_queue.head) )
   {
-    /* this fifo has become empty */
+    /* this queue has become empty */
     t->mix_stat &= ~d->mixbit;
   }
 
@@ -286,7 +274,7 @@ static void tag_update_dev_timeouts(struct tag *t)
   {
     if( (d = t->mix_devs[i]) )
     {
-      if( cfifo_empty(&d->pack_fifo) )
+      if( list_empty(&d->pack_queue.head) )
       {
         if( ++ d->timeouts > 500 )
         {
@@ -327,7 +315,7 @@ static inline void flush_all_queues(struct tag *t)
     if( !(d = t->mix_devs[i]) )
       continue;
 
-    l = cfifo_len(&d->pack_fifo);
+    l = d->pack_queue.len;
     for( ; l>1 ; l-- )
     {
       drop_queue_front(d);
@@ -348,7 +336,7 @@ static inline int flush_queues(struct tag *t)
 
     if( !d->flushing )
     {
-      len = cfifo_len(&d->pack_fifo);
+      len = d->pack_queue.len;
       if( len > 6 )
       {
         /* this queue is over-loaded.
@@ -378,7 +366,7 @@ static inline int flush_queues(struct tag *t)
     }
     else
     {
-      if( cfifo_len(&d->pack_fifo) < 2 )
+      if( d->pack_queue.len < 2 )
       {
         /* stop flush this queue */
         d->flushing = 0;
@@ -388,7 +376,7 @@ static inline int flush_queues(struct tag *t)
     }
 
     trace_warn("flush queue %ld, len %d, %d\n",
-      d->id, cfifo_len(&d->pack_fifo), d->stats.flushed);
+      d->id, d->pack_queue.len, d->stats.flushed);
 
     drop_queue_front(d);
 
@@ -485,19 +473,19 @@ normal:
      * sending data, but then it crashed. waiting for
      * it's data here will lead to endless wait! */
 
-    /* recheck to ensure the fifo is not empty */
-    if( cfifo_empty(&d->pack_fifo) )
+    /* recheck to ensure the queue is not empty */
+    if( list_empty(&d->pack_queue.head) )
       continue;
 
 #ifdef MIX_DEBUG
     if( !count )
     {
-      printf("%ld: len %d\n", d->id, cfifo_len(&d->pack_fifo));
+      printf("%ld: len %d\n", d->id, &d->pack_queue.len);
     }
 #endif
 
     /* reset this one's timeouts. we can immediately
-     * take data from it's fifo without wait. */
+     * take data from it's queue without wait. */
     d->timeouts = 0;
 
     p = tag_out_dev_packet(t, d);

@@ -63,8 +63,11 @@ struct device {
   struct device *hash_next;
   struct device **hash_pprev;
 
-  /* packet fifo */
-  struct cfifo pack_fifo;
+  /* packet queue */
+  struct {
+    struct list_head head;
+    int len;
+  } pack_queue;
   /* used by the tag mixing code */
   unsigned int mixbit;
   int timeouts;

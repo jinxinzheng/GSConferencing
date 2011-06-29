@@ -8,11 +8,9 @@
 
 struct packet
 {
-  struct list_head free; /* free list */
-
   struct device *dev; /* by what device it was sent */
 
-  struct list_head l; /* queue */
+  struct list_head queue_l; /* queue */
 
   size_t len; /* length of data */
   char data[MAXPACK];

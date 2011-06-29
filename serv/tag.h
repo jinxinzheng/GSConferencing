@@ -2,7 +2,7 @@
 #define _TAG_H_
 
 #include "include/list.h"
-#include "include/cfifo.h"
+#include <pthread.h>
 
 struct device;
 

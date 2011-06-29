@@ -302,24 +302,33 @@ static inline void drop_queue_front(struct device *d)
   p = tag_out_dev_packet(d->tag, d);
 
   pack_free(p);
+
+  trace_warn("flush queue %ld, len %d, %d\n",
+      d->id, d->pack_queue.len, d->stats.flushed);
+}
+
+static void flush_queue(struct tag *t, struct device *d)
+{
+  int l = d->pack_queue.len;
+  for( ; l>1 ; l-- )
+  {
+    drop_queue_front(d);
+  }
+
+  d->stats.flushed ++;
 }
 
 static inline void flush_all_queues(struct tag *t)
 {
   struct device *d;
   int i;
-  int l;
 
   for( i=0 ; i<8 ; i++ )
   {
     if( !(d = t->mix_devs[i]) )
       continue;
 
-    l = d->pack_queue.len;
-    for( ; l>1 ; l-- )
-    {
-      drop_queue_front(d);
-    }
+    flush_queue(t, d);
   }
 }
 
@@ -334,51 +343,32 @@ static inline int flush_queues(struct tag *t)
     if( !(d = t->mix_devs[i]) )
       continue;
 
-    if( !d->flushing )
+    len = d->pack_queue.len;
+    if( len > 6 )
     {
-      len = d->pack_queue.len;
-      if( len > 6 )
+      /* this queue is over-loaded.
+       * flush all queues immediately */
+      flush_all_queues(t);
+      return 1;
+    }
+    else if( len > 1 )
+    {
+      /* this queue is high-loaded. */
+      if( ++d->highload > 180 )
       {
-        /* this queue is over-loaded.
-         * flush all queues immediately */
-        flush_all_queues(t);
-        return 1;
-      }
-      else if( len > 1 )
-      {
-        /* this queue is high-loaded. */
-        if( ++d->highload > 180 )
-        {
-          /* it's been high-loaded for about 1 second.
-           * trigger flush now. */
-          d->flushing = 1;
-          d->stats.flushed ++;
-        }
-        else
-          continue;
+        /* it's been high-loaded for about 1 second.
+         * trigger flush now. */
+        flush_queue(t, d);
       }
       else
-      {
-        /* <2 is considered safe. */
-        d->highload = 0;
         continue;
-      }
     }
     else
     {
-      if( d->pack_queue.len < 2 )
-      {
-        /* stop flush this queue */
-        d->flushing = 0;
-        d->highload = 0;
-        continue;
-      }
+      /* <2 is considered safe. */
+      d->highload = 0;
+      continue;
     }
-
-    trace_warn("flush queue %ld, len %d, %d\n",
-      d->id, d->pack_queue.len, d->stats.flushed);
-
-    drop_queue_front(d);
 
     c++;
   }
@@ -446,9 +436,7 @@ static struct packet *tag_mix_audio(struct tag *t)
 
   /* first pass: flush the over-loaded queues */
 
-  if( flush_queues(t) )
-    /* flushing activated */
-    return NULL;
+  flush_queues(t);
 
 normal:
   /* second pass: normal blending */

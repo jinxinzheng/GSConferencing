@@ -72,7 +72,6 @@ struct device {
   unsigned int mixbit;
   int timeouts;
   int highload;
-  int flushing;
 
   struct {
     int flushed;

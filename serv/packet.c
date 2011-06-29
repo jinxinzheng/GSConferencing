@@ -1,7 +1,9 @@
 #include "packet.h"
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "block.h"
+#include "include/debug.h"
 
 /* packet objects are pooled/recycled
  * to improve performance.
@@ -22,15 +24,24 @@ void init_pack_pool()
   }
   while( (m >>= 1) );
 
-  free_pool = init_block_pool(1<<i, 256, 0);
+  /* alloc 2K*1024=2M memory at once and limited to this size.
+   * this should be adequate. there are at most 8 queues and
+   * each queue has maximumly 32 packets. theorectically 256
+   * packets are in use at most. allocing 1024 helps in
+   * performance. */
+  free_pool = init_block_pool(1<<i, 1024, 1);
 }
 
 struct packet *pack_get_new()
 {
   struct packet *p;
 
-  /* we are never empty */
-  p = (struct packet *) alloc_block(free_pool);
+  while( !(p = (struct packet *) alloc_block(free_pool)) )
+  {
+    trace_warn("out of packet resource!");
+    /* wait for a while for the resource to be freed */
+    usleep(10*1000);
+  }
 
   return p;
 }

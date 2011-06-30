@@ -311,8 +311,7 @@ void run_listener_udp(int port)
         case PACKET_HBEAT :
 
         dev_heartbeat(d);
-
-        break;
+        continue;
 
 
         case PACKET_AUDIO :

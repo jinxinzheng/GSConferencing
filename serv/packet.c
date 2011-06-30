@@ -38,7 +38,7 @@ struct packet *pack_get_new()
 
   while( !(p = (struct packet *) alloc_block(free_pool)) )
   {
-    trace_warn("out of packet resource!");
+    trace_warn("out of packet resource!\n");
     /* wait for a while for the resource to be freed */
     usleep(10*1000);
   }

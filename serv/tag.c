@@ -468,7 +468,7 @@ normal:
 #ifdef MIX_DEBUG
     if( !count )
     {
-      printf("%ld: len %d\n", d->id, &d->pack_queue.len);
+      printf("%ld: len %d\n", d->id, d->pack_queue.len);
     }
 #endif
 

@@ -18,15 +18,13 @@ struct block_pool
 struct block
 {
   struct list_head free;
-
-  unsigned char data[1];
 };
 
 #define block_data(b) \
-  ((b)->data)
+  ((void *)(b))
 
 #define block_entry(buf) \
-  ((struct block *)((char *)(buf)-(unsigned long)(&((struct block *)0)->data)))
+  ((struct block *)(buf))
 
 struct block_pool *init_block_pool(int block_size, int init_count, int limited)
 {

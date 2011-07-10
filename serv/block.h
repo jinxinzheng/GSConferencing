@@ -6,8 +6,6 @@
 struct block_pool;
 
 /* init block pool.
- * the actual size of each block is slightly
- * smaller than the block_size.
  * if limited=1, then only init_count of
  * blocks are available. If all blocks
  * are in use, then alloc_block() will fail.

@@ -97,7 +97,7 @@ void free_block(struct block_pool *bp, void *buf)
 
   pthread_mutex_lock(&bp->m);
 
-  list_add_tail(&b->free, &bp->free_list);
+  list_add(&b->free, &bp->free_list);
 
   pthread_mutex_unlock(&bp->m);
 }

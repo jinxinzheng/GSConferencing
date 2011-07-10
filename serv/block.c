@@ -22,6 +22,9 @@ struct block
   unsigned char data[1];
 };
 
+#define block_data(b) \
+  ((b)->data)
+
 #define block_entry(buf) \
   ((struct block *)((char *)(buf)-(unsigned long)(&((struct block *)0)->data)))
 
@@ -88,7 +91,7 @@ void *alloc_block(struct block_pool *bp)
     }
   }
 
-  return b->data;
+  return block_data(b);
 }
 
 void free_block(struct block_pool *bp, void *buf)

@@ -44,9 +44,9 @@ int handle_cmd_filectrl(struct cmd *cmd)
       return ERR_OTHER;
     }
 
-    REP_OK(cmd);
-
-    send_file_to_dev(table[i]->path, d);
+    REP_ADD(cmd, "OK");
+    REP_ADD(cmd, table[i]->path);
+    REP_END(cmd);
   }
 
   else return 2; /*sub cmd not found*/

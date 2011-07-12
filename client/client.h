@@ -283,7 +283,7 @@ int videoctrl_select(int vid_num, __out char *path);
 
 int filectrl_query(__out char *filelist);
 
-int filectrl_select(int file_num);
+int filectrl_select(int file_num, __out char *path);
 
 #ifdef __cplusplus
 }

@@ -1010,7 +1010,7 @@ int filectrl_query(char *filelist)
   return 0;
 }
 
-int filectrl_select(int file_num)
+int filectrl_select(int file_num, char *path)
 {
   BASICS;
 
@@ -1018,7 +1018,9 @@ int filectrl_select(int file_num)
 
   SEND_CMD();
 
-  FIND_OK(c);
+  i = FIND_OK(c);
+
+  strcpy(path, c.args[i+1]);
 
   return 0;
 }

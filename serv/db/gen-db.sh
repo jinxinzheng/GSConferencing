@@ -1,8 +1,8 @@
 #!/bin/awk -f
 
 BEGIN{
-  hfile="db.h"
-  cfile="db.c"
+  hfile="db_impl.h"
+  cfile="db_impl.c"
 
   header="_" toupper(hfile) "_"
   gsub(/\./, "_", header)
@@ -11,50 +11,6 @@ BEGIN{
 #ifndef "header"\n\
 #define "header"\n\
 " >hfile
-
-  print "\
-#include <stdio.h>\n\
-#include <stdlib.h>\n\
-#include <sqlite.h>\n\
-#include <string.h>\n\
-#include <pthread.h>\n\
-#include \""hfile"\"\n\
-\n\
-static sqlite *db = NULL;\n\
-static pthread_mutex_t mut;\n\
-\n\
-int db_init()\n\
-{\n\
- char *errmsg;\n\
- db = sqlite_open(\"sys.db\", 0777, &errmsg);\n\
- if (db == 0)\n\
- {\n\
-  fprintf(stderr, \"Could not open database: %s\\n\", errmsg);\n\
-  sqlite_freemem(errmsg);\n\
-  return SQLITE_ERROR;\n\
- }\n\
- else\n\
- {\n\
-  printf(\"Successfully connected to database.\\n\");\n\
-  pthread_mutex_init(&mut, NULL);\n\
-  return SQLITE_OK;\n\
- }\n\
-}\n\
-\n\
-void db_close()\n\
-{\n\
- sqlite_close(db);\n\
-}\n\
-\n\
-static int exec_locked(const char *sqlcmd, char **perrmsg)\n\
-{\n\
- int ret;\n\
- pthread_mutex_lock(&mut);\n\
- ret = sqlite_exec(db, sqlcmd, NULL, NULL, perrmsg);\n\
- pthread_mutex_unlock(&mut);\n\
- return ret;\n\
-}\n\
-" >cfile
 }
 
 $1=="table"{

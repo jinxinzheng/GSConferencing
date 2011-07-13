@@ -19,20 +19,24 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	db/md.o db/db.o
 
 
-all: $(sys)
+all: db $(sys)
 
 $(sys): $(SYS_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(SYS_OBJS)
 
-db/db.c: db/db.def
+db:
 	make -C db
 
-.depend: Makefile $(SRCS) db/db.c
+.PHONY: db
+
+db/db_impl.h: db
+
+db/mng.h: db
+
+.depend: $(SRCS) db/db_impl.h db/mng.h
 	$(CC) $(CFLAGS) -MM $(SRCS) >$@
 sinclude .depend
 
 clean:
 	make -C db clean
 	rm -f *.o .depend $(sys) db/*.o
-
-#.PHONY: db

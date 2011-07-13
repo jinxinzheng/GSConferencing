@@ -87,6 +87,12 @@ create table [file]
  path varchar(260)  -- 文稿路径
 );
 
+create table sysconfig
+(
+ id integer primary key,  -- id, autoincrement
+ name varchar(64),   -- config name
+ value varchar(64)   -- config value
+);
 
 -- prepared data
 
@@ -135,3 +141,6 @@ insert into video(name, path) values('video2', '/video2.avi');
 
 insert into [file](path) values('file1.txt');
 insert into [file](path) values('file2.txt');
+
+insert into sysconfig (name, value) values("contrast","0");
+insert into sysconfig (name, value) values("language","0");

@@ -152,6 +152,12 @@ enum {
   /* arg1: char *, pantilt cmd
    * arg2: unused */
   EVENT_PTC,
+
+  /* arg1: int, contrast value */
+  EVENT_CONTRAST_SETTING,
+
+  /* arg1: int, language */
+  EVENT_LANGUAGE_SETTING,
 };
 
 
@@ -284,6 +290,12 @@ int videoctrl_select(int vid_num, __out char *path);
 int filectrl_query(__out char *filelist);
 
 int filectrl_select(int file_num, __out char *path);
+
+/* other */
+
+int contrast_setting(int val);
+
+int language_setting(int val);
 
 #ifdef __cplusplus
 }

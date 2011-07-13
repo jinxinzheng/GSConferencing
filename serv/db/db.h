@@ -6,6 +6,8 @@ int db_init();
 
 void db_close();
 
+void db_sysconfig_set(const char *key, const char *val);
+
 #include "db_impl.h"
 
 

@@ -179,6 +179,7 @@ int handle_cmd_msgctrl(struct cmd *cmd);
 int handle_cmd_videoctrl(struct cmd *cmd);
 int handle_cmd_filectrl(struct cmd *cmd);
 int handle_cmd_synctime(struct cmd *cmd);
+int handle_cmd_sysconfig(struct cmd *cmd);
 int handle_cmd_manage(struct cmd *cmd);
 
 #endif

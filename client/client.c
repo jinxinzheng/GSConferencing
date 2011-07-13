@@ -441,7 +441,9 @@ static void parse_dev_info(char *str, struct dev_info *info)
     if( STREQU(keyval[0], #m) ) \
     { \
       _str_to_ints(keyval[1], info->m); \
-    }
+    } else
+
+    info_str(user_id)
 
     info_str(user_name)
     info_int(user_gender)

@@ -21,6 +21,7 @@ static void get_client_info(char *info, const struct device *d)
 
 #define ADD_ARG(fmt, a...) SEP_ADD(info, l, ":", fmt, ##a)
 
+  ADD_ARG("user_id=%s", dd->user_id);
   ADD_ARG("user_name=%s", dd->user_name);
   ADD_ARG("user_gender=%d", dd->user_gender);
   ADD_ARG("tag=%d", dd->tagid);

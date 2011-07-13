@@ -20,6 +20,7 @@ i id
 s ip 32
 i port
 i tagid
+s user_id 64
 i user_card
 s user_name 64
 i user_gender

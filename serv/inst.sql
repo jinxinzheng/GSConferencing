@@ -37,6 +37,7 @@ create table device
  ip varchar(15),        -- ip地址
  port int,              -- 端口号
  tagid int,             -- 通道id
+ user_id varchar(64),   -- 用户id
  user_card int,         -- 用户卡号
  user_name varchar(64), -- 用户名字
  user_gender int,       -- 用户性别

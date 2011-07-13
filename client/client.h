@@ -20,6 +20,8 @@ struct dev_info
 {
   int id;
 
+  char user_id[64]; /* user id of this client. */
+
   char user_name[64]; /* user name of this client. */
   int user_gender; /* 1:man, 0:woman. */
 

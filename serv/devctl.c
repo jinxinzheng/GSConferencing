@@ -49,6 +49,7 @@ void dev_update_data(struct device *dev)
         "",
         port,
         1, /* tagid */
+        "0", /* user_id */
         0,"?",1, /* user */
         1, /* online */
         0,0, /* sub */

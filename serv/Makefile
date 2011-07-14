@@ -26,9 +26,9 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	cmd_msgctrl.o \
 	cmd_videoctrl.o \
 	cmd_filectrl.o \
-	cmd_synctime.o \
 	cmd_sysconfig.o \
 	cmd_manage.o \
+	cmd_misc.o \
 	../sha/sha128.o \
 	../common/debug.o \
 	db/md.o db/db.o

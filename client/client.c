@@ -12,6 +12,7 @@
 #include "include/cfifo.h"
 #include "include/debug.h"
 #include "../config.h"
+#include "cyctl.h"
 
 #define MINRECV 0
 #define MAXRECV 30
@@ -539,6 +540,15 @@ void start_try_reg(const char *passwd)
   _MAKE_REG();
 
   start_try_send_tcp(buf, l, &servAddr, try_reg_end);
+}
+
+int report_cyc_ctl()
+{
+  BASICS;
+  PRINTC("%s", __func__);
+  SEND_CMD();
+  i = FIND_OK(c);
+  return 0;
 }
 
 
@@ -1343,5 +1353,12 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
     {
       event_handler(EVENT_LANGUAGE_SETTING, (void *)val, NULL);
     }
+  }
+
+  else if( STREQU(c.cmd, "cyc_ctl") )
+  {
+    char *p = c.args[i++];
+    trace_warn("cyclic rescue because of %d\n");
+    do_cyctl(1);
   }
 }

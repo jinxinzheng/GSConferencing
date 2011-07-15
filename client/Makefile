@@ -12,7 +12,7 @@ test_client := test-client
 libclient := libclient.a
 endif
 
-all: $(test_client) $(libclient) libclient.so apitest
+all: $(test_client) $(libclient) apitest cyctld
 
 $(test_client): main.o net.o
 	$(CC) $(LDFLAGS) -o $@ $^
@@ -27,9 +27,11 @@ libclient.so: client.o net.o
 	@$(CC) $(CFLAGS) -MM $(SRCS) >$@
 sinclude .depend
 
-clean:
-	rm -rf *.o .depend $(test_client) apitest $(libclient) libclient.so
-
 apitest: apitest.o $(libclient)
 
 pass: pass.o ../sha/sha128.o
+
+cyctld: cyctld.o ../common/ping.o
+
+clean:
+	rm -rf *.o .depend $(test_client) apitest $(libclient) libclient.so cyctld

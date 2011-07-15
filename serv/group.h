@@ -21,6 +21,8 @@ struct group {
   struct group *hash_next;
   struct group **hash_pprev;
 
+  struct device *cyctl;
+
   struct device *chairman;
 
   struct {

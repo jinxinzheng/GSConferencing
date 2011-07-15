@@ -181,5 +181,6 @@ int handle_cmd_filectrl(struct cmd *cmd);
 int handle_cmd_synctime(struct cmd *cmd);
 int handle_cmd_sysconfig(struct cmd *cmd);
 int handle_cmd_manage(struct cmd *cmd);
+int handle_cmd_report_cyc_ctl(struct cmd *cmd);
 
 #endif

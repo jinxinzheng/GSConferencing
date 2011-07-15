@@ -3,6 +3,8 @@
 #include "db/md.h"
 #include <stdio.h>
 #include <unistd.h>
+#include "async.h"
+#include "network.h"
 #include "include/debug.h"
 
 void dev_heartbeat(struct device *d)
@@ -18,6 +20,24 @@ void dev_heartbeat(struct device *d)
       device_save(d);
     }
     d->active = 1;
+  }
+}
+
+static void check_net(struct device *d)
+{
+  if( !ping_dev(d) )
+  {
+    struct group *g = d->group;
+    char cmd[256];
+    int l;
+
+    /* activate emergency handler */
+    if( g->cyctl )
+    {
+      trace_warn("activating cyclic rescue\n");
+      l = sprintf(cmd, "0 cyc_ctl %d\n", (int)d->id);
+      async_sendto_dev(cmd, l, g->cyctl);
+    }
   }
 }
 
@@ -50,6 +70,8 @@ static void *run_heartbeat_god(void *arg)
           }
           d->active = 0;
           trace_warn("dev %d is dead\n", (int)d->id);
+
+          check_net(d);
         }
       }
     }

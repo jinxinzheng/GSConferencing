@@ -13,4 +13,6 @@ void sendto_dev_tcp(const void *buf, size_t len, struct device *dev);
 
 void send_file_to_dev(const char *path, struct device *dev);
 
+int ping_dev(struct device *dev);
+
 #endif

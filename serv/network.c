@@ -19,6 +19,7 @@
 #include "include/encode.h"
 #include "../config.h"
 #include "hbeat.h"
+#include <include/ping.h>
 
 #define die(s) do {perror(s); exit(1);} while(0)
 #define fail(s) do {perror(s); return -1;} while(0)
@@ -492,4 +493,9 @@ void send_file_to_dev(const char *path, struct device *dev)
 END:
   fclose(f);
   close(sock);
+}
+
+int ping_dev(struct device *dev)
+{
+  return ping(&dev->addr);
 }

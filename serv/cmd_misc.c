@@ -1,5 +1,6 @@
 #include "cmd_handler.h"
 #include <time.h>
+#include <include/debug.h>
 
 int handle_cmd_synctime(struct cmd *cmd)
 {
@@ -11,6 +12,26 @@ int handle_cmd_synctime(struct cmd *cmd)
   REP_ADD_NUM(cmd, (int)t.tv_sec);
   REP_ADD_NUM(cmd, (int)t.tv_nsec);
   REP_END(cmd);
+
+  return 0;
+}
+
+int handle_cmd_report_cyc_ctl(struct cmd *cmd)
+{
+  struct group *g;
+  struct device *d;
+
+  THIS_DEVICE(cmd, d);
+
+  g = d->group;
+
+  if( g->cyctl )
+  {
+    trace_warn("received multiple cyc-ctl dev report: was %ld, to %ld\n",
+      g->cyctl->id, d->id);
+  }
+
+  g->cyctl = d;
 
   return 0;
 }

@@ -177,6 +177,9 @@ int reg(const char *passwd, __out struct dev_info *info);
  * upon success an EVENT_REG_OK is generated. */
 void start_try_reg(const char *passwd);
 
+/* tell the server I'm the cyclic controller */
+int report_cyc_ctl();
+
 /* synchronize local time with the server */
 int synctime();
 

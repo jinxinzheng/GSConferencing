@@ -1358,7 +1358,7 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
   else if( STREQU(c.cmd, "cyc_ctl") )
   {
     char *p = c.args[i++];
-    trace_warn("cyclic rescue because of %d\n");
+    trace_warn("cyclic rescue because of %s\n", p);
     do_cyctl(1);
   }
 }

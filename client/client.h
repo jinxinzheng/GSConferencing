@@ -261,7 +261,7 @@ int votectrl_start(int vote_num, __out int *vote_type);
 
 int votectrl_result(int vote_num, int result);
 
-int votectrl_status(int vote_num, __out int *idlist);
+int votectrl_status(int vote_num, __out int *total, __out int *voted);
 
 int votectrl_showresult(int vote_num, __out int *total, __out int *results);
 

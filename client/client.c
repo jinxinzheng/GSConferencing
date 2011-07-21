@@ -862,7 +862,7 @@ int votectrl_result(int vote_num, int result)
   return 0;
 }
 
-int votectrl_status(int vote_num, int *idlist)
+int votectrl_status(int vote_num, int *total, int *voted)
 {
   BASICS;
 
@@ -872,7 +872,8 @@ int votectrl_status(int vote_num, int *idlist)
 
   i = FIND_OK(c);
 
-  STR_TO_INT_LIST(c.args[i+1], idlist);
+  *total = atoi(c.args[++i]);
+  *voted = atoi(c.args[++i]);
 
   return 0;
 }

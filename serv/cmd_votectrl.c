@@ -50,6 +50,7 @@ void group_setup_vote(struct group *g, struct db_vote *dv)
   char *p;
 
   g->vote.nmembers = 0;
+  g->vote.nvoted = 0;
 
   strcpy(buf, dv->members);
   l = 0;
@@ -227,6 +228,8 @@ int handle_cmd_votectrl(struct cmd *cmd)
     d->vote.choice = i;
     d->vote.v->results[i]++;
 
+    g->vote.nvoted ++;
+
     REP_OK(cmd);
 
     d->db_data->vote_choice = i;
@@ -238,32 +241,18 @@ int handle_cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "status") == 0)
   {
-    struct vote *v;
-    struct list_head *t;
-
     /* the vote number */
     p = cmd->args[ai++];
     if (!p)
       return 1;
 
-    if (!(v = d->vote.v))
+    if( !d->vote.v )
       /* bug or corrupt of network packet */
       return 1;
 
     REP_ADD(cmd, "OK");
-
-    strcpy(buf, "0");
-    l = 0;
-    list_for_each(t, &v->device_head)
-    {
-      struct device *m = list_entry(t, struct device, vote.l);
-      if (m->vote.choice >= 0)
-      {
-        LIST_ADD_NUM(buf, l, (int)m->id);
-      }
-    }
-
-    REP_ADD(cmd, buf);
+    REP_ADD_NUM(cmd, g->vote.nmembers);
+    REP_ADD_NUM(cmd, g->vote.nvoted);
     REP_END(cmd);
   }
   else if (strcmp(scmd, "showresult") == 0)

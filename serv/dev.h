@@ -24,8 +24,17 @@
 #include "tag.h"
 
 struct db_device;
+struct device;
 
-struct device {
+struct dev_ops
+{
+  void (*save_db)(struct device *d);
+};
+
+struct device
+{
+  struct dev_ops *ops;
+
   long id;
   /*unsigned long ip;
   long port;*/

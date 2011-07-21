@@ -8,12 +8,31 @@
 #include "group.h"
 #include "include/debug.h"
 
+static inline struct device *new_dev()
+{
+  struct device *d;
+  d = (struct device *)malloc(sizeof (struct device));
+  memset(d, 0, sizeof (struct device));
+  return d;
+}
+
+static void device_save_db(struct device *d)
+{
+  md_update_device(d->db_data);
+}
+
+static struct dev_ops default_dev_ops = {
+  .save_db = device_save_db,
+};
+
+/* create new dev with default config */
 struct device *dev_create(long did)
 {
   struct device *d;
 
-  d = (struct device *)malloc(sizeof (struct device));
-  memset(d, 0, sizeof (struct device));
+  d = new_dev();
+
+  d->ops = &default_dev_ops;
 
   d->id = did;
 
@@ -170,7 +189,10 @@ int dev_unregister(struct device *dev)
 
 void device_save(struct device *d)
 {
-  md_update_device(d->db_data);
+  if( d->ops->save_db )
+  {
+    d->ops->save_db(d);
+  }
 }
 
 /* down cast to device */
@@ -184,4 +206,31 @@ int dev_event(struct device *dev, int event, void *args)
 {
   /* invoke event handler */
   return 0;
+}
+
+
+/* manager dev is the dev with id 0 and
+ * only exists in runtime, never saved
+ * to the database. */
+void add_manager_dev()
+{
+  int id = 0;
+  static struct device d;
+  static struct db_device dd;
+
+  static struct dev_ops ops = {
+    .save_db = NULL,
+  };
+
+  memset(&dd, 0, sizeof (struct db_device));
+  dd.id = id;
+  dd.tagid = 1;
+
+  memset(&d, 0, sizeof (struct device));
+  d.ops = &ops;
+  d.id = id;
+
+  d.db_data = &dd;
+
+  dev_register(&d);
 }

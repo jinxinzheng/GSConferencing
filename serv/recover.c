@@ -116,6 +116,8 @@ static void recover_devs()
   struct db_device *dd;
   struct device *d;
 
+  add_manager_dev();
+
   md_iterate_device_begin(&it);
   while( (dd = md_iterate_device_next(&it)) )
   {

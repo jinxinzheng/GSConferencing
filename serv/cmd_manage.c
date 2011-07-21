@@ -121,11 +121,64 @@ static void *serv_manage(void *arg)
   /* loop until the client closes */
   while( (l=recv(s, buf, 2048, 0)) > 0 )
   {
+    char rep[2048];
+    int rl;
+
     buf[l]=0;
     trace_info("manager cmd: %s\n", buf);
+
+    /* copy the command for (possible) reply use */
+    strcpy(rep, buf);
+    rl = l;
+    if (rep[rl-1] == '\n')
+      rep[--rl] = 0;
+
     parse_cmd(buf, &c);
 
     op = c.cmd;
+
+    if( strcmp(op, "cmd")==0 )
+    {
+      char *cmd = c.args[0];
+      if( strcmp(cmd,"discctrl")==0 ||
+          strcmp(cmd,"votectrl")==0 ||
+          strcmp(cmd,"regist")==0
+        )
+      {
+        /* pass it to the normal cmd handler. */
+        struct cmd newcmd;
+        int i;
+
+        memset(&newcmd, 0, sizeof newcmd);
+        newcmd.device_id = 0;
+        newcmd.cmd = cmd;
+        i = 1;
+        while( c.args[i] )
+        {
+          newcmd.args[i-1] = c.args[i];
+          i++;
+        }
+
+        newcmd.rep = rep;
+        newcmd.rl = rl;
+
+        i = handle_cmd(&newcmd);
+        if( i != 0 )
+          sprintf(rep, "FAIL %d\n", i);
+      }
+      else
+      {
+        /* other cmds not allowed. */
+        strcpy(rep, "FAIL 1\n");
+      }
+
+      send(s, rep, strlen(rep), 0);
+      continue;
+    }
+
+
+    /* data cmd */
+
     target = c.args[0];
 
     l = 0;

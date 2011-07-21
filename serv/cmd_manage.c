@@ -148,10 +148,14 @@ static void *serv_manage(void *arg)
         send(s, "FAIL 1\n", 7, 0);  \
     } else
 
+    GEN_OP(group)
+    GEN_OP(user)
     GEN_OP(device)
     GEN_OP(tag)
     GEN_OP(discuss)
     GEN_OP(vote)
+    GEN_OP(video)
+    GEN_OP(file)
 
     if( strcmp(target, "all")==0 )
     {

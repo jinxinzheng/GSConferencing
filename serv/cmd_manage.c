@@ -230,6 +230,48 @@ static void *serv_manage(void *arg)
   return NULL;
 }
 
+static int validate_user(const char *user, const char *pswd)
+{
+  iter it;
+  struct db_user *du = NULL;
+
+  md_iterate_user_begin(&it);
+  while( (du = md_iterate_user_next(&it)) )
+  {
+    if( strcmp(du->name, user)==0 &&
+        strcmp(du->password, pswd)==0 )
+    {
+      break;
+    }
+  }
+
+  return (du != NULL);
+}
+
+static int change_passwd(const char *user, const char *new_pswd)
+{
+  iter it;
+  struct db_user *du = NULL;
+
+  md_iterate_user_begin(&it);
+  while( (du = md_iterate_user_next(&it)) )
+  {
+    if( strcmp(du->name, user)==0 )
+    {
+      break;
+    }
+  }
+  if( !du )
+  {
+    return 0;
+  }
+
+  strcpy(du->password, new_pswd);
+  md_update_user(du);
+
+  return 1;
+}
+
 int handle_cmd_manage(struct cmd *cmd)
 {
   char *subcmd;
@@ -249,8 +291,6 @@ int handle_cmd_manage(struct cmd *cmd)
   SUBCMD("login")
   {
     char *u, *p;
-    iter it;
-    struct db_user *du = NULL;
     pthread_t thread;
 
     /* authenticate user */
@@ -258,16 +298,7 @@ int handle_cmd_manage(struct cmd *cmd)
     NEXT_ARG(u);
     NEXT_ARG(p);
 
-    md_iterate_user_begin(&it);
-    while( (du = md_iterate_user_next(&it)) )
-    {
-      if( strcmp(du->name, u)==0 &&
-          strcmp(du->password, p)==0 )
-      {
-        break;
-      }
-    }
-    if( !du )
+    if( !validate_user(u, p) )
     {
       return ERR_REJECTED;
     }
@@ -275,6 +306,47 @@ int handle_cmd_manage(struct cmd *cmd)
     send(s, "OK\n", 3, 0);
 
     pthread_create(&thread, NULL, serv_manage, (void *)s);
+  }
+
+  else return 2; /*sub cmd not found*/
+
+  return 0;
+}
+
+
+int handle_cmd_server_user(struct cmd *cmd)
+{
+  char *subcmd;
+  int a=0;
+
+  NEXT_ARG(subcmd);
+
+  if (0);
+
+  SUBCMD("login")
+  {
+    char *u, *p;
+
+    NEXT_ARG(u);
+    NEXT_ARG(p);
+
+    if( !validate_user(u, p) )
+      return ERR_REJECTED;
+
+    REP_OK(cmd);
+  }
+
+  SUBCMD("passwd")
+  {
+    char *u, *p;
+
+    NEXT_ARG(u);
+    NEXT_ARG(p);
+
+    if( !change_passwd(u, p) )
+      return ERR_OTHER;
+
+    REP_OK(cmd);
   }
 
   else return 2; /*sub cmd not found*/

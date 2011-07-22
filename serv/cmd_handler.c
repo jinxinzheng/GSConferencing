@@ -24,6 +24,7 @@ static struct cmd_handler_entry cmdhandlers[] = {
   CMD_HANDLER_INIT(synctime),
   CMD_HANDLER_INIT(sysconfig),
   CMD_HANDLER_INIT(manage),
+  CMD_HANDLER_INIT(server_user),
   CMD_HANDLER_INIT(report_cyc_ctl),
   {NULL}
 };

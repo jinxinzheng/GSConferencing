@@ -296,6 +296,12 @@ int filectrl_query(__out char *filelist);
 
 int filectrl_select(int file_num, __out char *path);
 
+/* server user */
+
+int server_user_login(const char *user, const char *pswd);
+
+int server_user_change_passwd(const char *user, const char *new_pswd);
+
 /* other */
 
 int contrast_setting(int val);

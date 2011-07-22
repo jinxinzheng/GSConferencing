@@ -1038,6 +1038,26 @@ int filectrl_select(int file_num, char *path)
   return 0;
 }
 
+
+int server_user_login(const char *user, const char *pswd)
+{
+  BASICS;
+  PRINTC("server_user login %s %s", user, pswd);
+  SEND_CMD();
+  i = FIND_OK(c);
+  return 0;
+}
+
+int server_user_change_passwd(const char *user, const char *new_pswd)
+{
+  BASICS;
+  PRINTC("server_user passwd %s %s", user, new_pswd);
+  SEND_CMD();
+  i = FIND_OK(c);
+  return 0;
+}
+
+
 int contrast_setting(int val)
 {
   BASICS;

@@ -45,10 +45,10 @@ struct tag *tag_create(long gid, long tid)
   pthread_mutex_init(&t->mix_stat_mut, NULL);
 
   INIT_LIST_HEAD(&t->discuss.open_list);
-  t->discuss.maxuser = t->id==1? 1:8; /* todo: move this hard-code to db */
+  t->discuss.maxuser = tid==1? 8:1; /* todo: move this hard-code to db */
   t->discuss.openuser = 0;
 
-  if( t->id == 1 )
+  if( tid == 1 )
   {
     struct group *g = get_group(gid);
     t->discuss.mode = g->db_data->discuss_mode;

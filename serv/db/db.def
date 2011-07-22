@@ -2,6 +2,7 @@ table group
 i id
 s name 32
 i discuss_mode
+i discuss_maxuser
 i discuss_id
 i regist_start
 i regist_mode

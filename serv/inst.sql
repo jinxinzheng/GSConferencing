@@ -4,6 +4,7 @@ create table [group]
  id int,            -- id
  name varchar(32),  -- 名称
  discuss_mode int,  -- 讨论模式
+ discuss_maxuser int,  -- 最多发言人数
  discuss_id int,    -- 议题id
  regist_start int,  -- 开始报到
  regist_mode int,   -- 报到模式
@@ -101,6 +102,7 @@ insert into [group] (
   id,
   name,
   discuss_mode,
+  discuss_maxuser,
   discuss_id,
   regist_start,
   regist_mode,
@@ -111,6 +113,7 @@ insert into [group] (
 values (
   1,
   'default',
+  0,
   0,
   0,
   0,

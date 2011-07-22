@@ -688,6 +688,8 @@ int discctrl_set_mode(int mode)
   return 0;
 }
 
+SIMPLE_CMD_i(discctrl, set_maxuser);
+
 int discctrl_query(char *disclist)
 {
   BASICS;

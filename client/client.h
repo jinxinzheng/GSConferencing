@@ -227,6 +227,8 @@ int regist_reg(int mode, int cardid, __out int *card, __out char *name, __out in
 /* mode: enum DISCMODE_* */
 int discctrl_set_mode(int mode);
 
+int discctrl_set_maxuser(int max);
+
 int discctrl_query(__out char *disclist);
 
 int discctrl_select(int disc_num, __out int *idlist, __out char *users_list);

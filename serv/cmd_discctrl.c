@@ -121,6 +121,24 @@ int handle_cmd_discctrl(struct cmd *cmd)
     group_save(g);
   }
 
+  SUBCMD("set_maxuser")
+  {
+    int max;
+    struct tag *t;
+
+    NEXT_ARG(p);
+    max = atoi(p);
+
+    /* only support setting maxuser of tag 1 */
+    t = get_tag(TAGUID(g->id,1));
+    t->discuss.maxuser = max;
+
+    REP_OK(cmd);
+
+    g->db_data->discuss_maxuser = max;
+    group_save(g);
+  }
+
   SUBCMD("query")
   {
     dbl = md_get_array_discuss(db);

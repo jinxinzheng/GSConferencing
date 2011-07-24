@@ -53,11 +53,5 @@ do{ \
   db_exec_sql(_sql);          \
 }while(0)
 
-void db_sysconfig_set(const char *key, const char *val)
-{
-  db_exec_sqlf("update sysconfig set value='%s' where name='%s'",
-      val, key);
-}
-
 
 #include "db_impl.c"

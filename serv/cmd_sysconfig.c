@@ -15,9 +15,6 @@ int handle_cmd_sysconfig(struct cmd *cmd)
   NEXT_ARG(key);
   NEXT_ARG(val);
 
-  /* save key/val to sysconfig */
-  db_sysconfig_set(key, val);
-
   REP_OK(cmd);
 
   send_to_group_all(cmd, d->group);

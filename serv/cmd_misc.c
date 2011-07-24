@@ -2,6 +2,7 @@
 #include <time.h>
 #include <include/types.h>
 #include <include/debug.h>
+#include "db/db.h"
 
 int handle_cmd_synctime(struct cmd *cmd)
 {
@@ -33,6 +34,42 @@ int handle_cmd_report_cyc_ctl(struct cmd *cmd)
   }
 
   g->cyctl = d;
+
+  return 0;
+}
+
+int handle_cmd_set_ptc(struct cmd *cmd)
+{
+  int a=0;
+
+  struct device *d;
+  char *p;
+
+  int cid;
+  int ptcid;
+  char *ptcmd;
+  struct device *c;
+
+  THIS_DEVICE(cmd, d);
+
+  NEXT_ARG(p);
+  cid = atoi(p);
+
+  NEXT_ARG(p);
+  ptcid = atoi(p);
+
+  NEXT_ARG(p);
+  ptcmd = p;
+
+  if( (c = get_device(cid)) )
+  {
+    c->db_data->ptc_id = ptcid;
+    strcpy(c->db_data->ptc_cmd, ptcmd);
+
+    device_save(c);
+  }
+
+  REP_OK(cmd);
 
   return 0;
 }

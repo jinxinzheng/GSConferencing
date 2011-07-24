@@ -1084,6 +1084,15 @@ int sysconfig(int cid, const char *cmd)
   return 0;
 }
 
+int set_ptc(int cid, int ptcid, const char *ptcmd)
+{
+  BASICS;
+  PRINTC("set_ptc %d %d %s", cid, ptcid, ptcmd);
+  SEND_CMD();
+  i = FIND_OK(c);
+  return 0;
+}
+
 
 int synctime()
 {

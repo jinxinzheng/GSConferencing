@@ -316,6 +316,8 @@ int sys_stats(__out int dev_count[]);
  * cmd: custom command, can't contain space. */
 int sysconfig(int id, const char *cmd);
 
+int set_ptc(int id, int ptcid, const char *ptcmd);
+
 #ifdef __cplusplus
 }
 #endif

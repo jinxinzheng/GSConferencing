@@ -155,11 +155,8 @@ enum {
    * arg2: unused */
   EVENT_PTC,
 
-  /* arg1: int, contrast value */
-  EVENT_CONTRAST_SETTING,
-
-  /* arg1: int, language */
-  EVENT_LANGUAGE_SETTING,
+  /* arg1: char *, cmd string */
+  EVENT_SYSCONFIG,
 };
 
 
@@ -306,9 +303,10 @@ int server_user_change_passwd(const char *user, const char *new_pswd);
 
 /* other */
 
-int contrast_setting(int val);
-
-int language_setting(int val);
+/* transparently send command to other clients.
+ * id: the other client id. 0 for all other clients.
+ * cmd: custom command, can't contain space. */
+int sysconfig(int id, const char *cmd);
 
 #ifdef __cplusplus
 }

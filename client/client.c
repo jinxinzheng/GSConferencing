@@ -1060,19 +1060,10 @@ int server_user_change_passwd(const char *user, const char *new_pswd)
 }
 
 
-int contrast_setting(int val)
+int sysconfig(int cid, const char *cmd)
 {
   BASICS;
-  PRINTC("sysconfig contrast %d", val);
-  SEND_CMD();
-  i = FIND_OK(c);
-  return 0;
-}
-
-int language_setting(int val)
-{
-  BASICS;
-  PRINTC("sysconfig language %d", val);
+  PRINTC("sysconfig %d %s", cid, cmd);
   SEND_CMD();
   i = FIND_OK(c);
   return 0;
@@ -1364,18 +1355,11 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
 
   else if (STREQU(c.cmd, "sysconfig"))
   {
-    char *key = c.args[i++];
-    char *val = c.args[i++];
+    char *cid = c.args[i++];
+    char *cmd = c.args[i++];
     CHECKOK(c.args[i++]);
 
-    if( STREQU(key, "contrast") )
-    {
-      event_handler(EVENT_CONTRAST_SETTING, (void *)val, NULL);
-    }
-    if( STREQU(key, "language") )
-    {
-      event_handler(EVENT_LANGUAGE_SETTING, (void *)val, NULL);
-    }
+    event_handler(EVENT_SYSCONFIG, cmd, NULL);
   }
 
   else if( STREQU(c.cmd, "cyc_ctl") )

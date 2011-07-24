@@ -89,6 +89,18 @@ static inline void send_cmd_to_dev(struct cmd *cmd, struct device *d)
   }
 }
 
+static inline int send_cmd_to_dev_id(struct cmd *cmd, int id)
+{
+  struct device *d;
+  if( (d = get_device(id)) )
+  {
+    send_cmd_to_dev(cmd, d);
+    return 1;
+  }
+  else
+    return 0;
+}
+
 static inline void send_to_group_all(struct cmd *cmd, struct group *g)
 {
   struct device *d;

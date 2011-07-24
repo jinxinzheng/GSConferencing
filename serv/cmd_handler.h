@@ -83,7 +83,10 @@ do { \
 
 static inline void send_cmd_to_dev(struct cmd *cmd, struct device *d)
 {
-  async_sendto_dev(cmd->rep, cmd->rl, d);
+  if( d->id != 0 )
+  {
+    async_sendto_dev(cmd->rep, cmd->rl, d);
+  }
 }
 
 static inline void send_to_group_all(struct cmd *cmd, struct group *g)

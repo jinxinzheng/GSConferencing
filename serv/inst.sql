@@ -35,6 +35,7 @@ create table tag
 create table device
 (
  id int primary key,    -- id
+ type int,              -- 设备类型
  ip varchar(15),        -- ip地址
  port int,              -- 端口号
  tagid int,             -- 通道id

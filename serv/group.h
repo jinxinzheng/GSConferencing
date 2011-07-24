@@ -26,6 +26,10 @@ struct group {
   struct device *chairman;
 
   struct {
+    int dev_count[8];
+  } stats;
+
+  struct {
     struct db_discuss *current;
     int curr_num;
     int nmembers;

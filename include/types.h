@@ -1,6 +1,14 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
+/* device types */
+enum {
+  DEVTYPE_NONE,
+  DEVTYPE_NORMAL,
+  DEVTYPE_CHAIR,
+  DEVTYPE_INTERP,
+};
+
 /* user register modes */
 enum {
   REGIST_KEY,

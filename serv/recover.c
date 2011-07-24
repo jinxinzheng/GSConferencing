@@ -9,6 +9,8 @@
 
 static inline void set_dev_from_data(struct device *d, const struct db_device *data)
 {
+  d->type = data->type;
+
   d->addr.sin_family = AF_INET;
   d->addr.sin_addr.s_addr = inet_addr(data->ip);
   d->addr.sin_port = htons(data->port);

@@ -1060,6 +1060,21 @@ int server_user_change_passwd(const char *user, const char *new_pswd)
 }
 
 
+int sys_stats(int dev_count[])
+{
+  BASICS;
+  PRINTC("sys_stats");
+  SEND_CMD();
+  i = FIND_OK(c);
+
+  dev_count[0] = 0;
+  dev_count[1] = atoi(c.args[++i]);
+  dev_count[2] = atoi(c.args[++i]);
+  dev_count[3] = atoi(c.args[++i]);
+
+  return 0;
+}
+
 int sysconfig(int cid, const char *cmd)
 {
   BASICS;

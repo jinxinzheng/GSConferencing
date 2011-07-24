@@ -18,6 +18,7 @@ s password 64
 
 table device
 i id
+i type
 s ip 32
 i port
 i tagid

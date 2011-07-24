@@ -195,5 +195,6 @@ int handle_cmd_sysconfig(struct cmd *cmd);
 int handle_cmd_manage(struct cmd *cmd);
 int handle_cmd_server_user(struct cmd *cmd);
 int handle_cmd_report_cyc_ctl(struct cmd *cmd);
+int handle_cmd_sys_stats(struct cmd *cmd);
 
 #endif

@@ -303,6 +303,14 @@ int server_user_change_passwd(const char *user, const char *new_pswd);
 
 /* other */
 
+/* get system stats.
+ * dev_count: int[4].
+ *    dev_count[0] is always zero.
+ *    dev_count[1] returns count of normal devs.
+ *    dev_count[2] returns count of chair-man devs.
+ *    dev_count[3] returns count of interpreter devs. */
+int sys_stats(__out int dev_count[]);
+
 /* transparently send command to other clients.
  * id: the other client id. 0 for all other clients.
  * cmd: custom command, can't contain space. */

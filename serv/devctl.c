@@ -7,6 +7,7 @@
 #include "db/md.h"
 #include "group.h"
 #include "async.h"
+#include <include/types.h>
 #include "include/debug.h"
 
 static inline struct device *new_dev()
@@ -72,6 +73,7 @@ void dev_update_data(struct device *dev)
     {
       struct db_device tmp = {
         dev->id,
+        dev->type,
         "",
         port,
         1, /* tagid */
@@ -164,6 +166,12 @@ int dev_register(struct device *dev)
     dev_subscribe(dev, t);
   }
 
+  /* update group stats */
+  if( dev->type < sizeof(g->stats.dev_count)/sizeof(g->stats.dev_count[0]) )
+  {
+    g->stats.dev_count[dev->type] ++;
+  }
+
   return 0;
 }
 
@@ -240,6 +248,7 @@ void add_manager_dev()
   memset(&d, 0, sizeof (struct device));
   d.ops = &ops;
   d.id = id;
+  d.type = DEVTYPE_NONE;
 
   d.db_data = &dd;
 

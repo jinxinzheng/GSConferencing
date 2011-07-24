@@ -381,3 +381,5 @@ int handle_cmd_votectrl(struct cmd *cmd)
 
   return 0;
 }
+
+CMD_HANDLER_SETUP(votectrl);

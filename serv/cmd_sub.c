@@ -60,3 +60,5 @@ int handle_cmd_sub(struct cmd *cmd)
   REP_OK(cmd);
   return 0;
 }
+
+CMD_HANDLER_SETUP(sub);

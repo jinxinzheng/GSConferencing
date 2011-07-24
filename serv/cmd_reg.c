@@ -129,3 +129,5 @@ int handle_cmd_reg(struct cmd *cmd)
 
   return 0;
 }
+
+CMD_HANDLER_SETUP(reg);

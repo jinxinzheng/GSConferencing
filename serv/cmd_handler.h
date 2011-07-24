@@ -18,7 +18,26 @@ struct cmd_handler_entry
 
 void init_cmd_handlers();
 
+void register_cmd_handler(struct cmd_handler_entry *ent);
+
 int handle_cmd(struct cmd *cmd);
+
+
+/* INIT functions are called at startup before main */
+#define INIT __attribute__((constructor))
+
+#define _CMD_HANDLER_SETUP(name, fn) \
+static struct cmd_handler_entry _ent_##fn =  \
+{ \
+  .id = name, \
+  .handler = fn, \
+};  \
+static void INIT _init_cmd_##fn()  \
+{ \
+  register_cmd_handler(&_ent_##fn);  \
+}
+
+#define CMD_HANDLER_SETUP(c)    _CMD_HANDLER_SETUP(#c, handle_cmd_##c)
 
 /* macros helpful to cmd handlers */
 
@@ -174,27 +193,5 @@ do { \
   } \
 } while(0)
 
-/* sub cmd handlers.
- * handler should fill the response in cmd->rep. */
-
-int handle_cmd_debug(struct cmd *cmd);
-int handle_cmd_reg(struct cmd *cmd);
-int handle_cmd_get_tags(struct cmd *cmd);
-int handle_cmd_sub(struct cmd *cmd);
-int handle_cmd_switch_tag(struct cmd *cmd);
-int handle_cmd_regist(struct cmd *cmd);
-int handle_cmd_discctrl(struct cmd *cmd);
-int handle_cmd_interp(struct cmd *cmd);
-int handle_cmd_votectrl(struct cmd *cmd);
-int handle_cmd_servicecall(struct cmd *cmd);
-int handle_cmd_msgctrl(struct cmd *cmd);
-int handle_cmd_videoctrl(struct cmd *cmd);
-int handle_cmd_filectrl(struct cmd *cmd);
-int handle_cmd_synctime(struct cmd *cmd);
-int handle_cmd_sysconfig(struct cmd *cmd);
-int handle_cmd_manage(struct cmd *cmd);
-int handle_cmd_server_user(struct cmd *cmd);
-int handle_cmd_report_cyc_ctl(struct cmd *cmd);
-int handle_cmd_sys_stats(struct cmd *cmd);
 
 #endif

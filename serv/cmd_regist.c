@@ -161,3 +161,5 @@ int handle_cmd_regist(struct cmd *cmd)
 
   return 0;
 }
+
+CMD_HANDLER_SETUP(regist);

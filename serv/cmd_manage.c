@@ -353,3 +353,6 @@ int handle_cmd_server_user(struct cmd *cmd)
 
   return 0;
 }
+
+CMD_HANDLER_SETUP(manage);
+CMD_HANDLER_SETUP(server_user);

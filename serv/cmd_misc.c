@@ -93,3 +93,8 @@ int handle_cmd_sys_stats(struct cmd *cmd)
 
   return 0;
 }
+
+CMD_HANDLER_SETUP(synctime);
+CMD_HANDLER_SETUP(report_cyc_ctl);
+CMD_HANDLER_SETUP(set_ptc);
+CMD_HANDLER_SETUP(sys_stats);

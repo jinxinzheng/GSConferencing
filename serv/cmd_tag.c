@@ -79,3 +79,6 @@ int handle_cmd_switch_tag(struct cmd *cmd)
 
   return 0;
 }
+
+CMD_HANDLER_SETUP(get_tags);
+CMD_HANDLER_SETUP(switch_tag);

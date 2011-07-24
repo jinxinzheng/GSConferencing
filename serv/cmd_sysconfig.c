@@ -29,3 +29,5 @@ int handle_cmd_sysconfig(struct cmd *cmd)
 
   return 0;
 }
+
+CMD_HANDLER_SETUP(sysconfig);

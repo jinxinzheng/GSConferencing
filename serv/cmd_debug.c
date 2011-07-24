@@ -76,3 +76,5 @@ int handle_cmd_debug(struct cmd *cmd)
 
   return 0;
 }
+
+CMD_HANDLER_SETUP(debug);

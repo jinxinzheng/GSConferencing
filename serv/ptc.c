@@ -4,9 +4,9 @@
 
 #include "dev.h"
 #include "sys.h"
-#include "async.h"
 #include "db/md.h"
 #include <stdio.h>
+#include "devctl.h"
 
 static void ptc_send(struct device *d);
 
@@ -56,7 +56,7 @@ static void ptc_send(struct device *d)
       char buf[256];
       int l;
       l = sprintf(buf, "%d ptc %s\n", (int)d->id, ptcmd);
-      async_sendto_dev(buf, l, ptc);
+      device_cmd(ptc, buf, l);
     }
 
     add_ptc(ptc);

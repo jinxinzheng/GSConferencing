@@ -3,7 +3,6 @@
 #include "db/md.h"
 #include <stdio.h>
 #include <unistd.h>
-#include "async.h"
 #include "network.h"
 #include "include/debug.h"
 
@@ -36,7 +35,7 @@ static void check_net(struct device *d)
     {
       trace_warn("activating cyclic rescue\n");
       l = sprintf(cmd, "0 cyc_ctl %d\n", (int)d->id);
-      async_sendto_dev(cmd, l, g->cyctl);
+      device_cmd(g->cyctl, cmd, l);
     }
   }
 }

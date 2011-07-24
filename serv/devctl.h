@@ -13,6 +13,8 @@ int dev_unregister(struct device *dev);
 
 void device_save(struct device *d);
 
+void device_cmd(struct device *d, const char *cmd, int len);
+
 void add_manager_dev();
 
 #endif

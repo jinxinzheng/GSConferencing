@@ -3,7 +3,7 @@
 
 #include "cmd/cmd.h"
 #include "sys.h"
-#include "async.h"
+#include "devctl.h"
 
 struct cmd_handler_entry
 {
@@ -83,10 +83,7 @@ do { \
 
 static inline void send_cmd_to_dev(struct cmd *cmd, struct device *d)
 {
-  if( d->id != 0 )
-  {
-    async_sendto_dev(cmd->rep, cmd->rl, d);
-  }
+  device_cmd(d, cmd->rep, cmd->rl);
 }
 
 static inline int send_cmd_to_dev_id(struct cmd *cmd, int id)

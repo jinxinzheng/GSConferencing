@@ -6,6 +6,7 @@
 #include "cast.h"
 #include "db/md.h"
 #include "group.h"
+#include "async.h"
 #include "include/debug.h"
 
 static inline struct device *new_dev()
@@ -16,13 +17,19 @@ static inline struct device *new_dev()
   return d;
 }
 
-static void device_save_db(struct device *d)
+static void def_save_db(struct device *d)
 {
   md_update_device(d->db_data);
 }
 
+static void def_send_cmd(struct device *d, const char *cmd, int len)
+{
+  async_sendto_dev(cmd, len, d);
+}
+
 static struct dev_ops default_dev_ops = {
-  .save_db = device_save_db,
+  .save_db = def_save_db,
+  .send_cmd = def_send_cmd,
 };
 
 /* create new dev with default config */
@@ -196,9 +203,12 @@ void device_save(struct device *d)
 }
 
 /* down cast to device */
-int dev_control(struct device *dev, int ctl, void *params)
+void device_cmd(struct device *d, const char *cmd, int len)
 {
-  return 0;
+  if( d->ops->send_cmd )
+  {
+    d->ops->send_cmd(d, cmd, len);
+  }
 }
 
 /* passed up to server */
@@ -220,6 +230,7 @@ void add_manager_dev()
 
   static struct dev_ops ops = {
     .save_db = NULL,
+    .send_cmd = NULL,
   };
 
   memset(&dd, 0, sizeof (struct db_device));

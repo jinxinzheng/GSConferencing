@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "opts.h"
 #include "recover.h"
+#include "async.h"
 #include <config.h>
 
 void init()

@@ -29,6 +29,7 @@ struct device;
 struct dev_ops
 {
   void (*save_db)(struct device *d);
+  void (*send_cmd)(struct device *d, const char *cmd, int len);
 };
 
 struct device

@@ -1,4 +1,5 @@
 #include "sys.h"
+#include "init.h"
 #include "cmd_handler.h"
 #include "hbeat.h"
 #include "network.h"
@@ -10,7 +11,7 @@
 #include "async.h"
 #include <config.h>
 
-void init()
+static void basic_setup()
 {
   init_groups();
 
@@ -42,7 +43,10 @@ int main(int argc, char *const argv[])
     }
   }
 
-  init();
+  if( init() != 0 )
+    return 1;
+
+  basic_setup();
 
   recover_server();
 

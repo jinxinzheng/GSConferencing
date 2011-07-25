@@ -1,6 +1,7 @@
 #include "cmd_handler.h"
 #include "tag.h"
 #include <arpa/inet.h>
+#include "init.h"
 
 int handle_cmd_debug(struct cmd *cmd)
 {

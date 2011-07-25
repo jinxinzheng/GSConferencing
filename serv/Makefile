@@ -13,6 +13,7 @@ endif
 
 SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.o sys.o hbeat.o pcm.o interp.o ptc.o\
 	async.o block.o ../threadpool/threadpool.o \
+	init.o \
 	cmd_handler.o \
 	cmd_debug.o \
 	cmd_tag.o \
@@ -33,11 +34,13 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	../common/ping.o \
 	db/md.o db/db.o
 
+SYS_LDS = sys.lds
+
 
 all: db $(sys)
 
-$(sys): $(SYS_OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(SYS_OBJS)
+$(sys): $(SYS_OBJS) $(SYS_LDS)
+	$(CC) $(LDFLAGS) -o $@ $(SYS_OBJS) $(SYS_LDS)
 
 db:
 	make -C db

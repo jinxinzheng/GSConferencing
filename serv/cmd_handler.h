@@ -1,6 +1,7 @@
 #ifndef _CMD_HANDLER_H_
 #define _CMD_HANDLER_H_
 
+#include "init.h"
 #include "cmd/cmd.h"
 #include "sys.h"
 #include "devctl.h"
@@ -23,19 +24,18 @@ void register_cmd_handler(struct cmd_handler_entry *ent);
 int handle_cmd(struct cmd *cmd);
 
 
-/* INIT functions are called at startup before main */
-#define INIT __attribute__((constructor))
-
 #define _CMD_HANDLER_SETUP(name, fn) \
 static struct cmd_handler_entry _ent_##fn =  \
 { \
   .id = name, \
   .handler = fn, \
 };  \
-static void INIT _init_cmd_##fn()  \
+static int _cmd_##fn##_init()  \
 { \
   register_cmd_handler(&_ent_##fn);  \
-}
+  return 0; \
+} \
+initcall(_cmd_##fn##_init);
 
 #define CMD_HANDLER_SETUP(c)    _CMD_HANDLER_SETUP(#c, handle_cmd_##c)
 

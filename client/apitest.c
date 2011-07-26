@@ -83,7 +83,7 @@ int main(int argc, char *const argv[])
   msgctrl_send(NULL, "hello");
 
   filectrl_query(buf);
-  filectrl_select(0);
+  filectrl_select(0, buf);
 
   //synctime();
 

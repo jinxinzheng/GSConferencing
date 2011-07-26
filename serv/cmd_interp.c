@@ -63,6 +63,8 @@ static int cmd_interp(struct cmd *cmd)
 
     t->interp.mode = mode;
 
+    REP_OK(cmd);
+
     send_to_tag_all(cmd, t);
   }
 

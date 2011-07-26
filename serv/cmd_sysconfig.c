@@ -16,6 +16,8 @@ static int cmd_sysconfig(struct cmd *cmd)
   NEXT_ARG(cid);
   NEXT_ARG(tcmd);
 
+  REP_OK(cmd);
+
   if( (i = atoi(cid)) )
   {
     send_cmd_to_dev_id(cmd, i);
@@ -24,8 +26,6 @@ static int cmd_sysconfig(struct cmd *cmd)
   {
     send_to_group_all(cmd, d->group);
   }
-
-  REP_OK(cmd);
 
   return 0;
 }

@@ -7,6 +7,15 @@
 
 #define BUFLEN 20480
 
+/* response a single short formatted string to the cmd */
+#define response(cmd, fmt, args...) \
+do {  \
+  char _buf[1024];  \
+  int _l = sprintf(_buf, "%d " fmt, (cmd)->cmd_seq, ##args);  \
+  send(s, _buf, _l, 0);  \
+} while(0)
+
+
 #define append(fmt, a...) l+=sprintf(buf+l,fmt,##a)
 #define flush() send(s, buf, l, 0)
 
@@ -16,8 +25,7 @@
   if( !(p = (c)->args[a++]) ) \
   { \
     trace_err("bad cmd arg\n"); \
-    append("FAIL 2\n"); \
-    flush(); \
+    response(c, "FAIL 2\n"); \
     break; \
   } \
   p; \
@@ -48,7 +56,6 @@ do \
     } \
   } \
   append("\n"); \
-  flush(); \
 }while(0)
 
 #define m_add(type, c) \
@@ -59,10 +66,9 @@ do \
   read_##type(_p, c); \
   _i = md_add_##type(_p); \
   if( _i==0 ) \
-    append("OK\n"); \
+    response(c, "OK\n"); \
   else \
-    append("FAIL %d\n", _i); \
-  flush(); \
+    response(c, "FAIL %d\n", _i); \
 }while(0)
 
 #define m_update(type, c) \
@@ -74,10 +80,9 @@ do \
   read_##type(_p, c); \
   _i = md_update_##type(_p); \
   if( _i==0 ) \
-    append("OK\n"); \
+    response(c, "OK\n"); \
   else \
-    append("FAIL %d\n", _i); \
-  flush(); \
+    response(c, "FAIL %d\n", _i); \
 }while(0)
 
 #define m_delete(type, c) \
@@ -87,10 +92,9 @@ do \
   int _i; \
   _i = md_del_##type(_id); \
   if( _i==0 ) \
-    append("OK\n"); \
+    response(c, "OK\n"); \
   else \
-    append("FAIL %d\n", _i); \
-  flush(); \
+    response(c, "FAIL %d\n", _i); \
 }while(0)
 
 #define m_get_all(c) \
@@ -172,7 +176,12 @@ static void *serv_manage(void *arg)
         strcpy(rep, "FAIL 1\n");
       }
 
-      send(s, rep, strlen(rep), 0);
+      /* remove the leading '0'
+       * returned by the cmd handler */
+      if( rep[0] == '0' )
+        rep[0] = ' ';
+
+      response(&c, "%s", rep);
       continue;
     }
 
@@ -188,8 +197,10 @@ static void *serv_manage(void *arg)
     { \
       if( strcmp(op, "get")==0 ) \
       { \
+        append("%d OK\n", c.cmd_seq); \
         m_get(t, &c); \
-        send(s, "EOF\n", 4, 0); \
+        append("EOF\n"); \
+        flush(); \
       } \
       else if( strcmp(op, "add")==0 ) \
         m_add(t, &c);  \
@@ -198,7 +209,7 @@ static void *serv_manage(void *arg)
       else if( strcmp(op, "delete")==0 ) \
         m_delete(t, &c); \
       else  \
-        send(s, "FAIL 1\n", 7, 0);  \
+        response(&c, "FAIL 1\n");  \
     } else
 
     GEN_OP(group)
@@ -214,13 +225,15 @@ static void *serv_manage(void *arg)
     {
       if( strcmp(op, "get")==0 )
       {
+        append("%d OK\n", c.cmd_seq);
         m_get_all(&c);
-        send(s, "EOF\n", 4, 0);
+        append("EOF\n");
+        flush();
       }
     }
     else
     {
-      send(s, "FAIL 1\n", 7, 0);
+      response(&c, "FAIL 1\n");
     }
 
   }
@@ -303,7 +316,7 @@ static int cmd_manage(struct cmd *cmd)
       return ERR_REJECTED;
     }
 
-    send(s, "OK\n", 3, 0);
+    response(cmd, "OK\n");
 
     pthread_create(&thread, NULL, serv_manage, (void *)s);
   }

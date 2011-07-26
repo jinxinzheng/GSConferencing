@@ -8,6 +8,9 @@
 
 struct cmd {
   int device_id;
+  /* cmd_seq is used where device_id is not needed. */
+# define cmd_seq device_id
+
   const char *cmd;
   char *args[32]; /* arguments, end with NULL */
 

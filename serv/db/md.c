@@ -85,15 +85,14 @@ int md_get_array_##type(struct db_##type *array[])    \
   return _list_to_array_##type(&list_##type, array);  \
 }                                                     \
 \
-void md_iterate_##type##_begin(iter *it)\
-{                                       \
-  *it = &list_##type;                   \
-}                                       \
-\
 struct db_##type *md_iterate_##type##_next(iter *it)\
 {                                                   \
-  struct list_head *p = (struct list_head *)*it;    \
+  struct list_head *p;                              \
   struct md_##type *m;                              \
+  if( !(*it) )                                      \
+    p = &list_##type;                               \
+  else                                              \
+    p = (struct list_head *)*it;                    \
   if( (p = p->next) == &list_##type )               \
     return NULL;                                    \
   *it = p;                                          \

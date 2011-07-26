@@ -12,7 +12,6 @@ typedef void *iter;
 #define DECLARE(type) \
 int md_get_##type##_count(); \
 int md_get_array_##type(struct db_##type *array[]); \
-void md_iterate_##type##_begin(iter *it);           \
 struct db_##type *md_iterate_##type##_next(iter *); \
 struct db_##type *md_find_##type(int id);           \
 int md_add_##type(struct db_##type *p);            \

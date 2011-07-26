@@ -4,12 +4,11 @@
 
 static int cmd_get_tags(struct cmd *cmd)
 {
-  iter it;
+  iter it = NULL;
   struct db_tag *dt;
   char buf[1024];
   int l=0;
 
-  md_iterate_tag_begin(&it);
   while( (dt = md_iterate_tag_next(&it)) )
   {
     LIST_ADD_FMT(buf, l, "%d:%s", dt->id, dt->name);

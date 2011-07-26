@@ -40,11 +40,10 @@ do {  \
 #define m_get(type, c) \
 do \
 { \
-  iter _it; \
+  iter _it = NULL; \
   struct db_##type *_d; \
 \
   l = 0; \
-  md_iterate_##type##_begin(&_it); \
   append("table " #type "\n"); \
   while( (_d = md_iterate_##type##_next(&_it)) ) \
   { \
@@ -245,10 +244,9 @@ static void *serv_manage(void *arg)
 
 static int validate_user(const char *user, const char *pswd)
 {
-  iter it;
+  iter it = NULL;
   struct db_user *du = NULL;
 
-  md_iterate_user_begin(&it);
   while( (du = md_iterate_user_next(&it)) )
   {
     if( strcmp(du->name, user)==0 &&
@@ -263,10 +261,9 @@ static int validate_user(const char *user, const char *pswd)
 
 static int change_passwd(const char *user, const char *new_pswd)
 {
-  iter it;
+  iter it = NULL;
   struct db_user *du = NULL;
 
-  md_iterate_user_begin(&it);
   while( (du = md_iterate_user_next(&it)) )
   {
     if( strcmp(du->name, user)==0 )

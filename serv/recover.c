@@ -114,13 +114,12 @@ static inline void restore_vote(struct device *d)
  * auto created on demand. */
 static void recover_devs()
 {
-  iter it;
+  iter it = NULL;
   struct db_device *dd;
   struct device *d;
 
   add_manager_dev();
 
-  md_iterate_device_begin(&it);
   while( (dd = md_iterate_device_next(&it)) )
   {
     d = dev_create(dd->id);

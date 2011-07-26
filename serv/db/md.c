@@ -94,7 +94,6 @@ struct db_##type *md_iterate_##type##_next(iter *it)\
 {                                                   \
   struct list_head *p = (struct list_head *)*it;    \
   struct md_##type *m;                              \
-  struct db_##type *t;                              \
   if( (p = p->next) == &list_##type )               \
     return NULL;                                    \
   *it = p;                                          \

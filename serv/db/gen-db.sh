@@ -61,9 +61,20 @@ t&&/^$/{
   updatef=substr(updatef, 0, length(updatef)-1);
   addf=substr(addf,0,length(addf)-1);
   addv=substr(addv,0,length(addv)-1);
+  adds=substr(adds,0,length(adds)-1);
+
+  get_signature="int db_get_"table"(struct db_"table" *table)";
+  update_signature="int db_update_"table"(struct db_"table" *data)";
+  add_signature="int db_add_"table"(struct db_"table" *data)";
+  delete_signature="int db_del_"table"(int id)";
+
+  print get_signature ";" >>hfile;
+  print update_signature ";" >>hfile;
+  print add_signature ";" >>hfile;
+  print delete_signature ";\n" >>hfile;
 
   print "\
-int db_get_"table"(struct db_"table" *table)\n\
+" get_signature "\n\
 {\n\
  const char **values, **columnNames;\n\
  char *errmsg;\n\
@@ -91,7 +102,7 @@ int db_get_"table"(struct db_"table" *table)\n\
  return rows;\n\
 }\n\
 \n\
-int db_update_"table"(struct db_"table" *data)\n\
+" update_signature "\n\
 {\n\
  char *errmsg;\n\
  int ret;\n\
@@ -111,7 +122,7 @@ int db_update_"table"(struct db_"table" *data)\n\
  return ret;\n\
 }\n\
 \n\
-int db_add_"table"(struct db_"table" *data)\n\
+" add_signature "\n\
 {\n\
   char *errmsg;\n\
   int ret;\n\
@@ -120,8 +131,7 @@ int db_add_"table"(struct db_"table" *data)\n\
   sprintf(sqlcmd, \"insert into '"table"' \"\n\
     \"("addf")\"\n\
     \" values("addv");\",\n\
-    "adds"\n\
-    0/*no harm*/);\n\
+    "adds" );\n\
 \n\
   ret = exec_locked(sqlcmd, &errmsg);\n\
 \n\
@@ -131,7 +141,7 @@ int db_add_"table"(struct db_"table" *data)\n\
   return ret;\n\
 }\n\
 \n\
-int db_del_"table"(int id)\n\
+" delete_signature "\n\
 {\n\
   char *errmsg;\n\
   int ret;\n\

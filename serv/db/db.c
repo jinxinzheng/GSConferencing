@@ -40,6 +40,7 @@ static int exec_locked(const char *sqlcmd, char **perrmsg)
   return ret;
 }
 
+#if 0
 static int db_exec_sql(const char *sql)
 {
   char *err;
@@ -52,6 +53,7 @@ do{ \
   sprintf(_sql, fmt, ##args); \
   db_exec_sql(_sql);          \
 }while(0)
+#endif
 
 
 #include "db_impl.c"

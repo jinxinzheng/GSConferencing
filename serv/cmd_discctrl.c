@@ -84,7 +84,7 @@ static void kick_user(struct device *d, struct device *kick)
   device_cmd(kick, buf, l);
 }
 
-int handle_cmd_discctrl(struct cmd *cmd)
+static int cmd_discctrl(struct cmd *cmd)
 {
   char *subcmd, *p;
   char buf[1024];

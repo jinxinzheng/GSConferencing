@@ -3,7 +3,7 @@
 #define DEVLIST_TO_IDLIST(str, head, listmember) \
   list_TO_NUMLIST(str, head, struct device, listmember, id)
 
-int handle_cmd_msgctrl(struct cmd *cmd)
+static int cmd_msgctrl(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;

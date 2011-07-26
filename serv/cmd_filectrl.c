@@ -5,7 +5,7 @@
 static struct db_file *table[1024];
 static int tblen = 0;
 
-int handle_cmd_filectrl(struct cmd *cmd)
+static int cmd_filectrl(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;

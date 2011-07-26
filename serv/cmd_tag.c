@@ -2,7 +2,7 @@
 #include "db/md.h"
 #include "devctl.h"
 
-int handle_cmd_get_tags(struct cmd *cmd)
+static int cmd_get_tags(struct cmd *cmd)
 {
   iter it;
   struct db_tag *dt;
@@ -22,7 +22,7 @@ int handle_cmd_get_tags(struct cmd *cmd)
   return 0;
 }
 
-int handle_cmd_switch_tag(struct cmd *cmd)
+static int cmd_switch_tag(struct cmd *cmd)
 {
   int a=0;
 

@@ -272,7 +272,7 @@ static int change_passwd(const char *user, const char *new_pswd)
   return 1;
 }
 
-int handle_cmd_manage(struct cmd *cmd)
+static int cmd_manage(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;
@@ -314,7 +314,7 @@ int handle_cmd_manage(struct cmd *cmd)
 }
 
 
-int handle_cmd_server_user(struct cmd *cmd)
+static int cmd_server_user(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;

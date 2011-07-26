@@ -3,7 +3,7 @@
 #include <arpa/inet.h>
 #include "init.h"
 
-int handle_cmd_debug(struct cmd *cmd)
+static int cmd_debug(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;

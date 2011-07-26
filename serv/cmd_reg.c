@@ -51,7 +51,7 @@ static void get_client_info(char *info, const struct device *d)
   ADD_ARG("vote_choice=%d", dd->vote_choice);
 }
 
-int handle_cmd_reg(struct cmd *cmd)
+static int cmd_reg(struct cmd *cmd)
 {
   int a=0;
 

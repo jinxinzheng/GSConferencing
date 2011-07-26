@@ -4,7 +4,7 @@
 static struct db_video *table[1024];
 static int tblen;
 
-int handle_cmd_videoctrl(struct cmd *cmd)
+static int cmd_videoctrl(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;

@@ -4,7 +4,7 @@
 #include <include/debug.h>
 #include "db/db.h"
 
-int handle_cmd_synctime(struct cmd *cmd)
+static int cmd_synctime(struct cmd *cmd)
 {
   struct timespec t;
 
@@ -18,7 +18,7 @@ int handle_cmd_synctime(struct cmd *cmd)
   return 0;
 }
 
-int handle_cmd_report_cyc_ctl(struct cmd *cmd)
+static int cmd_report_cyc_ctl(struct cmd *cmd)
 {
   struct group *g;
   struct device *d;
@@ -38,7 +38,7 @@ int handle_cmd_report_cyc_ctl(struct cmd *cmd)
   return 0;
 }
 
-int handle_cmd_set_ptc(struct cmd *cmd)
+static int cmd_set_ptc(struct cmd *cmd)
 {
   int a=0;
 
@@ -74,7 +74,7 @@ int handle_cmd_set_ptc(struct cmd *cmd)
   return 0;
 }
 
-int handle_cmd_sys_stats(struct cmd *cmd)
+static int cmd_sys_stats(struct cmd *cmd)
 {
   struct group *g;
   struct device *d;

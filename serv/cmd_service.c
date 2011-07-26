@@ -1,6 +1,6 @@
 #include "cmd_handler.h"
 
-int handle_cmd_servicecall(struct cmd *cmd)
+static int cmd_servicecall(struct cmd *cmd)
 {
   int a=0;
 

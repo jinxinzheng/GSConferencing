@@ -4,7 +4,7 @@
 #include "devctl.h"
 #include "cast.h"
 
-int handle_cmd_sub(struct cmd *cmd)
+static int cmd_sub(struct cmd *cmd)
 {
   char *p;
 

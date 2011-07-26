@@ -23,7 +23,7 @@ static inline void regist_notify_all(struct cmd *cmd, struct group *g)
   }
 }
 
-int handle_cmd_regist(struct cmd *cmd)
+static int cmd_regist(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;

@@ -25,19 +25,19 @@ int handle_cmd(struct cmd *cmd);
 
 
 #define _CMD_HANDLER_SETUP(name, fn) \
-static struct cmd_handler_entry _ent_##fn =  \
+static struct cmd_handler_entry _##fn##_ent =  \
 { \
   .id = name, \
   .handler = fn, \
 };  \
-static int _cmd_##fn##_init()  \
+static int _##fn##_init()  \
 { \
-  register_cmd_handler(&_ent_##fn);  \
+  register_cmd_handler(&_##fn##_ent);  \
   return 0; \
 } \
-initcall(_cmd_##fn##_init);
+initcall(_##fn##_init);
 
-#define CMD_HANDLER_SETUP(c)    _CMD_HANDLER_SETUP(#c, handle_cmd_##c)
+#define CMD_HANDLER_SETUP(c)    _CMD_HANDLER_SETUP(#c, cmd_##c)
 
 /* macros helpful to cmd handlers */
 

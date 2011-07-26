@@ -1,7 +1,7 @@
 #include "cmd_handler.h"
 #include "db/db.h"
 
-int handle_cmd_sysconfig(struct cmd *cmd)
+static int cmd_sysconfig(struct cmd *cmd)
 {
   int a=0;
 

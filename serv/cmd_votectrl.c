@@ -80,7 +80,7 @@ void group_setup_vote(struct group *g, struct db_vote *dv)
   g->vote.current = dv;
 }
 
-int handle_cmd_votectrl(struct cmd *cmd)
+static int cmd_votectrl(struct cmd *cmd)
 {
   char *scmd, *p;
   char buf[1024];

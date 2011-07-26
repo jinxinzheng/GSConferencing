@@ -2,7 +2,7 @@
 #include "include/types.h"
 #include "interp.h"
 
-int handle_cmd_interp(struct cmd *cmd)
+static int cmd_interp(struct cmd *cmd)
 {
   char *subcmd;
   int a=0;

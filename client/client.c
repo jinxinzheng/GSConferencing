@@ -1093,6 +1093,15 @@ int set_ptc(int cid, int ptcid, const char *ptcmd)
   return 0;
 }
 
+int set_user_id(int cid, const char *user_id)
+{
+  BASICS;
+  PRINTC("set_user_id %d %s", cid, user_id);
+  SEND_CMD();
+  i = FIND_OK(c);
+  return 0;
+}
+
 
 int synctime()
 {
@@ -1391,5 +1400,14 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
     char *p = c.args[i++];
     trace_warn("cyclic rescue because of %s\n", p);
     do_cyctl(1);
+  }
+
+  else if (STREQU(c.cmd, "set_user_id"))
+  {
+    char *cid = c.args[i++];
+    char *user_id = c.args[i++];
+    CHECKOK(c.args[i++]);
+
+    event_handler(EVENT_SET_UID, user_id, NULL);
   }
 }

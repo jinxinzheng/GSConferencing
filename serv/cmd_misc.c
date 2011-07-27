@@ -94,7 +94,36 @@ static int cmd_sys_stats(struct cmd *cmd)
   return 0;
 }
 
+static int cmd_set_user_id(struct cmd *cmd)
+{
+  int a=0;
+
+  struct device *c;
+
+  char *p;
+  int cid;
+  char *user_id;
+
+  NEXT_ARG(p);
+  cid = atoi(p);
+
+  NEXT_ARG(user_id);
+
+  if( !(c = get_device(cid)) )
+    return ERR_INVL_ARG;
+
+  strcpy(c->db_data->user_id, user_id);
+  device_save(c);
+
+  REP_OK(cmd);
+
+  send_cmd_to_dev(cmd, c);
+
+  return 0;
+}
+
 CMD_HANDLER_SETUP(synctime);
 CMD_HANDLER_SETUP(report_cyc_ctl);
 CMD_HANDLER_SETUP(set_ptc);
 CMD_HANDLER_SETUP(sys_stats);
+CMD_HANDLER_SETUP(set_user_id);

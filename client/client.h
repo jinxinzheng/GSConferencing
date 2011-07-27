@@ -157,6 +157,9 @@ enum {
 
   /* arg1: char *, cmd string */
   EVENT_SYSCONFIG,
+
+  /* arg1: char *, user id */
+  EVENT_SET_UID,
 };
 
 
@@ -317,6 +320,8 @@ int sys_stats(__out int dev_count[]);
 int sysconfig(int id, const char *cmd);
 
 int set_ptc(int id, int ptcid, const char *ptcmd);
+
+int set_user_id(int id, const char *user_id);
 
 #ifdef __cplusplus
 }

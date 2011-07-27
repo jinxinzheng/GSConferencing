@@ -423,7 +423,10 @@ void sendto_dev_tcp(const void *buf, size_t len, struct device *dev)
    * for the tcp socket could be connect()ed only once. */
   int sock;
 
+#ifdef DEBUG_INFO
+  ((char*)buf)[len] = 0;
   trace_info("%s( '%s', %d, %d )\n", __func__, (char*)buf, len, (int)dev->id);
+#endif
 
   _CONNECT_DEV(dev, sock);
 

@@ -53,7 +53,7 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   struct list_head *p, *h;
   int i;
 
-#if DEBUG >= 4
+#ifdef DEBUG_VERB
   {
     pack_data *pd = (pack_data *)pack->data;
     trace_verb("%d.%d ", ntohl(pd->id), ntohl(pd->seq));

@@ -16,11 +16,14 @@
 #include <stdio.h>
 
 #ifdef DEBUG
+ #define DEBUG_ERR
+
  #ifdef PREFIX_TRACE
   #define trace(fmt, a...) fprintf(stderr, "[%s:%d] [%s] " fmt, __FILE__, __LINE__, __func__, ##a)
  #else
   #define trace(fmt, a...) fprintf(stderr, fmt, ##a)
  #endif
+
  #define debug(expr) expr
 #else
  #define trace(...)
@@ -30,7 +33,7 @@
 #define trace0 trace
 
 #if DEBUG >= 1
-
+ #define DEBUG_WARN
  #define trace1 trace
 
 #if 0
@@ -55,6 +58,7 @@ do { \
 
 
 #if DEBUG >= 2
+ #define DEBUG_INFO
  #define trace2 trace
 #else
  #define trace2(...)
@@ -62,6 +66,7 @@ do { \
 
 
 #if DEBUG >= 3
+ #define DEBUG_DBG
  #define trace3 trace
 #else
  #define trace3(...)
@@ -69,7 +74,7 @@ do { \
 
 
 #if DEBUG >= 4
-
+ #define DEBUG_VERB
  #define trace4 trace
 
  #define DEBUG_TIME_INIT() struct timespec _s,_e

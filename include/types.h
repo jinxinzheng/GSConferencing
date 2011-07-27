@@ -7,6 +7,7 @@ enum {
   DEVTYPE_NORMAL,
   DEVTYPE_CHAIR,
   DEVTYPE_INTERP,
+  DEVTYPE_OTHER,
 };
 
 /* user register modes */

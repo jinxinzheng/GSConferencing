@@ -411,6 +411,59 @@ static int str_split(char *s, char *sp[], const char *delim)
   return i;
 }
 
+/* entry list string parse helper */
+
+struct parse_cfg
+{
+  int ent_size;
+  int offset;
+  int type;
+};
+
+#define PARSE_CFG(etype, emember, type)   \
+  {sizeof(etype), (int)(&((etype *)0)->emember), type}
+
+#define PARSE_CFG_INT(etype, emember)   \
+  PARSE_CFG(etype, emember, 'i')
+
+#define PARSE_CFG_STR(etype, emember)   \
+  PARSE_CFG(etype, emember, 's')
+
+#define PARSE_CFG_END()   {0}
+
+static int parse_entries(void *ents, char *str, const struct parse_cfg *cfg)
+{
+  int i,j,l,m;
+  char *sp[1024];
+  char *em[128];
+  const struct parse_cfg *pm;
+  char *ent = (char *)ents;
+
+  l = str_split(str, sp, ",");
+
+  for( i=0 ; i<l ; i++ )
+  {
+    m = str_split(sp[i], em, ":");
+
+    for( pm=cfg,j=0 ; pm->type && j<m ; pm++,j++ )
+    {
+      switch ( pm->type )
+      {
+        case 'i':
+          *(int *)(ent+pm->offset) = atoi(em[j]);
+          break;
+        case 's':
+          strcpy(ent+pm->offset, em[j]);
+          break;
+      }
+    }
+
+    ent += cfg[0].ent_size;
+  }
+
+  return l;
+}
+
 
 static void parse_dev_info(char *str, struct dev_info *info)
 {
@@ -556,8 +609,12 @@ int get_tags(struct tag_info tags[], int *count)
 {
   BASICS;
   char *info;
-  char *sp[100];
-  char *te[10];
+
+  struct parse_cfg cfg[] = {
+    PARSE_CFG_INT(struct tag_info, id),
+    PARSE_CFG_STR(struct tag_info, name),
+    PARSE_CFG_END()
+  };
 
   PRINTC("%s", __func__);
 
@@ -567,16 +624,7 @@ int get_tags(struct tag_info tags[], int *count)
 
   info = c.args[i+1];
 
-  l = str_split(info, sp, ",");
-
-  for( i=0 ; i<l ; i++ )
-  {
-    str_split(sp[i], te, ":");
-    tags[i].id = atoi(te[0]);
-    strcpy(tags[i].name, te[1]);
-  }
-
-  *count = l;
+  *count = parse_entries(tags, info, cfg);
 
   return 0;
 }
@@ -1106,25 +1154,21 @@ int get_all_devs(dev_ent_t devs[], int *count)
 {
   BASICS;
   char *p;
-  char *sp[1024];
-  char *de[3];
+
+  static struct parse_cfg cfg[] = {
+    PARSE_CFG_INT(dev_ent_t, id),
+    PARSE_CFG_INT(dev_ent_t, type),
+    PARSE_CFG_STR(dev_ent_t, user_id),
+    PARSE_CFG_END()
+  };
 
   PRINTC("get_all_devs");
   SEND_CMD();
   i = FIND_OK(c);
 
   p = c.args[++i];
-  l = str_split(p, sp, ",");
 
-  for( i=0 ; i<l ; i++ )
-  {
-    str_split(sp[i], de, ":");
-    devs[i].id = atoi(de[0]);
-    devs[i].type = atoi(de[1]);
-    strcpy(devs[i].user_id, de[2]);
-  }
-
-  *count = l;
+  *count = parse_entries(devs, p, cfg);
 
   return 0;
 }

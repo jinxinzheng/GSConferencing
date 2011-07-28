@@ -77,7 +77,7 @@ void dev_update_data(struct device *dev)
         "",
         port,
         1, /* tagid */
-        "0", /* user_id */
+        "", /* user_id */
         0,"?",1, /* user */
         1, /* online */
         0,0, /* sub */
@@ -90,6 +90,8 @@ void dev_update_data(struct device *dev)
         0, "", /* ptc */
       };
       strcpy(tmp.ip, ip);
+      /* user_id is defaultly copy of id */
+      sprintf(tmp.user_id, "%ld", dev->id);
 
       md_add_device(&tmp);
 

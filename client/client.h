@@ -323,6 +323,15 @@ int set_ptc(int id, int ptcid, const char *ptcmd);
 
 int set_user_id(int id, const char *user_id);
 
+typedef struct
+{
+  int id;
+  int type;
+  char user_id[64];
+} dev_ent_t;
+
+int get_all_devs(__out dev_ent_t devs[], __out int *count);
+
 #ifdef __cplusplus
 }
 #endif

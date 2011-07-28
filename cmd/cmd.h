@@ -25,6 +25,9 @@ struct cmd {
   int sock;
 };
 
+#define CMD_MAX     4096
+#define REPLY_MAX   CMD_MAX
+
 /* cmd error codes */
 enum {
   ERR_PARSE = 1,

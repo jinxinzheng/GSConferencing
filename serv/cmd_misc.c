@@ -122,8 +122,38 @@ static int cmd_set_user_id(struct cmd *cmd)
   return 0;
 }
 
+static int cmd_get_all_devs(struct cmd *cmd)
+{
+  struct group *g;
+  struct device *d;
+  struct device *c;
+  struct list_head *t;
+  char buf[REPLY_MAX];
+  int l = 0;
+
+  THIS_DEVICE(cmd, d);
+
+  g = d->group;
+
+  list_for_each(t, &g->device_head)
+  {
+    c = list_entry(t, struct device, list);
+    LIST_ADD_FMT(buf, l, "%ld:%d:%s",
+      c->id,
+      c->type,
+      c->db_data->user_id);
+  }
+
+  REP_ADD(cmd, "OK");
+  REP_ADD(cmd, buf);
+  REP_END(cmd);
+
+  return 0;
+}
+
 CMD_HANDLER_SETUP(synctime);
 CMD_HANDLER_SETUP(report_cyc_ctl);
 CMD_HANDLER_SETUP(set_ptc);
 CMD_HANDLER_SETUP(sys_stats);
 CMD_HANDLER_SETUP(set_user_id);
+CMD_HANDLER_SETUP(get_all_devs);

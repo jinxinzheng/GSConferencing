@@ -1102,6 +1102,33 @@ int set_user_id(int cid, const char *user_id)
   return 0;
 }
 
+int get_all_devs(dev_ent_t devs[], int *count)
+{
+  BASICS;
+  char *p;
+  char *sp[1024];
+  char *de[3];
+
+  PRINTC("get_all_devs");
+  SEND_CMD();
+  i = FIND_OK(c);
+
+  p = c.args[++i];
+  l = str_split(p, sp, ",");
+
+  for( i=0 ; i<l ; i++ )
+  {
+    str_split(sp[i], de, ":");
+    devs[i].id = atoi(de[0]);
+    devs[i].type = atoi(de[1]);
+    strcpy(devs[i].user_id, de[2]);
+  }
+
+  *count = l;
+
+  return 0;
+}
+
 
 int synctime()
 {

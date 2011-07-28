@@ -7,6 +7,7 @@
 #include "db/md.h"
 #include "group.h"
 #include "async.h"
+#include "strutil.h"
 #include <include/types.h>
 #include "include/debug.h"
 
@@ -168,11 +169,16 @@ int dev_register(struct device *dev)
     dev_subscribe(dev, t);
   }
 
-  /* update group stats */
+  /* update group stats and caches */
   if( dev->type < sizeof(g->stats.dev_count)/sizeof(g->stats.dev_count[0]) )
   {
     g->stats.dev_count[dev->type] ++;
   }
+
+  LIST_ADD_FMT(g->caches.dev_ents, g->caches.dev_ents_len, "%ld:%d:%s",
+      dev->id,
+      dev->type,
+      dev->db_data->user_id);
 
   return 0;
 }

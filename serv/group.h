@@ -52,6 +52,11 @@ struct group {
     char membernames[2048];
     struct vote *v; /* for recover use */
   } vote;
+
+  struct {
+    char dev_ents[4096];
+    int dev_ents_len;
+  } caches;
 };
 
 

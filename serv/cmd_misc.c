@@ -126,26 +126,13 @@ static int cmd_get_all_devs(struct cmd *cmd)
 {
   struct group *g;
   struct device *d;
-  struct device *c;
-  struct list_head *t;
-  char buf[REPLY_MAX];
-  int l = 0;
 
   THIS_DEVICE(cmd, d);
 
   g = d->group;
 
-  list_for_each(t, &g->device_head)
-  {
-    c = list_entry(t, struct device, list);
-    LIST_ADD_FMT(buf, l, "%ld:%d:%s",
-      c->id,
-      c->type,
-      c->db_data->user_id);
-  }
-
   REP_ADD(cmd, "OK");
-  REP_ADD(cmd, buf);
+  REP_ADD(cmd, g->caches.dev_ents);
   REP_END(cmd);
 
   return 0;

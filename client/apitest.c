@@ -72,6 +72,17 @@ int main(int argc, char *const argv[])
   start_try_reg("*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&");
   sleep(1);
 
+  {
+    struct tag_info tags[32];
+    int ntag;
+    get_tags(tags, &ntag);
+  }
+
+  {
+    dev_ent_t devs[1024];
+    int ndev;
+    get_all_devs(devs, &ndev);
+  }
 
   regist_start(0);
   regist_status(idlist+0, idlist+1);
@@ -84,6 +95,8 @@ int main(int argc, char *const argv[])
 
   filectrl_query(buf);
   filectrl_select(0, buf);
+
+  interp_set_mode(0);
 
   //synctime();
 

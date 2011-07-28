@@ -12,6 +12,8 @@
 #include "include/encode.h"
 #include "../config.h"
 
+#define BUFLEN 4096
+
 void get_broadcast_addr(char *addr)
 {
   struct ifaddrs *ifa, *p;
@@ -65,7 +67,7 @@ int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)
 int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
 {
   int sock;
-  unsigned char tmp[2048];
+  unsigned char tmp[BUFLEN];
   int l;
 
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -244,7 +246,7 @@ static void _recv_udp(int s)
 {
   struct sockaddr_in other;
   size_t otherLen;
-  char buf[4096], *p;
+  char buf[BUFLEN], *p;
   int len;
 
   otherLen = sizeof(other);
@@ -284,7 +286,7 @@ static void *run_recv_tcp(void *arg)
   struct sockaddr_in loclAddr; /* local address */
   struct sockaddr_in remtAddr; /* remote address */
   size_t remtLen;
-  char buf[2048];
+  char buf[BUFLEN];
   int l;
 
   port = tcp_port;
@@ -379,7 +381,7 @@ static void *run_recv_tcp(void *arg)
       if( !isfile )
       {
         /* decode received data */
-        unsigned char tmp[4096];
+        unsigned char tmp[BUFLEN];
         l = decode(tmp, buf, l);
         memcpy(buf, tmp, l);
         buf[l] = 0;

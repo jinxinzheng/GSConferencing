@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <include/ping.h>
+#include "inifile.h"
 
 #include "cyctl.h"
 
-static char *server_addr;
+static char server_addr[260];
 static int is_cyctl;
 
 static void run_cyctl()
@@ -43,10 +44,16 @@ static void run_cyctl()
   }
 }
 
+static void read_config()
+{
+  const char *file = "config.ini";
+  read_profile_string("con", "server_addr", server_addr, sizeof server_addr, "", file);
+  is_cyctl = read_profile_int("con", "is_cyctl", 0, file);
+}
+
 int main(int argc, char *argv[])
 {
-  server_addr = argv[1];
-  is_cyctl = atoi(argv[2]);
+  read_config();
 
   if( !is_cyctl )
   {

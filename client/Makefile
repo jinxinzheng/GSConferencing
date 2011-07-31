@@ -31,7 +31,7 @@ apitest: apitest.o $(libclient)
 
 pass: pass.o ../sha/sha128.o
 
-cyctld: cyctld.o ../common/ping.o
+cyctld: cyctld.o ../common/ping.o inifile.o
 
 clean:
 	rm -rf *.o .depend $(test_client) apitest $(libclient) libclient.so cyctld

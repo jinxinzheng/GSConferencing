@@ -56,7 +56,7 @@ static void *run_heartbeat_god(void *arg)
     list_for_each(p, &g->device_head)
     {
       d = list_entry(p, struct device, list);
-      if( ++ d->hbeat > 6 )
+      if( ++ d->hbeat > 3 )
       {
         /* 1 minute has been hit */
         if( d->active )

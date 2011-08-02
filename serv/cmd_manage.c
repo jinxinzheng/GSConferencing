@@ -7,12 +7,15 @@
 
 #define BUFLEN 20480
 
+#define _response(buf, len) \
+  send(s, buf, len, 0)
+
 /* response a single short formatted string to the cmd */
 #define response(cmd, fmt, args...) \
 do {  \
   char _buf[1024];  \
   int _l = sprintf(_buf, "%d " fmt, (cmd)->cmd_seq, ##args);  \
-  send(s, _buf, _l, 0);  \
+  _response(_buf, _l);  \
 } while(0)
 
 
@@ -115,6 +118,7 @@ static void *serv_manage(void *arg)
   int r;
   int a=0;
   char *p;
+  int i;
 
   //c.sock = s;
 
@@ -162,7 +166,6 @@ static void *serv_manage(void *arg)
       {
         /* pass it to the normal cmd handler. */
         struct cmd newcmd;
-        int i;
 
         memset(&newcmd, 0, sizeof newcmd);
         newcmd.device_id = 0;
@@ -179,7 +182,15 @@ static void *serv_manage(void *arg)
 
         i = handle_cmd(&newcmd);
         if( i != 0 )
+        {
           sprintf(rep, "FAIL %d\n", i);
+          goto end_cmd;
+        }
+
+        /* directly send the rep as it
+         * already contains the seq. */
+        _response(newcmd.rep, newcmd.rl);
+        continue;
       }
       else
       {
@@ -187,11 +198,6 @@ static void *serv_manage(void *arg)
         strcpy(rep, "FAIL 1\n");
         goto end_cmd;
       }
-
-      /* remove the leading '0'
-       * returned by the cmd handler */
-      if( rep[0] == '0' )
-        rep[0] = ' ';
 
 end_cmd:
       response(&c, "%s", rep);

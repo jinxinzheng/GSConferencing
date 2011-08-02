@@ -113,6 +113,7 @@ static void *serv_manage(void *arg)
   int l;
 
   struct cmd c = {0};
+  int r;
   int a=0;
   char *p;
 
@@ -136,13 +137,25 @@ static void *serv_manage(void *arg)
     if (rep[rl-1] == '\n')
       rep[--rl] = 0;
 
-    parse_cmd(buf, &c);
+    memset(&c, 0, sizeof c);
+    if( (r=parse_cmd(buf, &c)) != 0 )
+    {
+      response(&c, "FAIL %d\n", r);
+      continue;
+    }
 
     op = c.cmd;
 
     if( strcmp(op, "cmd")==0 )
     {
       char *cmd = c.args[0];
+
+      if( !cmd )
+      {
+        strcpy(rep, "FAIL 1\n");
+        goto end_cmd;
+      }
+
       if( strcmp(cmd,"discctrl")==0 ||
           strcmp(cmd,"votectrl")==0 ||
           strcmp(cmd,"regist")==0
@@ -173,6 +186,7 @@ static void *serv_manage(void *arg)
       {
         /* other cmds not allowed. */
         strcpy(rep, "FAIL 1\n");
+        goto end_cmd;
       }
 
       /* remove the leading '0'
@@ -180,6 +194,7 @@ static void *serv_manage(void *arg)
       if( rep[0] == '0' )
         rep[0] = ' ';
 
+end_cmd:
       response(&c, "%s", rep);
       continue;
     }
@@ -188,6 +203,12 @@ static void *serv_manage(void *arg)
     /* data cmd */
 
     target = c.args[0];
+
+    if( !target )
+    {
+      response(&c, "FAIL 1\n");
+      continue;
+    }
 
     l = 0;
 

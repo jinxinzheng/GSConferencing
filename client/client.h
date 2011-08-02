@@ -155,7 +155,8 @@ enum {
    * arg2: unused */
   EVENT_PTC,
 
-  /* arg1: char *, cmd string */
+  /* arg1: int, client id that is issueing this cmd
+   * arg2: char *, cmd string */
   EVENT_SYSCONFIG,
 
   /* arg1: char *, user id */

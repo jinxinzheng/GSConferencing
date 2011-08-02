@@ -1463,7 +1463,7 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
     char *cmd = c.args[i++];
     CHECKOK(c.args[i++]);
 
-    event_handler(EVENT_SYSCONFIG, cmd, NULL);
+    event_handler(EVENT_SYSCONFIG, (void *)c.device_id, cmd);
   }
 
   else if( STREQU(c.cmd, "cyc_ctl") )

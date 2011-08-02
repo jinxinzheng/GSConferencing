@@ -43,7 +43,6 @@ do \
   iter _it = NULL; \
   struct db_##type *_d; \
 \
-  l = 0; \
   append("table " #type "\n"); \
   while( (_d = md_iterate_##type##_next(&_it)) ) \
   { \

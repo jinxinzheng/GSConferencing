@@ -91,4 +91,6 @@ void refresh_dev_ents_cache(struct group *g)
     d = list_entry(e, struct device, list);
     append_dev_ents_cache(g, d);
   }
+
+  g->caches.dev_ents_dirty = 0;
 }

@@ -56,6 +56,7 @@ struct group {
   struct {
     char dev_ents[4096];
     int dev_ents_len;
+    int dev_ents_dirty;
   } caches;
 };
 
@@ -68,6 +69,16 @@ void group_save(struct group *g);
 void append_dev_ents_cache(struct group *g, struct device *d);
 
 void refresh_dev_ents_cache(struct group *g);
+
+static inline void dirty_dev_ents_cache(struct group *g)
+{
+  g->caches.dev_ents_dirty = 1;
+}
+
+static inline int is_dirty_dev_ents_cache(struct group *g)
+{
+  return g->caches.dev_ents_dirty;
+}
 
 
 void group_setup_discuss(struct group *g, struct db_discuss *s);

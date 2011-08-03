@@ -115,7 +115,7 @@ static int cmd_set_user_id(struct cmd *cmd)
   strcpy(c->db_data->user_id, user_id);
   device_save(c);
 
-  refresh_dev_ents_cache(c->group);
+  dirty_dev_ents_cache(c->group);
 
   REP_OK(cmd);
 
@@ -132,6 +132,11 @@ static int cmd_get_all_devs(struct cmd *cmd)
   THIS_DEVICE(cmd, d);
 
   g = d->group;
+
+  if( is_dirty_dev_ents_cache(g) )
+  {
+    refresh_dev_ents_cache(g);
+  }
 
   REP_ADD(cmd, "OK");
   REP_ADD(cmd, g->caches.dev_ents);

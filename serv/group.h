@@ -65,6 +65,10 @@ struct group *group_create(long gid);
 void group_save(struct group *g);
 
 
+void append_dev_ents_cache(struct group *g, struct device *d);
+
+void refresh_dev_ents_cache(struct group *g);
+
 
 void group_setup_discuss(struct group *g, struct db_discuss *s);
 

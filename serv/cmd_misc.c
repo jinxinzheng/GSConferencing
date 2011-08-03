@@ -115,6 +115,8 @@ static int cmd_set_user_id(struct cmd *cmd)
   strcpy(c->db_data->user_id, user_id);
   device_save(c);
 
+  refresh_dev_ents_cache(c->group);
+
   REP_OK(cmd);
 
   send_cmd_to_dev(cmd, c);

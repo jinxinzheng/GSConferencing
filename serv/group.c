@@ -5,6 +5,7 @@
 #include "group.h"
 #include "db/md.h"
 #include "vote.h"
+#include "strutil.h"
 #include "include/debug.h"
 
 struct group *group_create(long gid)
@@ -67,4 +68,27 @@ struct group *group_create(long gid)
 void group_save(struct group *g)
 {
   md_update_group(g->db_data);
+}
+
+void append_dev_ents_cache(struct group *g, struct device *d)
+{
+  LIST_ADD_FMT(g->caches.dev_ents, g->caches.dev_ents_len, "%ld:%d:%s",
+      d->id,
+      d->type,
+      d->db_data->user_id);
+}
+
+void refresh_dev_ents_cache(struct group *g)
+{
+  struct device *d;
+  struct list_head *e;
+
+  g->caches.dev_ents[0] = 0;
+  g->caches.dev_ents_len = 0;
+
+  list_for_each(e, &g->device_head)
+  {
+    d = list_entry(e, struct device, list);
+    append_dev_ents_cache(g, d);
+  }
 }

@@ -7,7 +7,6 @@
 #include "db/md.h"
 #include "group.h"
 #include "async.h"
-#include "strutil.h"
 #include <include/types.h>
 #include "include/debug.h"
 
@@ -175,10 +174,7 @@ int dev_register(struct device *dev)
     g->stats.dev_count[dev->type] ++;
   }
 
-  LIST_ADD_FMT(g->caches.dev_ents, g->caches.dev_ents_len, "%ld:%d:%s",
-      dev->id,
-      dev->type,
-      dev->db_data->user_id);
+  append_dev_ents_cache(g, dev);
 
   return 0;
 }

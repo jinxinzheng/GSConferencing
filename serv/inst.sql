@@ -60,7 +60,7 @@ create table device
 -- 投票表决
 create table vote
 (
- id integer primary key,  -- id, autoincrement
+ id int primary key,  -- id
  name varchar(32),     -- 表决名称
  type int,             -- 表决类型
  options_count int,    -- 表决项数量
@@ -70,7 +70,7 @@ create table vote
 -- 讨论议题
 create table discuss
 (
- id integer primary key,  -- id, autoincrement
+ id int primary key,  -- id
  name varchar(64),     -- 议题名称
  members varchar(1024) -- 讨论代表
 );

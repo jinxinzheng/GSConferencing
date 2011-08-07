@@ -235,8 +235,23 @@ static int cmd_discctrl(struct cmd *cmd)
          * need to find out a way to handle. */
         if( d->tag->discuss.mode == DISCMODE_FIFO )
         {
-          struct list_head *t = tag->discuss.open_list.next;
-          struct device *kick = list_entry(t, struct device, discuss.l);
+          struct list_head *e;
+          struct device *k, *kick = NULL;
+          list_for_each(e, &tag->discuss.open_list)
+          {
+            k = list_entry(e, struct device, discuss.l);
+            if( k->type != DEVTYPE_CHAIR )
+            {
+              kick = k;
+              break;
+            }
+          }
+          if( !kick )
+          {
+            /* can't find one to kick */
+            return ERR_REJECTED;
+          }
+
           /* kick one out */
           del_open(tag, kick);
 

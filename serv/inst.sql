@@ -126,13 +126,13 @@ insert into tag(name) values('French');
 insert into tag(name) values('Japanese');
 insert into tag(name) values('Spanish');
 
-insert into vote(name, type, options_count, members) values('vote_1', 1, 2, '101,102,103');
-insert into vote(name, type, options_count, members) values('vote_2', 2, 2, '101,102');
-insert into vote(name, type, options_count, members) values('vote_3', 2, 2, '101');
-insert into vote(name, type, options_count, members) values('vote_4', 3, 2, '104');
+insert into vote(id, name, type, options_count, members) values(1,'vote_1', 1, 2, '101,102,103');
+insert into vote(id, name, type, options_count, members) values(2,'vote_2', 2, 2, '101,102');
+insert into vote(id, name, type, options_count, members) values(3,'vote_3', 2, 2, '101');
+insert into vote(id, name, type, options_count, members) values(4,'vote_4', 3, 2, '104');
 
-insert into discuss(name, members) values('test_discuss_1', '101,102,103,104');
-insert into discuss(name, members) values('test_discuss_2', '101,102,103');
+insert into discuss(id, name, members) values(1,'test_discuss_1', '101,102,103,104');
+insert into discuss(id, name, members) values(2,'test_discuss_2', '101,102,103');
 
 insert into video(name, path) values('video1', '/video1.avi');
 insert into video(name, path) values('video2', '/video2.avi');

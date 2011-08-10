@@ -115,7 +115,7 @@ static int cmd_votectrl(struct cmd *cmd)
       LIST_ADD(buf, l, db[i]->name);
     }
 
-    REP_ADD(cmd, buf);
+    REP_ADD_STR(cmd, buf, l);
     REP_END(cmd);
   }
   else if (strcmp(scmd, "select") == 0)
@@ -286,7 +286,7 @@ static int cmd_votectrl(struct cmd *cmd)
       LIST_ADD_NUM(buf, l, v->results[i]);
     }
 
-    REP_ADD(cmd, buf);
+    REP_ADD_STR(cmd, buf, l);
     REP_END(cmd);
 
     /* send the result to all clients about the vote */

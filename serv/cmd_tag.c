@@ -15,7 +15,7 @@ static int cmd_get_tags(struct cmd *cmd)
   }
 
   REP_ADD(cmd, "OK");
-  REP_ADD(cmd, buf);
+  REP_ADD_STR(cmd, buf, l);
   REP_END(cmd);
 
   return 0;

@@ -47,11 +47,18 @@ do { \
   (cmd)->rl += sprintf((cmd)->rep+(cmd)->rl, " "fmt, ##a); \
 } while(0)
 
-#define REP_ADD(cmd, s) \
+#define REP_ADD_STR(cmd, s, len) \
 do { \
   (cmd)->rep[(cmd)->rl++] = ' '; \
-  strcpy((cmd)->rep+(cmd)->rl, (s)); \
-  (cmd)->rl += strlen(s); \
+  memcpy((cmd)->rep+(cmd)->rl, (s), len); \
+  (cmd)->rl += len; \
+  (cmd)->rep[(cmd)->rl] = 0;  \
+} while(0)
+
+#define REP_ADD(cmd, s) \
+do { \
+  int _l = strlen(s); \
+  REP_ADD_STR(cmd, s, _l);  \
 } while(0)
 
 #define REP_ADD_NUM(cmd, n) \
@@ -158,6 +165,7 @@ static inline void send_to_idlist(struct cmd *cmd, char *idlist)
 #define MAKE_STRLIST(buf, parr, arrlen, member) \
 do { \
   int _i, _l=0; \
+  (buf)[0]=0; \
   for (_i=0; _i<(arrlen); _i++) \
   { \
     LIST_ADD(buf, _l, (parr)[_i]->member); \
@@ -169,6 +177,7 @@ do { \
   int _l = 0; \
   struct list_head *_t; \
   type *_e; \
+  (buf)[0]=0; \
   list_for_each(_t, (head)) \
   { \
     _e = list_entry(_t, type, lm); \

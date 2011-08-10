@@ -317,6 +317,12 @@ static void *run_recv_udp(void *arg)
   _i; \
 })
 
+/* convert null string to empty */
+static inline char *null_safe(char *s)
+{
+  return s? s:"";
+}
+
 /* return: position of 'OK' in the reply */
 int send_cmd(char *buf, int len, struct cmd *reply)
 {
@@ -357,7 +363,12 @@ int cmd##_##subcmd(int arg) \
 /* checks whether an int is in a int list str */
 static inline int int_in_str(int i, char *s)
 {
-  char *p = strtok(s, ",");
+  char *p;
+
+  if( !s )
+    return 0;
+
+  p = strtok(s, ",");
   do
   {
     if (atoi(p)==i)
@@ -371,6 +382,10 @@ static int _str_to_ints(char *s, int *list)
 {
   char *p;
   int i;
+
+  if( !s )
+    return 0;
+
   i = 0;
   p = strtok(s, ",");
   while (p) {
@@ -748,7 +763,7 @@ int discctrl_query(char *disclist)
 
   i = FIND_OK(c);
 
-  strcpy(disclist, c.args[i+1]);
+  strcpy(disclist, null_safe(c.args[i+1]));
 
   return 0;
 }
@@ -864,7 +879,7 @@ int votectrl_query(char *votelist)
 
   i = FIND_OK(c);
 
-  strcpy(votelist, c.args[i+1]);
+  strcpy(votelist, null_safe(c.args[i+1]));
 
   return 0;
 }
@@ -1038,7 +1053,7 @@ int videoctrl_query(char *vidlist)
 
   i = FIND_OK(c);
 
-  strcpy(vidlist, c.args[i+1]);
+  strcpy(vidlist, null_safe(c.args[i+1]));
 
   return 0;
 }
@@ -1068,7 +1083,7 @@ int filectrl_query(char *filelist)
 
   i = FIND_OK(c);
 
-  strcpy(filelist, c.args[i+1]);
+  strcpy(filelist, null_safe(c.args[i+1]));
 
   return 0;
 }

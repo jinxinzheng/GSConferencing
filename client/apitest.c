@@ -89,6 +89,7 @@ int main(int argc, char *const argv[])
   regist_reg(0, 0, idlist+0, buf, idlist+1);
   regist_stop();
 
+  votectrl_query(buf);
 
   msgctrl_query(idlist);
   msgctrl_send(NULL, "hello");

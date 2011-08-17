@@ -702,7 +702,18 @@ int switch_tag(int tag)
 
 SIMPLE_CMD_i(regist, start);
 
-SIMPLE_CMD(regist, stop);
+int regist_stop(int *expect, int *got)
+{
+  BASICS;
+  PRINTC("regist stop");
+  SEND_CMD();
+  i = FIND_OK(c);
+
+  *expect = atoi(c.args[++i]);
+  *got    = atoi(c.args[++i]);
+
+  return 0;
+}
 
 int regist_status(int *expect, int *got)
 {
@@ -1418,7 +1429,9 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
     else if (STREQU(sub, "stop"))
     {
       CHECKOK(c.args[i++]);
-      event_handler(EVENT_REGIST_STOP, NULL, NULL);
+      int expect = atoi(c.args[i++]);
+      int got = atoi(c.args[i++]);
+      event_handler(EVENT_REGIST_STOP, (void*)expect, (void*)got);
     }
   }
 

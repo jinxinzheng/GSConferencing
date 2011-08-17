@@ -85,7 +85,8 @@ enum {
    * arg2: unused */
   EVENT_REGIST_START,
 
-  /* arg1, arg2: unused */
+  /* arg1: int, expected count
+   * arg2: int, registered count */
   EVENT_REGIST_STOP,
 
   /* arg1: int, mode, enum DISCMODE_*
@@ -211,7 +212,7 @@ int send_audio_end(int len);
 /* mode: see enum REGIST_* */
 int regist_start(int mode);
 
-int regist_stop();
+int regist_stop(__out int *expect, __out int *got);
 
 int regist_status(__out int *expect, __out int *got);
 

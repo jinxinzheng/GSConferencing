@@ -75,6 +75,13 @@ static int cmd_regist(struct cmd *cmd)
       return ERR_OTHER;
     }
 
+    REP_ADD(cmd, "OK");
+    REP_ADD_NUM(cmd, g->regist.expect);
+    REP_ADD_NUM(cmd, g->regist.arrive);
+    REP_END(cmd);
+
+    regist_notify_all(cmd, g);
+
     g->regist.expect = 0;
     g->regist.arrive = 0;
 
@@ -86,10 +93,6 @@ static int cmd_regist(struct cmd *cmd)
 
     d->db_data->regist_master = 0;
     device_save(d);
-
-    REP_OK(cmd);
-
-    regist_notify_all(cmd, g);
   }
 
   SUBCMD("status")

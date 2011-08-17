@@ -233,19 +233,30 @@ static int cmd_discctrl(struct cmd *cmd)
       {
         /* opened users reached max count.
          * need to find out a way to handle. */
+        struct list_head *e;
+        struct device *k, *kick = NULL;
+        int opened = tag->discuss.openuser;
+
+        /* chair users should not occupy our site */
+        list_for_each(e, &tag->discuss.open_list)
+        {
+          k = list_entry(e, struct device, discuss.l);
+          if( k->type == DEVTYPE_CHAIR )
+          {
+            -- opened;
+            if( opened < tag->discuss.maxuser )
+              goto openit;
+          }
+          else
+          {
+            /* candidate to kick in fifo mode */
+            if(!kick)
+              kick = k;
+          }
+        }
+
         if( d->tag->discuss.mode == DISCMODE_FIFO )
         {
-          struct list_head *e;
-          struct device *k, *kick = NULL;
-          list_for_each(e, &tag->discuss.open_list)
-          {
-            k = list_entry(e, struct device, discuss.l);
-            if( k->type != DEVTYPE_CHAIR )
-            {
-              kick = k;
-              break;
-            }
-          }
           if( !kick )
           {
             /* can't find one to kick */
@@ -265,6 +276,7 @@ static int cmd_discctrl(struct cmd *cmd)
         }
       }
 
+openit:
       add_open(tag, d);
 
       /* send the pantilt control cmd */

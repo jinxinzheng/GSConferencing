@@ -57,6 +57,22 @@ static void _del_##type(int id)   \
   }                               \
 }                                 \
 \
+static void _clear_##type()                     \
+{                                               \
+  struct list_head *head = &list_##type;        \
+  struct list_head *p, *next;                   \
+  struct md_##type *m;                          \
+  for( p=head->next; p!=head; p=next )          \
+  {                                             \
+    m = list_entry(p, struct md_##type, l);     \
+    next = p->next;                             \
+    free(m);                                    \
+  }                                             \
+  INIT_LIST_HEAD(head);                         \
+  memset(hash_##type, 0, sizeof hash_##type);   \
+  n_##type = 0;                                 \
+}                                               \
+\
 static int _list_to_array_##type(struct list_head *list, struct db_##type *array[]) \
 {                         \
   struct list_head *p;    \
@@ -135,6 +151,15 @@ int md_update_##type(struct db_##type *p)     \
   /* assume that p is returned by md_find so
    * we don't need to update memory data. */  \
   return 0;                                   \
+} \
+\
+int md_clear_##type()               \
+{                                   \
+  int r;                            \
+  if( (r=db_clear_##type()) != 0 )  \
+    return r;                       \
+  _clear_##type();                  \
+  return 0;                         \
 }
 
 

@@ -17,6 +17,7 @@ struct db_##type *md_find_##type(int id);           \
 int md_add_##type(struct db_##type *p);            \
 int md_del_##type(int id);                         \
 int md_update_##type(struct db_##type *p);         \
+int md_clear_##type();
 
 DECLARE(group);
 DECLARE(user);

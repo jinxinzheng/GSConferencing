@@ -67,11 +67,14 @@ t&&/^$/{
   update_signature="int db_update_"table"(struct db_"table" *data)";
   add_signature="int db_add_"table"(struct db_"table" *data)";
   delete_signature="int db_del_"table"(int id)";
+  clear_signature="int db_clear_"table"()";
 
-  print get_signature ";" >>hfile;
-  print update_signature ";" >>hfile;
-  print add_signature ";" >>hfile;
-  print delete_signature ";\n" >>hfile;
+  print \
+  get_signature ";\n"       \
+  update_signature ";\n"    \
+  add_signature ";\n"       \
+  delete_signature ";\n"    \
+  clear_signature ";\n"     >>hfile;
 
   print "\
 " get_signature "\n\
@@ -157,6 +160,19 @@ t&&/^$/{
   return ret;\n\
 }\n\
 \n\
+" clear_signature " \
+{ \
+  char *errmsg; \
+  int ret;  \
+  char sqlcmd[64];  \
+\
+  sprintf(sqlcmd, \"delete from '"table"';\"); \
+  ret = exec_locked(sqlcmd, &errmsg); \
+  if (ret != SQLITE_OK) \
+    fprintf(stderr, \"SQL error: %s\\n\", errmsg);  \
+\
+  return ret; \
+}\
 " >>cfile;
 }
 

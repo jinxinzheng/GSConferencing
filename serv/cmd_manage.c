@@ -89,9 +89,14 @@ do \
 #define m_delete(type, c) \
 do \
 { \
-  int _id = atoi( (c)->args[1] ); \
+  int _id;  \
   int _i; \
-  _i = md_del_##type(_id); \
+  if( strcmp((c)->args[1], "all")==0 ) {  \
+    _i = md_clear_##type(); \
+  } else {  \
+    _id = atoi( (c)->args[1] ); \
+    _i = md_del_##type(_id); \
+  } \
   if( _i==0 ) \
     response(c, "OK\n"); \
   else \

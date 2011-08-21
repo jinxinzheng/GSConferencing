@@ -189,10 +189,16 @@ static void *serv_manage(void *arg)
         memset(&newcmd, 0, sizeof newcmd);
         newcmd.device_id = 0;
         newcmd.cmd = cmd;
+
+        rl = sprintf(rep, "0 %s ", cmd);
+
         i = 1;
         while( c.args[i] )
         {
           newcmd.args[i-1] = c.args[i];
+
+          rl += sprintf(rep+rl, "%s ", c.args[i]);
+
           i++;
         }
 
@@ -206,9 +212,14 @@ static void *serv_manage(void *arg)
           goto end_cmd;
         }
 
-        /* directly send the rep as it
-         * already contains the seq. */
-        _response(newcmd.rep, newcmd.rl);
+        /* fix back the manager reply */
+        if( rep[0]=='0' && rep[1]==' ' )
+          i=2;
+        else
+          i=0;
+        l = sprintf(buf, "%d %s %s", c.device_id, c.cmd, rep+i);
+
+        _response(buf, l);
         continue;
       }
       else

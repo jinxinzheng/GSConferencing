@@ -75,9 +75,17 @@ do \
 #define m_update(type, c) \
 do \
 { \
-  int _id = atoi( (c)->args[1] ); \
-  struct db_##type *_p = md_find_##type(_id); \
+  int _id;  \
   int _i; \
+  struct db_##type *_p; \
+  char *_arg = (c)->args[1];  \
+  if( !_arg ) \
+  { \
+    response(c, "FAIL %d\n", ERR_INVL_ARG); \
+    break;  \
+  } \
+  _id = atoi( _arg ); \
+  _p = md_find_##type(_id); \
   read_##type(_p, c); \
   _i = md_update_##type(_p); \
   if( _i==0 ) \
@@ -91,10 +99,16 @@ do \
 { \
   int _id;  \
   int _i; \
-  if( strcmp((c)->args[1], "all")==0 ) {  \
+  char *_arg = (c)->args[1];  \
+  if( !_arg ) \
+  { \
+    response(c, "FAIL %d\n", ERR_INVL_ARG); \
+    break;  \
+  } \
+  if( strcmp(_arg, "all")==0 ) {  \
     _i = md_clear_##type(); \
   } else {  \
-    _id = atoi( (c)->args[1] ); \
+    _id = atoi( _arg ); \
     _i = md_del_##type(_id); \
   } \
   if( _i==0 ) \

@@ -524,6 +524,7 @@ static void parse_dev_info(char *str, struct dev_info *info)
     info_int(discuss_mode)
     info_int(discuss_chair)
     info_int(discuss_num)
+    info_str(discuss_name)
     info_int(discuss_nmembers)
     info_int_list(discuss_idlist)
     info_str(discuss_userlist)
@@ -788,6 +789,9 @@ int discctrl_select(int disc_num, int *idlist, char *users_list)
   SEND_CMD();
 
   i = FIND_OK(c);
+
+  /* skip the name arg */
+  ++i;
 
   STR_TO_INT_LIST(c.args[++i], idlist);
 
@@ -1372,9 +1376,11 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
     }
     else if( STREQU(sub, "select") )
     {
+      char *name;
       int dn = atoi(c.args[i++]);
       CHECKOK(c.args[i++]);
-      event_handler(EVENT_DISC_OPEN, (void*)dn, NULL);
+      name = c.args[i++];
+      event_handler(EVENT_DISC_OPEN, (void*)dn, name);
     }
     else if (STREQU(sub, "close"))
     {

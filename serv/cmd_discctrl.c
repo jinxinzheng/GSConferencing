@@ -175,6 +175,8 @@ static int cmd_discctrl(struct cmd *cmd)
 
     REP_ADD(cmd, "OK");
 
+    REP_ADD(cmd, s->name);
+
     REP_ADD(cmd, s->members);
 
     REP_ADD(cmd, g->discuss.membernames);

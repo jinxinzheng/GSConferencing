@@ -30,6 +30,7 @@ struct dev_info
 
   int discuss_mode; /* discuss mode. (DISCMODE_) */
   int discuss_num; /* current discuss number. -1 if no discuss. */
+  char discuss_name[64];  /* current discuss name */
   int discuss_nmembers; /* number of members */
   int discuss_idlist[1024]; /* member IDs */
   char discuss_userlist[2048]; /* member names. comma separated. */
@@ -94,7 +95,7 @@ enum {
   EVENT_DISC_SETMODE,
 
   /* arg1: int, discussion number
-   * arg2: unused */
+   * arg2: char *, discussion name */
   EVENT_DISC_OPEN,
 
   /* arg1, arg2: unused */

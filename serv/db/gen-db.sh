@@ -27,7 +27,7 @@ $1=="table"{
 }
 t&&$1=="i"{
   printf " int %s;\n", $2 >>hfile;
-  gets=gets"  rec->"$2" = atoi(values["i++"]);\n";
+  gets=gets"  if(values["i"]) rec->"$2" = atoi(values["i"]);\n";
   if( $2 != "id")
   {
     updatef=updatef $2"=%d,";
@@ -39,15 +39,17 @@ t&&$1=="i"{
     addv=addv "%d,";
     adds=adds "data->"$2",";
   }
+  i++
 }
 t&&$1=="s"{
   printf " char %s[%d];\n", $2, $3 >>hfile;
-  gets=gets"  strcpy(rec->"$2", values["i++"]);\n";
+  gets=gets"  if(values["i"]) strcpy(rec->"$2", values["i"]);\n";
   updatef=updatef $2"='%s',";
   updates=updates "data->"$2",";
   addf=addf $2",";
   addv=addv "'%s',";
   adds=adds "data->"$2",";
+  i++
 }
 t&&$1=="x"{
   # extra fields not in db
@@ -172,7 +174,7 @@ t&&/^$/{
     fprintf(stderr, \"SQL error: %s\\n\", errmsg);  \
 \
   return ret; \
-}\
+}\n\
 " >>cfile;
 }
 

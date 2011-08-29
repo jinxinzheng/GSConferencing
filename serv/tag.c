@@ -511,6 +511,7 @@ normal:
    break;
   }
 
+#if 0
   /* detect silence packet.
    * dropping continuous silence packets can
    * greatly improve the client's performance.*/
@@ -527,6 +528,7 @@ normal:
   {
     t->mix_silence = 0;
   }
+#endif
 
   return pp[0];
 }

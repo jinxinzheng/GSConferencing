@@ -139,7 +139,10 @@ void tag_add_outstanding(struct tag *t, struct device *d)
       t->mix_devs[i] = d;
 
       d->mixbit = 1<<i;
-      t->mix_mask |= d->mixbit;
+      /* delay the mix mask update to when
+       * subsequent packet arrives in the
+       * tag_in_dev_packet(). */
+      //t->mix_mask |= d->mixbit;
 
       d->timeouts = 0;
 
@@ -221,8 +224,16 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
   /* put in */
   _dev_in_packet(d, pack);
 
-  /* decide state change */
+  /* change mix state */
   t->mix_stat |= d->mixbit;
+
+  /* delayed update of the mix mask
+   * in order to avoid holding other
+   * queues back. */
+  if( !(t->mix_mask & d->mixbit) )
+  {
+    t->mix_mask |= d->mixbit;
+  }
 
   pthread_mutex_unlock(&t->mix_stat_mut);
 }

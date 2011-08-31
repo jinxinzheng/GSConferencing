@@ -303,21 +303,28 @@ static inline void drop_queue_front(struct device *d)
 {
   struct packet *p;
 
-  p = tag_out_dev_packet(d->tag, d);
+  p = __dev_out_packet(d);
 
   pack_free(p);
-
-  trace_warn("flush queue %ld, len %d, %d\n",
-      d->id, d->pack_queue.len, d->stats.flushed);
 }
 
 static void flush_queue(struct tag *t, struct device *d)
 {
-  int l = d->pack_queue.len;
+  int l;
+
+  trace_warn("flush queue %ld, len %d, %d\n",
+      d->id, d->pack_queue.len, d->stats.flushed);
+
+  /* hold the enque/deque lock while flushing. */
+  pthread_mutex_lock(&t->mix_stat_mut);
+
+  l = d->pack_queue.len;
   for( ; l>1 ; l-- )
   {
     drop_queue_front(d);
   }
+
+  pthread_mutex_unlock(&t->mix_stat_mut);
 
   d->stats.flushed ++;
 }

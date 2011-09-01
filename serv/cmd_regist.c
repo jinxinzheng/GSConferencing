@@ -5,13 +5,10 @@
 
 static inline void regist_notify_all(struct cmd *cmd, struct group *g)
 {
-  struct list_head *e;
   struct device *d;
 
-  list_for_each(e, &g->device_head)
+  list_for_each_entry(d, &g->device_head, list)
   {
-    d = list_entry(e, struct device, list);
-
     /* clear regist state each time
      * regist is started/stopped */
     d->regist.reg = 0;

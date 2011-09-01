@@ -56,14 +56,12 @@ void group_setup_vote(struct group *g, struct db_vote *dv)
   l = 0;
   if (strcmp(buf, "all")==0)
   {
-    struct list_head *e;
     struct device *m;
 
     /* loop through all within this group */
     /* TODO: make it work in server recovery */
-    list_for_each(e, &g->device_head)
+    list_for_each_entry(m, &g->device_head, list)
     {
-      m = list_entry(e, struct device, list);
       add_vote_member(g, m->id, l);
     }
   }
@@ -258,7 +256,7 @@ static int cmd_votectrl(struct cmd *cmd)
   else if (strcmp(scmd, "showresult") == 0)
   {
     struct vote *v;
-    struct list_head *t;
+    struct device *m;
 
     if( !g->vote.current )
     {
@@ -290,9 +288,8 @@ static int cmd_votectrl(struct cmd *cmd)
     REP_END(cmd);
 
     /* send the result to all clients about the vote */
-    list_for_each(t, &v->device_head)
+    list_for_each_entry(m, &v->device_head, vote.l)
     {
-      struct device *m = list_entry(t, struct device, vote.l);
       send_cmd_to_dev(cmd, m);
       m->vote.v = NULL;
     }
@@ -315,13 +312,12 @@ static int cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "stop") == 0)
   {
-    struct list_head *t;
+    struct device *m;
 
     REP_OK(cmd);
 
-    list_for_each(t, &g->device_head)
+    list_for_each_entry(m, &g->device_head, list)
     {
-      struct device *m = list_entry(t, struct device, list);
       send_cmd_to_dev(cmd, m);
     }
 

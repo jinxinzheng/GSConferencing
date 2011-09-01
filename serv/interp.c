@@ -40,16 +40,13 @@ void interp_del_dup_tag(struct tag *t)
 void interp_dup_pack(struct tag *dup, struct packet *pack)
 {
   struct tag *t;
-  struct list_head *e;
   struct packet *newp;
   pack_data *pdata;
 
   pthread_mutex_lock(&dup->interp.mx);
 
-  list_for_each(e, &dup->interp.dup_head)
+  list_for_each_entry(t, &dup->interp.dup_head, interp.dup_l)
   {
-    t = list_entry(e, struct tag, interp.dup_l);
-
     /* sanity check. */
     if( t->interp.mode == INTERP_NO ||
         t->interp.dup != dup )

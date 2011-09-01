@@ -13,8 +13,6 @@ static int cmd_debug(struct cmd *cmd)
   char *p;
   char buf[2048];
 
-  struct list_head *e;
-
   THIS_DEVICE(cmd, d);
 
   NEXT_ARG(subcmd);
@@ -54,9 +52,8 @@ static int cmd_debug(struct cmd *cmd)
     {
       struct group *g = d->group;
 
-      list_for_each(e, &g->device_head)
+      list_for_each_entry(d, &g->device_head, list)
       {
-        d = list_entry(e, struct device, list);
         REP_PRF(cmd, "\n%d", (int)d->id);
         REP_PRF(cmd, "\n addr=%s:%d", inet_ntoa(d->addr.sin_addr), ntohs(d->addr.sin_port));
         REP_PRF(cmd, "\n tag=%d", (int)d->tag->id);

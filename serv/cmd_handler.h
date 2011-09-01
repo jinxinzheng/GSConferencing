@@ -110,11 +110,9 @@ static inline int send_cmd_to_dev_id(struct cmd *cmd, int id)
 static inline void send_to_group_all(struct cmd *cmd, struct group *g)
 {
   struct device *d;
-  struct list_head *e;
 
-  list_for_each(e, &g->device_head)
+  list_for_each_entry(d, &g->device_head, list)
   {
-    d = list_entry(e, struct device, list);
     send_cmd_to_dev(cmd, d);
   }
 }
@@ -129,11 +127,9 @@ do { \
 static inline void send_to_tag_all(struct cmd *cmd, struct tag *t)
 {
   struct device *d;
-  struct list_head *e;
 
-  list_for_each(e, &t->device_head)
+  list_for_each_entry(d, &t->device_head, tlist)
   {
-    d = list_entry(e, struct device, tlist);
     send_cmd_to_dev(cmd, d);
   }
 }
@@ -175,12 +171,10 @@ do { \
 #define list_TO_NUMLIST(buf, head, type, lm, member) \
 do { \
   int _l = 0; \
-  struct list_head *_t; \
   type *_e; \
   (buf)[0]=0; \
-  list_for_each(_t, (head)) \
+  list_for_each_entry(_e, (head), lm) \
   { \
-    _e = list_entry(_t, type, lm); \
     LIST_ADD_NUM(buf, _l, (int)_e->member); \
   } \
 } while(0)

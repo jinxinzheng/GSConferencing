@@ -6,6 +6,7 @@
 #include <include/list.h>
 #include <hash.h>
 
+#if 0
 #define md_iterate(type, head, visit) \
 do                        \
 {                         \
@@ -17,6 +18,7 @@ do                        \
     visit (&m->data);     \
   }                       \
 } while(0)
+#endif
 
 
 #define SETUP(type) \
@@ -75,14 +77,11 @@ static void _clear_##type()                     \
 \
 static int _list_to_array_##type(struct list_head *list, struct db_##type *array[]) \
 {                         \
-  struct list_head *p;    \
   struct md_##type *m;    \
   int i = 0;              \
                           \
-  list_for_each(p, list)  \
+  list_for_each_entry(m, list, l)  \
   {                       \
-    m = list_entry(p, struct md_##type, l); \
-                          \
     array[i++] = &m->data;\
   }                       \
   array[i] = NULL;        \

@@ -235,14 +235,12 @@ static int cmd_discctrl(struct cmd *cmd)
       {
         /* opened users reached max count.
          * need to find out a way to handle. */
-        struct list_head *e;
         struct device *k, *kick = NULL;
         int opened = tag->discuss.openuser;
 
         /* chair users should not occupy our site */
-        list_for_each(e, &tag->discuss.open_list)
+        list_for_each_entry(k, &tag->discuss.open_list, discuss.l)
         {
-          k = list_entry(e, struct device, discuss.l);
           if( k->type == DEVTYPE_CHAIR )
           {
             -- opened;

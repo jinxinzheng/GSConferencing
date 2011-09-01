@@ -44,7 +44,6 @@ static void *run_heartbeat_god(void *arg)
 {
   struct group *g;
   struct device *d;
-  struct list_head *p;
 
   while( 1 )
   {
@@ -53,9 +52,8 @@ static void *run_heartbeat_god(void *arg)
     if( !(g = get_group(1)) )
       continue;
 
-    list_for_each(p, &g->device_head)
+    list_for_each_entry(d, &g->device_head, list)
     {
-      d = list_entry(p, struct device, list);
       if( ++ d->hbeat > 3 )
       {
         /* 1 minute has been hit */

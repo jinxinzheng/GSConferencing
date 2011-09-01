@@ -81,14 +81,12 @@ void append_dev_ents_cache(struct group *g, struct device *d)
 void refresh_dev_ents_cache(struct group *g)
 {
   struct device *d;
-  struct list_head *e;
 
   g->caches.dev_ents[0] = 0;
   g->caches.dev_ents_len = 0;
 
-  list_for_each(e, &g->device_head)
+  list_for_each_entry(d, &g->device_head, list)
   {
-    d = list_entry(e, struct device, list);
     append_dev_ents_cache(g, d);
   }
 

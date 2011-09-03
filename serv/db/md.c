@@ -64,10 +64,9 @@ static void _clear_##type()                     \
   struct list_head *head = &list_##type;        \
   struct list_head *p, *next;                   \
   struct md_##type *m;                          \
-  for( p=head->next; p!=head; p=next )          \
+  list_for_each_safe(p, next, head)             \
   {                                             \
     m = list_entry(p, struct md_##type, l);     \
-    next = p->next;                             \
     free(m);                                    \
   }                                             \
   INIT_LIST_HEAD(head);                         \

@@ -15,7 +15,8 @@ static int cmd_servicecall(struct cmd *cmd)
 
   request = atoi(p);
 
-  /* todo: send the request to the manager */
+  /* send to the special 'manager' virtual device */
+  send_cmd_to_dev_id(cmd, 1);
 
   REP_OK(cmd);
 

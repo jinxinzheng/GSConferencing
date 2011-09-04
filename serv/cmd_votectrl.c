@@ -199,6 +199,9 @@ static int cmd_votectrl(struct cmd *cmd)
       ++ v->n_members;
     }
 
+    /* send to the special 'manager' virtual device */
+    send_cmd_to_dev_id(cmd, 1);
+
     d->db_data->vote_master = 1;
     device_save(d);
 
@@ -293,6 +296,9 @@ static int cmd_votectrl(struct cmd *cmd)
       send_cmd_to_dev(cmd, m);
       m->vote.v = NULL;
     }
+
+    /* send to the special 'manager' virtual device */
+    send_cmd_to_dev_id(cmd, 1);
 
     d->vote.v = NULL;
 

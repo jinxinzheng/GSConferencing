@@ -197,6 +197,9 @@ static int cmd_discctrl(struct cmd *cmd)
       }
     }
 
+    /* send to the special 'manager' virtual device */
+    send_cmd_to_dev_id(cmd, 1);
+
     d->db_data->discuss_chair = 1;
     device_save(d);
 

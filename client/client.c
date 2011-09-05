@@ -254,7 +254,7 @@ static void *run_recv_udp(void *arg)
       int qlen = cfifo_len(&udp_rcv_fifo);
       if( qlen > 4 )
       {
-        int drop = qlen - 4;
+        int drop = qlen - 1;
         /* force to drop packets to work around the delay. */
         trace_warn("dropping %d\n", drop);
         drop_rcv_queue(drop);

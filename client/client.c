@@ -306,6 +306,11 @@ static void *run_recv_udp(void *arg)
       return -2; \
     } \
   } \
+  else if( l == -2) \
+  { \
+    event_handler(EVENT_NEED_REG, NULL, NULL); \
+    return l; \
+  } \
   else return -1; \
 } while (0)
 

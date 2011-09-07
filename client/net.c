@@ -76,7 +76,8 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
   if (connect(sock, (struct sockaddr *)addr, sizeof(*addr)) < 0)
   {
     close(sock);
-    fail("connect()");
+    perror("connect()");
+    return -2;
   }
 
   /* encode the data before sending out */

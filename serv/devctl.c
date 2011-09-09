@@ -87,7 +87,7 @@ void dev_update_data(struct device *dev)
         0, /* regist_reg */
         0, /* vote_master */
         -1, /* vote_choice */
-        0, "", /* ptc */
+        -1, "", /* ptc */
       };
       strcpy(tmp.ip, ip);
       /* user_id is defaultly copy of id */

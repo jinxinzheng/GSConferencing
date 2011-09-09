@@ -1492,6 +1492,7 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
 
   else if (STREQU(c.cmd, "ptc"))
   {
+    char *ptcid = c.args[i++];
     char *ptcmd = c.args[i++];
     event_handler(EVENT_PTC, ptcmd, NULL);
   }

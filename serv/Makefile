@@ -30,6 +30,7 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	cmd_sysconfig.o \
 	cmd_manage.o \
 	cmd_misc.o \
+	cmd_ptc.o \
 	../sha/sha128.o \
 	../common/ping.o \
 	db/md.o db/db.o

@@ -55,7 +55,7 @@ static void ptc_send(struct device *d)
     {
       char buf[256];
       int l;
-      l = sprintf(buf, "%d ptc %s\n", (int)d->id, ptcmd);
+      l = sprintf(buf, "%d ptc %d %s\n", (int)d->id, (int)ptc->id, ptcmd);
       device_cmd(ptc, buf, l);
     }
 

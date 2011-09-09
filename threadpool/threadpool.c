@@ -151,7 +151,7 @@ int dispatch_threadpool(threadpool from_me, dispatch_fn dispatch_to_here, void *
 
 		if( 0 == sp_thread_create( &thread->id, &attr, wrapper_fn, thread ) ) {
 			pool->tp_total++;
-			printf( "create thread#%ld\n", thread->id );
+			printf( "create thread#%lu\n", thread->id );
 		} else {
 			ret = -1;
 			printf( "cannot create thread\n" );

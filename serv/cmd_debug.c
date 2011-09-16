@@ -38,6 +38,7 @@ static int cmd_debug(struct cmd *cmd)
       }
       else
       {
+        buf[0]=0;
         l=0;
         for (i=0; i<t->bcast_size; i++)
         {

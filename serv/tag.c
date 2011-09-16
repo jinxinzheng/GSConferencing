@@ -208,12 +208,24 @@ void tag_clear_outstanding(struct tag *t)
 }
 
 
+#define MAX_DEV_PACKS 32
+
 void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
 {
   /* don't en-queue if the dev is not outstanding.
    * in the small window when client is opening or
    * closing the mic. */
   if( !d->mixbit )
+  {
+    pack_free(pack);
+    return;
+  }
+
+  /* immediately free the packet if the queue
+   * is crazily high-loaded, in order to avoid
+   * resource exhausting. this usually means
+   * we got a broken client ... */
+  if( d->pack_queue.len > MAX_DEV_PACKS )
   {
     pack_free(pack);
     return;

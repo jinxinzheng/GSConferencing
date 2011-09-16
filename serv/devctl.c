@@ -115,6 +115,17 @@ int dev_register(struct device *dev)
     /* this device has already been registered.
      * this may be due to a reset of the device or some. */
     trace_info("device %ld already registered, ignoring.\n", dev->id);
+
+    /* work around: update tag's broadcast address list.
+     * this is the case that the server is restarted.
+     * TODO: this work around isn't complete.
+     * the addresses are still unknown until the
+     * devices registers again.
+     * should save this info to db, and recover
+     * it with the device. */
+    if( dev->tag && dev->bcast.sin_addr.s_addr )
+      tag_add_bcast(dev->tag, &dev->bcast);
+
     return 1;
   }
 

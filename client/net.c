@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <ifaddrs.h>
@@ -8,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <errno.h>
 #include "util.h"
 #include "include/encode.h"
 #include "../config.h"
@@ -70,13 +72,47 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
   unsigned char tmp[BUFLEN];
   int l;
 
+  const int timeout = 3;
+
+  struct timeval tv = {timeout, 0};
+  fd_set fds;
+  int so_err;
+  socklen_t err_len = sizeof so_err;
+
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     fail("socket()");
 
+  setsockopt(sock,SOL_SOCKET,SO_SNDTIMEO,&tv,sizeof(tv));
+  setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(tv));
+
+  /* make the connect() support timeout via select() */
+  fcntl(sock, F_SETFL, O_NONBLOCK);
+
   if (connect(sock, (struct sockaddr *)addr, sizeof(*addr)) < 0)
   {
+    if(errno != EINPROGRESS)
+    {
+      perror("connect()");
+      close(sock);
+      return -2;
+    }
+  }
+
+  FD_ZERO(&fds);
+  FD_SET(sock, &fds);
+
+  /* select() writefds returns when connected. */
+  if( select(sock+1, NULL, &fds, NULL, &tv) < 0 )
+  {
+    perror("failed to connect with select()");
     close(sock);
-    perror("connect()");
+    return -2;
+  }
+
+  if( getsockopt(sock, SOL_SOCKET, SO_ERROR, &so_err, &err_len) < 0 || so_err != 0 )
+  {
+    perror("connect error");
+    close(sock);
     return -2;
   }
 
@@ -85,11 +121,26 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
 
   if (send(sock, tmp, l, 0) < 0)
   {
+    perror("send()");
     close(sock);
-    fail("send()");
+    return -2;
   }
 
   /* recv any reply here */
+
+  FD_ZERO(&fds);
+  FD_SET(sock, &fds);
+
+  tv.tv_sec = timeout;
+  tv.tv_usec = 0;
+
+  if( select(sock+1, &fds, NULL, NULL, &tv) < 0 )
+  {
+    perror("select() for recv()");
+    close(sock);
+    return -2;
+  }
+
   l=recv(sock, tmp, sizeof tmp, 0);
   if (l > 0)
   {

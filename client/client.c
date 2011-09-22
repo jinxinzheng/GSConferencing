@@ -142,6 +142,8 @@ int send_audio_end(int len)
 {
   static int qseq = 0;
 
+  if( len <= 0 )
+    return -1;
 
   audio_current->type = PACKET_AUDIO;
   audio_current->id = (uint32_t)id;

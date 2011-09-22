@@ -230,6 +230,11 @@ static int cmd_discctrl(struct cmd *cmd)
 
     if( open )
     {
+      if( d->type == DEVTYPE_CHAIR && tag->discuss.openuser < MAX_MIX )
+      {
+        goto openit;
+      }
+
       if( tag->discuss.openuser < tag->discuss.maxuser )
       {
         /* can direct put through */

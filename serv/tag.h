@@ -7,6 +7,7 @@
 struct device;
 
 #define MAX_SUB 1
+#define MAX_MIX 8
 
 struct tag {
   long tid;
@@ -28,7 +29,7 @@ struct tag {
   struct tag **hash_pprev;
 
   /* support up to 8 devices mixing audio */
-  struct device *mix_devs[8];
+  struct device *mix_devs[MAX_MIX];
   int mix_count;
   unsigned int mix_mask;
   unsigned int mix_stat;

@@ -52,7 +52,7 @@ struct tag *tag_create(long gid, long tid)
     struct group *g = get_group(gid);
     t->discuss.mode = g->db_data->discuss_mode;
     if( g->db_data->discuss_maxuser == 0 )
-      t->discuss.maxuser = 8;
+      t->discuss.maxuser = MAX_MIX;
     else
       t->discuss.maxuser = g->db_data->discuss_maxuser;
   }

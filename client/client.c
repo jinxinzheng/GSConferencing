@@ -183,6 +183,29 @@ static void *run_send_udp(void *arg)
   return NULL;
 }
 
+static int is_recved(uint32_t seq)
+{
+  static uint32_t recent_seqs[8] = {0};
+  static int pos = 0;
+
+  int i;
+
+  for( i=0 ; i<8 ; i++ )
+  {
+    if( seq == recent_seqs[(pos+8-i)&7] )
+    {
+      return 1;
+    }
+  }
+
+  /* add the seq to recent.
+   * the list is an 'fifo'. */
+  pos = (pos+1)&7;
+  recent_seqs[pos] = seq;
+
+  return 0;
+}
+
 static void udp_recved(char *buf, int len)
 {
   struct pack *qitem;
@@ -212,6 +235,12 @@ static void udp_recved(char *buf, int len)
   {
     fprintf(stderr, "bug: %d+%d > %d\n", headlen(qitem), qitem->datalen, len);
     return; /*mal pack, drop*/
+  }
+
+  /* remove dup packs */
+  if( is_recved(qitem->seq) )
+  {
+    return;
   }
 
   qitem = (struct pack *)cfifo_get_in(&udp_rcv_fifo);

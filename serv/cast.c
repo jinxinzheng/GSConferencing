@@ -65,6 +65,9 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   {
     /* do broadcast here */
     broadcast(t, pack->data, pack->len);
+    /* ensure not lost */
+    usleep(1000);
+    broadcast(t, pack->data, pack->len);
     return;
   }
 

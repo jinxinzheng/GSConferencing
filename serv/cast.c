@@ -76,9 +76,7 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
     {
       d = list_entry(p, struct device, subscribe[i]);
 
-      /* don't send back to the original sender.
-       * this could help to reduce network load. */
-      if (d == pack->dev)
+      if( d->id == 0 )
         continue;
 
       sendto_dev_udp(t->sock, pack->data, pack->len, d);

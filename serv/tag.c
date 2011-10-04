@@ -470,7 +470,7 @@ static struct packet *tag_mix_audio(struct tag *t)
 
   /* first pass: flush the over-loaded queues */
 
-  flush_queues(t);
+  //flush_queues(t);
 
 normal:
   /* second pass: normal blending */

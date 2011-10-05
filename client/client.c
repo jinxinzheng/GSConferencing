@@ -185,14 +185,14 @@ static void *run_send_udp(void *arg)
 
 static int is_recved(uint32_t seq)
 {
-  static uint32_t recent_seqs[8] = {0};
+  static uint32_t recent_seqs[4] = {0};
   static int pos = 0;
 
   int i;
 
-  for( i=0 ; i<8 ; i++ )
+  for( i=0 ; i<4 ; i++ )
   {
-    if( seq == recent_seqs[(pos+8-i)&7] )
+    if( seq == recent_seqs[(pos+4-i)&3] )
     {
       return 1;
     }
@@ -200,7 +200,7 @@ static int is_recved(uint32_t seq)
 
   /* add the seq to recent.
    * the list is an 'fifo'. */
-  pos = (pos+1)&7;
+  pos = (pos+1)&3;
   recent_seqs[pos] = seq;
 
   return 0;

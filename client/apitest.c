@@ -173,6 +173,10 @@ int main(int argc, char *const argv[])
     dev_ent_t devs[1024];
     int ndev;
     get_all_devs(devs, &ndev);
+    for( i=0 ; i<ndev ; i++ )
+    {
+      printf("%d %d %s\n", devs[i].id, devs[i].type, devs[i].user_id);
+    }
   }
 
   regist_start(0);

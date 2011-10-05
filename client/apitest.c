@@ -55,7 +55,7 @@ static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsig
 
   /*reset and sync*/
   ioctl_val=0;
-  ioctl(fd,SNDCTL_DSP_RESET,(char*)&ioctl_val );
+  //ioctl(fd,SNDCTL_DSP_RESET,(char*)&ioctl_val );
   ioctl(fd,SNDCTL_DSP_SYNC,(char*)&ioctl_val);
 
   /* set bit format */
@@ -95,10 +95,22 @@ static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsig
 
 static void open_audio_out()
 {
-  fdw = open("/dev/dsp", O_WRONLY, 0777);
-  if( fdw > 0 )
+  int fd;
+  fd = open("/dev/dsp", O_WRONLY, 0777);
+  if( fd > 0 )
   {
-    set_format(fdw, 0x10, 2, 11025);
+    int setting, result;
+
+    ioctl(fd, SNDCTL_DSP_RESET);
+    setting = 0x00040009;
+    result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
+    if( result )
+    {
+      perror("ioctl(SNDCTL_DSP_SETFRAGMENT)");
+    }
+    set_format(fd, 0x10, 2, 11025);
+
+    fdw = fd;
   }
 }
 

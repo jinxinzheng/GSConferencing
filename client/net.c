@@ -16,6 +16,9 @@
 
 #define BUFLEN 4096
 
+static void (*udp_recved)(char *buf, int l);
+static void (*tcp_recved)(int sock, int isfile, char *buf, int l);
+
 void get_broadcast_addr(char *addr)
 {
   struct ifaddrs *ifa, *p;
@@ -201,8 +204,146 @@ void start_try_send_tcp(void *buf, int len, const struct sockaddr_in *addr, void
 }
 
 
+static int audio_sock = -1;
+static struct sockaddr_in audio_serv_addr;
+static int dev_id;
+
+static void repack_audio(const void *buf, int len)
+{
+  const int pksize = 528;
+  static char pack[1000];
+  static int pklen = 0;
+  static int pkrem = pksize;
+  int boff = 0;
+  int l;
+
+  while( len > 0 )
+  {
+    l = len<pkrem? len:pkrem;
+    memcpy(pack+pklen, buf+boff, l);
+    pklen += l;
+    pkrem -= l;
+    boff += l;
+    len -= l;
+
+    if( pklen == pksize )
+    {
+      /* deliter it */
+      tcp_recved(audio_sock, /* audio type */ 2, pack, pklen);
+      pklen = 0;
+      pkrem = pksize;
+    }
+  }
+}
+
+static int __connect_audio_sock()
+{
+  int sock;
+  char buf[20];
+  uint32_t *pid;
+
+  if( audio_sock > 0 )
+  {
+    close(audio_sock);
+    audio_sock = -1;
+  }
+
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    fail("socket()");
+
+  if (connect(sock, (const struct sockaddr *)&audio_serv_addr, sizeof(audio_serv_addr)) < 0)
+  {
+    close(sock);
+    fail("connect()");
+  }
+
+  /* send Hi right after the audio connection is
+   * established, for the server to identify the device. */
+  pid = (uint32_t *)buf;
+  *pid = htonl(dev_id);
+  buf[4] = 'H';
+  buf[5] = 'i';
+  if (send(sock, buf, 6, 0) < 0)
+  {
+    close(sock);
+    fail("send Hi");
+  }
+
+  audio_sock = sock;
+
+  return 0;
+}
+
+static void __run_recv_audio()
+{
+  int l;
+  char buf[BUFLEN];
+
+  /* audio packs are transmitted over a constent connection,
+   * until server is closed. */
+
+  while(1)
+  {
+    if( audio_sock < 0 )
+    {
+      sleep(3);
+      __connect_audio_sock();
+      continue;
+    }
+
+    l = recv(audio_sock, buf, sizeof buf, 0);
+    if( l <= 0 )
+    {
+      perror("recv()");
+      /* try reconnect */
+      __connect_audio_sock();
+    }
+    else
+    {
+      //if (tcp_recved)
+      //  tcp_recved(audio_sock, /* audio type */ 2, buf, l);
+      repack_audio(buf, l);
+    }
+  }
+}
+
+static void *run_recv_audio(void *arg)
+{
+  __run_recv_audio();
+  return NULL;
+}
+
+int connect_audio_sock(const struct sockaddr_in *addr, int did)
+{
+  int r;
+  pthread_t thread;
+
+  audio_serv_addr = *addr;
+  dev_id = did;
+  r = __connect_audio_sock();
+
+  pthread_create(&thread, NULL, run_recv_audio, NULL);
+
+  return r;
+}
+
+int send_audio(void *buf, size_t len)
+{
+  if( audio_sock < 0 )
+  {
+    return -1;
+  }
+
+  if (send(audio_sock, buf, len, 0) < 0)
+  {
+    fail("send()");
+  }
+
+  return 0;
+}
+
+
 static int udp_port;
-static void (*udp_recved)(char *buf, int l);
 
 static void _recv_udp(int s);
 
@@ -324,7 +465,6 @@ static void _recv_udp(int s)
 
 static int tcp_port;
 static int file_port;
-static void (*tcp_recved)(int sock, int isfile, char *buf, int l);
 
 static void *run_recv_tcp(void *arg)
 {

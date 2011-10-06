@@ -5,6 +5,8 @@ void start_listener_tcp();
 
 void listener_udp();
 
+int dev_send_audio(struct device *d, const void *buf, int len);
+
 int sendto_dev_udp(int sock, const void *buf, size_t len, struct device *dev);
 
 int broadcast(struct tag *t, const void *buf, size_t len);

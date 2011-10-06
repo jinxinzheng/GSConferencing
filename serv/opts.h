@@ -3,6 +3,7 @@
 
 extern int opt_queue_max;
 extern int opt_broadcast;
+extern int opt_tcp_audio;
 extern int opt_flush;
 
 enum {

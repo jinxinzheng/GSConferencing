@@ -50,7 +50,7 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
 void tag_cast_pack(struct tag *t, struct packet *pack)
 {
   struct device *d;
-  struct list_head *p, *h;
+  struct list_head *h;
   int i;
 
 #ifdef DEBUG_VERB
@@ -66,7 +66,7 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
     /* do broadcast here */
     broadcast(t, pack->data, pack->len);
     /* ensure not lost */
-    usleep(1000);
+    usleep(2000);
     broadcast(t, pack->data, pack->len);
     return;
   }
@@ -75,14 +75,22 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   {
     h = &t->subscribe_head[i];
 
-    list_for_each(p, h)
+    list_for_each_entry(d, h, subscribe[i])
     {
-      d = list_entry(p, struct device, subscribe[i]);
-
+      /* don't send to device 0.
+       * this is a hack... */
       if( d->id == 0 )
         continue;
 
-      sendto_dev_udp(t->sock, pack->data, pack->len, d);
+      if( opt_tcp_audio )
+      {
+        if( d->audio_sock > 0 )
+          dev_send_audio(d, pack->data, pack->len);
+      }
+      else
+      {
+        sendto_dev_udp(t->sock, pack->data, pack->len, d);
+      }
     }
   }
 }

@@ -174,7 +174,8 @@ static void *run_send_udp(void *arg)
     //send udp
     l = headlen(qitem) + qitem->datalen;
     HTON(qitem);
-    send_udp(qitem, l, &servAddr);
+    //send_udp(qitem, l, &servAddr);
+    send_audio(qitem, l);
 
     //free
     cfifo__out(&udp_snd_fifo);
@@ -598,6 +599,14 @@ int reg(const char *passwd, struct dev_info *info)
   subscription[0] = info->sub[0]; \
   if( subscription[0]==0 && subscription[1]==0 ) \
     subscription[0] = 1; \
+  /* connect audio sock. this must be done after  \
+   * the reg() is completed. */ \
+  { \
+    struct sockaddr_in serv_audio_addr; \
+    serv_audio_addr = servAddr; \
+    serv_audio_addr.sin_port = htons(SERVER_PORT+2);  \
+    connect_audio_sock(&serv_audio_addr, id); \
+  } \
 }
 
   _MAKE_REG();
@@ -1297,8 +1306,15 @@ static void handle_file(int sock, char *buf, int l)
   }
 }
 
+enum
+{
+  TCP_CMD = 0,
+  TCP_FILE = 1,
+  TCP_AUDIO = 2,
+};
+
 /* handle recved cmd and generate appropriate events to the client */
-static void handle_cmd(int sock, int isfile, char *buf, int l)
+static void handle_cmd(int sock, int type, char *buf, int l)
 {
   /* this is maintained during each connection.
    * caution: this only supports one thread running tcp recv! */
@@ -1316,6 +1332,18 @@ static void handle_cmd(int sock, int isfile, char *buf, int l)
   struct cmd c = {0};
   int i;
 
+  int isfile;
+
+
+  if( type == TCP_AUDIO )
+  {
+    /* pass it to the UDP audio receiver. */
+    udp_recved(buf, l);
+    return;
+  }
+
+
+  isfile = type;
 
   if (isfile)
   {

@@ -50,6 +50,8 @@ struct device
 
   struct db_device *db_data;
 
+  int audio_sock;
+
   int hbeat;
 
   /* group and tag is stored in database */

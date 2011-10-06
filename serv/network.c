@@ -238,13 +238,222 @@ void *listener_tcp_proc(void *p)
   return NULL;
 }
 
-void start_listener_tcp()
-{
-  pthread_t thread;
 
-  pthread_create(&thread, NULL, listener_tcp_proc, NULL);
+int dev_send_audio(struct device *d, const void *buf, int len)
+{
+  if( send(d->audio_sock, buf, len, 0) < 0 )
+  {
+    fail("send audio");
+  }
+
+  return 0;
 }
 
+static int pack_recv(struct packet *pack);
+
+static void *run_recv_audio(void *arg)
+{
+  struct device *d = (struct device *)arg;
+  int conn_sock = d->audio_sock;
+  char buf[BUFLEN];
+  int len;
+
+  struct packet *pack;
+
+  const int pksize = 528;
+  int pklen = 0;
+  int pkrem = pksize;
+  int boff = 0;
+  int l;
+
+  pack = pack_get_new();
+
+  while( (len = recv(conn_sock, buf, sizeof buf, 0)) > 0 )
+  {
+    /* repack the data into fixed-size chunks */
+
+    boff = 0;
+    while( len > 0 )
+    {
+      l = len<pkrem? len:pkrem;
+      memcpy(pack->data+pklen, buf+boff, l);
+      pklen += l;
+      pkrem -= l;
+      boff += l;
+      len -= l;
+
+      if( pklen == pksize )
+      {
+        pack->len = pklen;
+        if( !pack_recv(pack) )
+        {
+          pack = pack_get_new();
+        }
+
+        pklen = 0;
+        pkrem = pksize;
+      }
+    }
+  }
+
+  /* the device is disconnected,
+   * so we invalidate the sock. */
+  d->audio_sock = -1;
+
+  close(conn_sock);
+
+  return NULL;
+}
+
+static void audio_connect(int sock)
+{
+  char buf[100];
+  int l;
+
+  /* expect the first Hi from the device. */
+  l = recv(sock, buf, sizeof buf, 0);
+  if( l >= 6 )
+  {
+    /* check the 'magic' */
+    if( buf[4] == 'H' && buf[5] == 'i' )
+    {
+      int did;
+      struct device *d;
+      uint32_t *pid;
+
+      pid = (uint32_t *)buf;
+      did = ntohl(*pid);
+      if( (d = get_device(did)) )
+      {
+        pthread_t thread;
+
+        d->audio_sock = sock;
+        trace_info("audio connected to dev %d\n", did);
+
+        /* fork a thread to receive the audio packs. */
+        pthread_create(&thread, NULL, run_recv_audio, (void *)d);
+        return;
+      }
+    }
+  }
+
+  close(sock);
+}
+
+static int __run_listen_audio()
+{
+  int audio_sock;
+  int conn_sock;
+  int on;
+  struct sockaddr_in loclAddr;
+
+  int audio_port = SERVER_PORT + 2;
+
+  /* audio packs are transmitted over a constent connection
+   * associated with each device. */
+
+  if ((audio_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    fail("socket()");
+
+  on = 1;
+  if (setsockopt(audio_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(on)) < 0)
+    perror("setsockopt");
+
+  memset(&loclAddr, 0, sizeof loclAddr);
+  loclAddr.sin_family = AF_INET;
+  loclAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  loclAddr.sin_port = htons(audio_port);
+
+  if (bind(audio_sock, (struct sockaddr *) &loclAddr, sizeof loclAddr) < 0)
+    fail("bind()");
+
+  if (listen(audio_sock, 50) < 0)
+    fail("listen()");
+
+  for(;;)
+  {
+    struct sockaddr_in remtAddr;
+    size_t remtLen;
+
+    /* Set the size of the in-out parameter */
+    remtLen = sizeof remtAddr;
+
+    if ((conn_sock = accept(audio_sock, (struct sockaddr *) &remtAddr, &remtLen)) < 0)
+    {
+      perror("accept()");
+      continue;
+    }
+
+    trace_info("audio connect from %s\n", inet_ntoa(remtAddr.sin_addr));
+
+    audio_connect(conn_sock);
+  }
+
+  return 0;
+}
+
+static void *run_listen_audio(void *arg)
+{
+  __run_listen_audio();
+  return NULL;
+}
+
+void start_listener_tcp()
+{
+  pthread_t thread, athread;
+
+  pthread_create(&thread, NULL, listener_tcp_proc, NULL);
+  pthread_create(&athread, NULL, run_listen_audio, NULL);
+}
+
+
+/* return: 1 if pack can be freed, 0 otherwise. */
+static int pack_recv(struct packet *pack)
+{
+  pack_data *p = (pack_data *)pack->data;
+  struct device *d;
+  struct group *g;
+  int i;
+  long did;
+
+  /* work out the device object */
+  did = ntohl(p->id);
+  d = get_device(did);
+  if (!d)
+    return 1;
+
+  i = ntohs(p->type);
+  switch ( i )
+  {
+    case PACKET_HBEAT :
+
+      dev_heartbeat(d);
+      return 1;
+
+
+    case PACKET_AUDIO :
+
+      g = d->group;
+
+      /* don't cast if all are disabled by the chairman.
+       * but we still need to cast the chairman's voice. */
+      if( g->discuss.disabled && d != g->chairman )
+        return 1;
+
+      /* don't cast if it is prohibited */
+      if( d->discuss.forbidden || !d->discuss.open )
+        return 1;
+
+      /* put packet into processing queue */
+      pack->dev = d;
+      if (dev_cast_packet(d, 0, pack) != 0)
+        return 1;
+
+      break;
+  }
+
+  return 0;
+}
 
 /* this should be running in main thread */
 void run_listener_udp(int port)
@@ -255,8 +464,6 @@ void run_listener_udp(int port)
   int optval;
 
   struct packet *pack;
-
-  long did;
 
   /* Create socket for sending/receiving datagrams */
   if ((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -293,53 +500,8 @@ void run_listener_udp(int port)
     }
 
     /* analyze the packet data. */
-
-    {
-      pack_data *p = (pack_data *)pack->data;
-      struct device *d;
-      struct group *g;
-      int i;
-
-      /* work out the device object */
-      did = ntohl(p->id);
-      d = get_device(did);
-      if (!d)
-        continue;
-
-      i = ntohs(p->type);
-      switch ( i )
-      {
-        case PACKET_HBEAT :
-
-        dev_heartbeat(d);
-        continue;
-
-
-        case PACKET_AUDIO :
-
-        g = d->group;
-
-        /* don't cast if all are disabled by the chairman.
-         * but we still need to cast the chairman's voice. */
-        if( g->discuss.disabled && d != g->chairman )
-          continue;
-
-        /* don't cast if it is prohibited */
-        if( d->discuss.forbidden || !d->discuss.open )
-          continue;
-
-        /* put packet into processing queue */
-        pack->dev = d;
-        if (dev_cast_packet(d, 0, pack) != 0)
-          continue;
-
-        break;
-
-
-        default :
-        break;
-      }
-    }
+    if( pack_recv(pack) )
+      continue;
 
     /* Send any reply here */
 

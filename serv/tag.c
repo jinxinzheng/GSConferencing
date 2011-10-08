@@ -438,6 +438,33 @@ static inline int wait_all_queues(struct tag *t)
   return 1;
 }
 
+static int wait_any_queue(struct tag *t)
+{
+  int usecs = 11610;  /* for 11k Hz */
+
+  while( usecs > 0 )
+  {
+    /* immediately return if all queues have data.
+     * checked every 1 ms. this ensures us not drifted
+     * too much from the realtime data. */
+    if( (t->mix_stat & t->mix_mask) == t->mix_mask )
+      return 1;
+
+    if( usecs >= 1000 )
+    {
+      usleep(1000);
+      usecs -= 1000;
+    }
+    else
+    {
+      usleep(usecs);
+      usecs = 0;
+    }
+  }
+
+  return (t->mix_stat != 0);
+}
+
 static struct packet *tag_mix_audio(struct tag *t)
 {
   struct device *d;
@@ -478,12 +505,23 @@ static struct packet *tag_mix_audio(struct tag *t)
 normal:
   /* second pass: normal blending */
 
-  /* when flushing is not activated, must wait for
-   * all outstanding devs to have data on their queue.
-   * otherwise clients sending at lower rate may be
-   * scattered. */
-  if( !wait_all_queues(t) )
-    return NULL;
+  switch ( opt_sync_policy )
+  {
+    case SYNC_WAIT :
+    /* wait for all outstanding devs to have data on
+     * their queue. otherwise clients sending at
+     * lower rate may be scattered. */
+    if( !wait_all_queues(t) )
+      return NULL;
+    break;
+
+    case SYNC_FIXED :
+    /* wait for a while hoping to sync all queues at
+     * different paces. */
+    if( !wait_any_queue(t) )
+      return NULL;
+    break;
+  }
 
 
   c = 0;

@@ -30,7 +30,7 @@ int main(int argc, char *const argv[])
 
   printf("daya server %s\n", VERSION);
 
-  while ((opt = getopt(argc, argv, "q:Bfs")) != -1) {
+  while ((opt = getopt(argc, argv, "q:Bfp:s")) != -1) {
     switch (opt) {
       case 'q':
         opt_queue_max = atoi(optarg);
@@ -40,6 +40,12 @@ int main(int argc, char *const argv[])
         break;
       case 'f':
         opt_flush = 1;
+        break;
+      case 'p':
+        if( strcmp("wait", optarg) == 0 )
+          opt_sync_policy = SYNC_WAIT;
+        else if( strcmp("fixed", optarg) == 0 )
+          opt_sync_policy = SYNC_FIXED;
         break;
       case 's':
         opt_silence_drop = 1;

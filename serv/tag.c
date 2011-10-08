@@ -11,6 +11,7 @@
 #include "include/types.h"
 #include "sys.h"
 #include "db/md.h"
+#include "opts.h"
 
 //#define MIX_DEBUG
 
@@ -541,24 +542,25 @@ normal:
    break;
   }
 
-#if 0
-  /* detect silence packet.
-   * dropping continuous silence packets can
-   * greatly improve the client's performance.*/
-  if( pcm_silent((char *)au[0], mixlen, 51200*c ) )
+  if( opt_silence_drop )
   {
-    if( ++(t->mix_silence) > 50 )
+    /* detect silence packet.
+     * dropping continuous silence packets can
+     * greatly improve the client's performance.*/
+    if( pcm_silent((char *)au[0], mixlen, 51200*c ) )
     {
-      pack_free(pp[0]);
-      trace_dbg("dropping silent pack %d\n", t->mix_silence);
-      return NULL;
+      if( ++(t->mix_silence) > 50 )
+      {
+        pack_free(pp[0]);
+        trace_dbg("dropping silent pack %d\n", t->mix_silence);
+        return NULL;
+      }
+    }
+    else
+    {
+      t->mix_silence = 0;
     }
   }
-  else
-  {
-    t->mix_silence = 0;
-  }
-#endif
 
   return pp[0];
 }

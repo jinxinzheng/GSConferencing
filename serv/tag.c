@@ -384,7 +384,6 @@ static inline int flush_queues(struct tag *t)
       /* this queue is over-loaded.
        * flush it immediately */
       flush_queue(t, d);
-      return 1;
     }
     else if( len > 1 )
     {

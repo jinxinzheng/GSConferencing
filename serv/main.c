@@ -24,14 +24,30 @@ static void basic_setup()
   md_load_all();
 }
 
+static void help()
+{
+  printf(
+      "options:\n"
+      "-h: print this help.\n"
+      "-B: don't use broadcast.\n"
+      "-f: enable packet flush dropping.\n"
+      "-s: enable packet silence dropping.\n"
+      "-p POLICY: set syncing policy: wait(default), fixed.\n"
+  );
+}
+
 int main(int argc, char *const argv[])
 {
   int opt;
 
   printf("daya server %s\n", VERSION);
 
-  while ((opt = getopt(argc, argv, "q:Bfp:s")) != -1) {
+  while ((opt = getopt(argc, argv, "hq:Bfp:s")) != -1) {
     switch (opt) {
+      case 'h':
+        help();
+        return 0;
+        break;
       case 'q':
         opt_queue_max = atoi(optarg);
         break;

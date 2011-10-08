@@ -30,13 +30,16 @@ int main(int argc, char *const argv[])
 
   printf("daya server %s\n", VERSION);
 
-  while ((opt = getopt(argc, argv, "q:Bs")) != -1) {
+  while ((opt = getopt(argc, argv, "q:Bfs")) != -1) {
     switch (opt) {
       case 'q':
         opt_queue_max = atoi(optarg);
         break;
       case 'B':
         opt_broadcast = 0;
+        break;
+      case 'f':
+        opt_flush = 1;
         break;
       case 's':
         opt_silence_drop = 1;

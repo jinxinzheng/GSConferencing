@@ -30,6 +30,7 @@ static void help()
       "options:\n"
       "-h: print this help.\n"
       "-B: don't use broadcast.\n"
+      "-u: always use udp to cast audio.\n"
       "-f: enable packet flush dropping.\n"
       "-s: enable packet silence dropping.\n"
       "-p POLICY: set syncing policy: wait(default), fixed.\n"
@@ -42,7 +43,7 @@ int main(int argc, char *const argv[])
 
   printf("daya server %s\n", VERSION);
 
-  while ((opt = getopt(argc, argv, "hq:Bfp:s")) != -1) {
+  while ((opt = getopt(argc, argv, "hq:Bufp:s")) != -1) {
     switch (opt) {
       case 'h':
         help();
@@ -53,6 +54,9 @@ int main(int argc, char *const argv[])
         break;
       case 'B':
         opt_broadcast = 0;
+        break;
+      case 'u':
+        opt_tcp_audio = 0;
         break;
       case 'f':
         opt_flush = 1;

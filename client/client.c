@@ -22,6 +22,10 @@ static int devtype;
 static struct sockaddr_in servAddr;
 static int listenPort;
 
+static struct client_options opts = {
+  .audio_use_udp = 0,
+};
+
 static int subscription[2] = {0};
 
 static event_cb event_handler;
@@ -86,6 +90,11 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   pthread_create(&thread, NULL, run_heartbeat, NULL);
   pthread_create(&thread, NULL, run_send_udp, NULL);
   pthread_create(&thread, NULL, run_recv_udp, NULL);
+}
+
+void set_options(const struct client_options *p)
+{
+  opts = *p;
 }
 
 void set_event_callback(event_cb cb)
@@ -171,11 +180,13 @@ static void *run_send_udp(void *arg)
     cfifo_wait_empty(&udp_snd_fifo);
     qitem = (struct pack *)cfifo_get_out(&udp_snd_fifo);
 
-    //send udp
+    //send audio
     l = headlen(qitem) + qitem->datalen;
     HTON(qitem);
-    //send_udp(qitem, l, &servAddr);
-    send_audio(qitem, l);
+    if( opts.audio_use_udp )
+      send_udp(qitem, l, &servAddr);
+    else
+      send_audio(qitem, l);
 
     //free
     cfifo__out(&udp_snd_fifo);
@@ -599,9 +610,10 @@ int reg(const char *passwd, struct dev_info *info)
   subscription[0] = info->sub[0]; \
   if( subscription[0]==0 && subscription[1]==0 ) \
     subscription[0] = 1; \
-  /* connect audio sock. this must be done after  \
-   * the reg() is completed. */ \
+  if( !opts.audio_use_udp )  \
   { \
+    /* connect audio sock. this must be done after  \
+     * the reg() is completed. */ \
     struct sockaddr_in serv_audio_addr; \
     serv_audio_addr = servAddr; \
     serv_audio_addr.sin_port = htons(SERVER_PORT+2);  \

@@ -307,7 +307,7 @@ static void tag_update_dev_timeouts(struct tag *t)
     {
       if( list_empty(&d->pack_queue.head) )
       {
-        if( ++ d->timeouts > 500 )
+        if( ++ d->timeouts > 300 )
         {
           /* what? this one has been hung for too long...
            * get this shit out of our way. */

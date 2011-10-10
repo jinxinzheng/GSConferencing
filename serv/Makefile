@@ -14,6 +14,7 @@ endif
 SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.o sys.o hbeat.o pcm.o interp.o ptc.o\
 	async.o block.o ../threadpool/threadpool.o \
 	init.o \
+	enounce.o \
 	cmd_handler.o \
 	cmd_debug.o \
 	cmd_tag.o \

@@ -2,6 +2,7 @@
 #include "init.h"
 #include "cmd_handler.h"
 #include "hbeat.h"
+#include "enounce.h"
 #include "network.h"
 #include "packet.h"
 #include "db/md.h"
@@ -85,6 +86,8 @@ int main(int argc, char *const argv[])
   start_heartbeat_god();
 
   start_listener_tcp();
+
+  start_server_enounce();
 
   /* this will execute on the main thread and keep the process alive. */
   listener_udp();

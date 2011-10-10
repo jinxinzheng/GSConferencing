@@ -25,6 +25,7 @@ typedef struct pack pack_data;
 enum {
   PACKET_HBEAT,
   PACKET_AUDIO,
+  PACKET_ENOUNCE,
 };
 
 #define P_HTON(p) \
@@ -44,5 +45,7 @@ do { \
   (p)->tag  = ntohs((p)->tag); \
   (p)->datalen = ntohl((p)->datalen); \
 }while (0)
+
+#define offsetof(type, memb)  (size_t)&(((type *)0)->memb)
 
 #endif

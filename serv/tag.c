@@ -165,13 +165,15 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
   {
     if( d == t->mix_devs[i] )
     {
+      int bit;
       trace_dbg("removing dev from outstanding\n");
       t->mix_devs[i] = NULL;
 
-      t->mix_mask &= ~d->mixbit;
+      bit = d->mixbit;
       d->mixbit = 0;
 
       pthread_mutex_lock(&t->mut);
+      t->mix_mask &= ~bit;
       t->mix_count --;
       pthread_mutex_unlock(&t->mut);
 
@@ -200,9 +202,8 @@ void tag_clear_outstanding(struct tag *t)
     }
   }
 
-  t->mix_mask = 0;
-
   pthread_mutex_lock(&t->mut);
+  t->mix_mask = 0;
   t->mix_count = 0;
   pthread_mutex_unlock(&t->mut);
 
@@ -245,7 +246,9 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
    * queues back. */
   if( !(t->mix_mask & d->mixbit) )
   {
+    pthread_mutex_lock(&t->mut);
     t->mix_mask |= d->mixbit;
+    pthread_mutex_unlock(&t->mut);
   }
 
   pthread_mutex_unlock(&t->mix_stat_mut);

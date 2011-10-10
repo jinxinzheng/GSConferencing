@@ -302,6 +302,8 @@ static void *run_recv_audio(void *arg)
 
   close(conn_sock);
 
+  trace_info("audio of dev %ld disconnected\n", d->id);
+
   return NULL;
 }
 

@@ -218,16 +218,13 @@ static int is_recved(uint32_t seq)
   return 0;
 }
 
-static void udp_recved(char *buf, int len)
+static void audio_recved(struct pack *buf, int len)
 {
-  struct pack *qitem;
+  struct pack *qitem = buf;
 
   /* return immediately when we are not subscribed to any */
   if (subscription[0] == 0 && subscription[1] == 0)
     return;
-
-  qitem = (struct pack *)buf;
-  NTOH(qitem);
 
   trace_verb("%d.%d ", qitem->id, qitem->seq);
   DEBUG_TIME_NOW();
@@ -269,6 +266,21 @@ static void udp_recved(char *buf, int len)
         (void*)qitem->data,
         (void*)qitem->datalen);
   }*/
+}
+
+static void udp_recved(char *buf, int len)
+{
+  struct pack *pack;
+
+  pack = (struct pack *)buf;
+  NTOH(pack);
+
+  switch ( pack->type )
+  {
+    case PACKET_AUDIO :
+    audio_recved(pack, len);
+    break;
+  }
 }
 
 static inline void drop_rcv_queue(int count)

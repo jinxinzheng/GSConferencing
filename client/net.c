@@ -242,12 +242,6 @@ static int __connect_audio_sock()
   char buf[20];
   uint32_t *pid;
 
-  if( audio_sock > 0 )
-  {
-    close(audio_sock);
-    audio_sock = -1;
-  }
-
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     fail("socket()");
 
@@ -269,6 +263,9 @@ static int __connect_audio_sock()
     fail("send Hi");
   }
 
+  /* make the sock non-block */
+  fcntl(sock, F_SETFL, O_NONBLOCK);
+
   audio_sock = sock;
 
   return 0;
@@ -278,6 +275,10 @@ static void __run_recv_audio()
 {
   int l;
   char buf[BUFLEN];
+  fd_set fds;
+  struct timeval tv;
+  int r;
+  int s;
 
   /* audio packs are transmitted over a constent connection,
    * until server is closed. */
@@ -291,19 +292,51 @@ static void __run_recv_audio()
       continue;
     }
 
-    l = recv(audio_sock, buf, sizeof buf, 0);
-    if( l <= 0 )
+    /* recv until remote end closed. */
+    for(;;)
     {
-      perror("recv()");
-      /* try reconnect */
-      __connect_audio_sock();
+      FD_ZERO(&fds);
+      FD_SET(audio_sock, &fds);
+      tv.tv_sec = 10;
+      tv.tv_usec = 0;
+
+      r = select(audio_sock+1, &fds, NULL, NULL, &tv);
+      if( r == 0 )
+      {
+        /* timed out. check the sock error periodically for
+         * any chance to reconnect. */
+        int so_err;
+        socklen_t err_len = sizeof(so_err);
+        if( getsockopt(audio_sock, SOL_SOCKET, SO_ERROR, &so_err, &err_len) < 0
+            || so_err != 0 )
+        {
+          perror("sock error");
+          break;
+        }
+
+        continue;
+      }
+      else if( r < 0 )
+      {
+        perror("recv audio: select()");
+        break;
+      }
+
+      l = recv(audio_sock, buf, sizeof buf, 0);
+      if( l <= 0 )
+      {
+        perror("recv audio: recv()");
+        break;
+      }
+      else
+      {
+        repack_audio(buf, l);
+      }
     }
-    else
-    {
-      //if (tcp_recved)
-      //  tcp_recved(audio_sock, /* audio type */ 2, buf, l);
-      repack_audio(buf, l);
-    }
+
+    s = audio_sock;
+    audio_sock = -1;
+    close(s);
   }
 }
 

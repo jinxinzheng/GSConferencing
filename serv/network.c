@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/sendfile.h>
 #include "include/queue.h"
 #include "sys.h"
@@ -23,6 +24,11 @@
 
 #define die(s) do {perror(s); exit(1);} while(0)
 #define fail(s) do {perror(s); return -1;} while(0)
+#define perrorf(fmt, args...) do{ \
+  char __buf[256];  \
+  sprintf(__buf, fmt, ##args); \
+  perror(__buf);  \
+} while(0)
 
 struct connection
 {
@@ -241,9 +247,12 @@ void *listener_tcp_proc(void *p)
 
 int dev_send_audio(struct device *d, const void *buf, int len)
 {
+  /* this returns immediately on non-block socket.
+   * try only once as it works generally on good connection. */
   if( send(d->audio_sock, buf, len, 0) < 0 )
   {
-    fail("send audio");
+    perrorf("%ld send audio fail", d->id);
+    return -1;
   }
 
   return 0;
@@ -266,10 +275,29 @@ static void *run_recv_audio(void *arg)
   int boff = 0;
   int l;
 
+  fd_set fds;
+
   pack = pack_get_new();
 
-  while( (len = recv(conn_sock, buf, sizeof buf, 0)) > 0 )
+  while(1)
   {
+    FD_ZERO(&fds);
+    FD_SET(conn_sock, &fds);
+
+    if( select(conn_sock+1, &fds, NULL, NULL, NULL) < 0 )
+    {
+      /* any error should not happen if the connection is good. */
+      perror("recv_audio: select()");
+      break;
+    }
+
+    if( (len = recv(conn_sock, buf, sizeof buf, 0)) <= 0 )
+    {
+      /* recv() should succeed since approved by select(). */
+      perror("recv_audio: recv()");
+      break;
+    }
+
     /* repack the data into fixed-size chunks */
 
     boff = 0;
@@ -328,6 +356,9 @@ static void audio_connect(int sock)
       if( (d = get_device(did)) )
       {
         pthread_t thread;
+
+        /* make the sock non-block */
+        fcntl(sock, F_SETFL, O_NONBLOCK);
 
         d->audio_sock = sock;
         trace_info("audio connected to dev %d\n", did);

@@ -276,7 +276,6 @@ static void __run_recv_audio()
   int l;
   char buf[BUFLEN];
   fd_set fds;
-  struct timeval tv;
   int r;
   int s;
 
@@ -297,26 +296,9 @@ static void __run_recv_audio()
     {
       FD_ZERO(&fds);
       FD_SET(audio_sock, &fds);
-      tv.tv_sec = 10;
-      tv.tv_usec = 0;
 
-      r = select(audio_sock+1, &fds, NULL, NULL, &tv);
-      if( r == 0 )
-      {
-        /* timed out. check the sock error periodically for
-         * any chance to reconnect. */
-        int so_err;
-        socklen_t err_len = sizeof(so_err);
-        if( getsockopt(audio_sock, SOL_SOCKET, SO_ERROR, &so_err, &err_len) < 0
-            || so_err != 0 )
-        {
-          perror("sock error");
-          break;
-        }
-
-        continue;
-      }
-      else if( r < 0 )
+      r = select(audio_sock+1, &fds, NULL, NULL, NULL);
+      if( r < 0 )
       {
         perror("recv audio: select()");
         break;
@@ -362,17 +344,34 @@ int connect_audio_sock(const struct sockaddr_in *addr, int did)
 
 int send_audio(void *buf, size_t len)
 {
+  int i;
+
   if( audio_sock < 0 )
   {
     return -1;
   }
 
-  if (send(audio_sock, buf, len, 0) < 0)
+  /* try 15 times. shutdown the sock if all failed
+   * (remote end inactive). */
+  for( i=0; i<15; i++ )
   {
-    fail("send()");
+    if (send(audio_sock, buf, len, 0) < 0)
+    {
+      perror("send audio");
+      if( errno == EAGAIN )
+        continue;
+      else
+        return -1;
+    }
+    else
+      return 0;
   }
 
-  return 0;
+  /* this will unblock the select() in the recv thread,
+   * thus allow it to try to reconnect. */
+  shutdown(audio_sock, SHUT_RDWR);
+
+  return -1;
 }
 
 

@@ -51,6 +51,7 @@ struct device
   struct db_device *db_data;
 
   int audio_sock;
+  int audio_bad;
 
   int hbeat;
 

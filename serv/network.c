@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/sendfile.h>
 #include "include/queue.h"
 #include "sys.h"
@@ -252,8 +253,23 @@ int dev_send_audio(struct device *d, const void *buf, int len)
   if( send(d->audio_sock, buf, len, 0) < 0 )
   {
     perrorf("%ld send audio fail", d->id);
+    if( errno == EAGAIN )
+    {
+      if( ++d->audio_bad > 30 )
+      {
+        /* send() fails EAGAIN when, e.g, the network wire
+         * is unplugged without any prompt. but the recv thread
+         * cannot detect any error as the connection is still
+         * in established state. */
+        fprintf(stderr, "%ld remote is inactive, shutdown.\n", d->id);
+        shutdown(d->audio_sock, SHUT_RDWR);
+        d->audio_bad = 0;
+      }
+    }
     return -1;
   }
+
+  d->audio_bad = 0;
 
   return 0;
 }

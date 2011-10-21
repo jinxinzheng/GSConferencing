@@ -159,6 +159,8 @@ int dispatch_threadpool(threadpool from_me, dispatch_fn dispatch_to_here, void *
 			sp_thread_cond_destroy( &thread->cond );
 			free( thread );
 		}
+
+    pthread_attr_destroy(&attr);
 	} else {
 		pool->tp_index--;
 		thread = pool->tp_list[ pool->tp_index ];

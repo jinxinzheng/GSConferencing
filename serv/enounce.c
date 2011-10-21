@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <include/pack.h>
+#include <include/thread.h>
 #include "network.h"
 #include "../config.h"
 
@@ -40,6 +41,5 @@ static void *run_enounce(void *arg)
 
 void start_server_enounce()
 {
-  pthread_t thread;
-  pthread_create(&thread, NULL, run_enounce, NULL);
+  start_thread(run_enounce, NULL);
 }

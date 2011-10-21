@@ -22,6 +22,7 @@
 #include "../config.h"
 #include "hbeat.h"
 #include <include/ping.h>
+#include <include/thread.h>
 
 #define die(s) do {perror(s); exit(1);} while(0)
 #define fail(s) do {perror(s); return -1;} while(0)
@@ -75,7 +76,6 @@ void run_listener_tcp(int port)
   socklen_t clntLen;
   int optval;
   struct connection *c;
-  pthread_t connection_thread;
 
   blocking_queue_init(&connection_queue);
 
@@ -102,7 +102,7 @@ void run_listener_tcp(int port)
     die("listen()");
 
   /* the connected sockets proceeding thread */
-  pthread_create(&connection_thread, NULL, run_proceed_connection, NULL);
+  start_thread(run_proceed_connection, NULL);
 
   for (;;) /* Run forever */
   {
@@ -371,8 +371,6 @@ static void audio_connect(int sock)
       did = ntohl(*pid);
       if( (d = get_device(did)) )
       {
-        pthread_t thread;
-
         /* make the sock non-block */
         fcntl(sock, F_SETFL, O_NONBLOCK);
 
@@ -380,7 +378,7 @@ static void audio_connect(int sock)
         trace_info("audio connected to dev %d\n", did);
 
         /* fork a thread to receive the audio packs. */
-        pthread_create(&thread, NULL, run_recv_audio, (void *)d);
+        start_thread(run_recv_audio, (void *)d);
         return;
       }
     }
@@ -449,10 +447,8 @@ static void *run_listen_audio(void *arg)
 
 void start_listener_tcp()
 {
-  pthread_t thread, athread;
-
-  pthread_create(&thread, NULL, listener_tcp_proc, NULL);
-  pthread_create(&athread, NULL, run_listen_audio, NULL);
+  start_thread(listener_tcp_proc, NULL);
+  start_thread(run_listen_audio, NULL);
 }
 
 

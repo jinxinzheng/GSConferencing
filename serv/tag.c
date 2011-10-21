@@ -12,13 +12,13 @@
 #include "sys.h"
 #include "db/md.h"
 #include "opts.h"
+#include <include/thread.h>
 
 //#define MIX_DEBUG
 
 struct tag *tag_create(long gid, long tid)
 {
   struct tag *t;
-  pthread_t thread;
   long long tuid;
   int i;
 
@@ -72,7 +72,7 @@ struct tag *tag_create(long gid, long tid)
   add_tag(t);
 
   /* create the tag's casting queue thread */
-  pthread_create(&thread, NULL, tag_run_casting, t);
+  start_thread(tag_run_casting, t);
 
   trace_info("tag %ld:%ld created\n", gid, tid);
   return t;

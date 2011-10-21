@@ -14,10 +14,10 @@ endif
 
 all: $(test_client) $(libclient) apitest cyctld
 
-$(test_client): main.o net.o
+$(test_client): main.o net.o ../common/thread.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-$(libclient): client.o net.o
+$(libclient): client.o net.o ../common/thread.o
 	$(AR) -rcv $@ $^
 
 libclient.so: client.o net.o

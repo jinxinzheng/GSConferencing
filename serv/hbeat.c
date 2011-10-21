@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "network.h"
 #include "include/debug.h"
+#include <include/thread.h>
 
 void dev_heartbeat(struct device *d)
 {
@@ -80,6 +81,5 @@ static void *run_heartbeat_god(void *arg)
 
 void start_heartbeat_god()
 {
-  pthread_t god;
-  pthread_create(&god, NULL, run_heartbeat_god, NULL);
+  start_thread(run_heartbeat_god, NULL);
 }

@@ -11,6 +11,7 @@
 #include "include/pack.h"
 #include "include/cfifo.h"
 #include "include/debug.h"
+#include <include/thread.h>
 #include "../config.h"
 #include "cyctl.h"
 
@@ -53,7 +54,6 @@ static void *run_recv_udp(void *arg);
 void client_init(int dev_id, int type, const char *servIP, int localPort)
 {
   int servPort = SERVER_PORT;
-  pthread_t thread;
 
   printf("daya client %s\n", VERSION);
 
@@ -87,9 +87,9 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   cfifo_enable_locking(&udp_rcv_fifo);
 
   /* udp sender thread */
-  pthread_create(&thread, NULL, run_heartbeat, NULL);
-  pthread_create(&thread, NULL, run_send_udp, NULL);
-  pthread_create(&thread, NULL, run_recv_udp, NULL);
+  start_thread(run_heartbeat, NULL);
+  start_thread(run_send_udp, NULL);
+  start_thread(run_recv_udp, NULL);
 }
 
 void set_options(const struct client_options *p)

@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include "util.h"
+#include <include/thread.h>
 #include "include/encode.h"
 #include "../config.h"
 
@@ -191,7 +192,6 @@ static void *try_send_tcp(void *arg)
 
 void start_try_send_tcp(void *buf, int len, const struct sockaddr_in *addr, void (*try_end)(char *))
 {
-  pthread_t thread;
   struct try_send_tcp_param_t *param =
     (struct try_send_tcp_param_t *)malloc(2048);
   memcpy(param->bytes, buf, len);
@@ -200,7 +200,7 @@ void start_try_send_tcp(void *buf, int len, const struct sockaddr_in *addr, void
   param->addr = *addr;
   param->try_end = try_end;
 
-  pthread_create(&thread, NULL, try_send_tcp, param);
+  start_thread(try_send_tcp, param);
 }
 
 
@@ -331,13 +331,12 @@ static void *run_recv_audio(void *arg)
 int connect_audio_sock(const struct sockaddr_in *addr, int did)
 {
   int r;
-  pthread_t thread;
 
   audio_serv_addr = *addr;
   dev_id = did;
   r = __connect_audio_sock();
 
-  pthread_create(&thread, NULL, run_recv_audio, NULL);
+  start_thread(run_recv_audio, NULL);
 
   return r;
 }
@@ -636,7 +635,7 @@ void start_recv_udp(int listenPort, void (*recved)(char *buf, int l))
   pthread_t thread;
   udp_port = listenPort;
   udp_recved = recved;
-  pthread_create(&thread, NULL, run_recv_udp, NULL);
+  start_thread(run_recv_udp, NULL);
 }
 
 void start_recv_tcp(int listenPort, void (*recved)(int sock, int isfile, char *buf, int l))
@@ -645,5 +644,5 @@ void start_recv_tcp(int listenPort, void (*recved)(int sock, int isfile, char *b
   tcp_port = listenPort;
   file_port = listenPort+1;
   tcp_recved = recved;
-  pthread_create(&thread, NULL, run_recv_tcp, NULL);
+  start_thread(run_recv_tcp, NULL);
 }

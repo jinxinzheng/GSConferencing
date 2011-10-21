@@ -1,9 +1,9 @@
 #include "cmd_handler.h"
 #include <unistd.h>
-#include <pthread.h>
 #include <string.h>
 #include "db/md.h"
 #include "include/debug.h"
+#include <include/thread.h>
 
 #define BUFLEN 20480
 
@@ -358,7 +358,6 @@ static int cmd_manage(struct cmd *cmd)
   SUBCMD("login")
   {
     char *u, *p;
-    pthread_t thread;
 
     /* authenticate user */
 
@@ -372,7 +371,7 @@ static int cmd_manage(struct cmd *cmd)
 
     response(cmd, "OK\n");
 
-    pthread_create(&thread, NULL, serv_manage, (void *)s);
+    start_thread(serv_manage, (void *)s);
   }
 
   else return 2; /*sub cmd not found*/

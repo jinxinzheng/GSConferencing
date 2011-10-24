@@ -28,6 +28,9 @@ struct group *group_create(long gid)
 
   g->id = gid;
   INIT_LIST_HEAD(&g->device_head);
+
+  pthread_mutex_init(&g->stats_lk, NULL);
+
   add_group(g);
 
   g->db_data = dg;

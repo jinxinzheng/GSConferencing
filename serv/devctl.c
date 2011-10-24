@@ -9,6 +9,8 @@
 #include "async.h"
 #include <include/types.h>
 #include "include/debug.h"
+#include <include/util.h>
+#include <include/lock.h>
 
 static inline struct device *new_dev()
 {
@@ -49,9 +51,6 @@ struct device *dev_create(long did)
 
 void dev_update_data(struct device *dev)
 {
-
-  dev->active = 1;
-
   /* update the device database */
   {
     struct db_device *dbd;
@@ -180,7 +179,7 @@ int dev_register(struct device *dev)
   }
 
   /* update group stats and caches */
-  if( dev->type < sizeof(g->stats.dev_count)/sizeof(g->stats.dev_count[0]) )
+  if( dev->type < array_size(g->stats.dev_count) )
   {
     g->stats.dev_count[dev->type] ++;
   }
@@ -268,4 +267,33 @@ void add_manager_dev()
   d.db_data = &dd;
 
   dev_register(&d);
+}
+
+
+void dev_activate(struct device *d)
+{
+  struct group *g = d->group;
+
+  d->active = 1;
+
+  if( d->type < array_size(g->stats.active_count) )
+  {
+    LOCK(g->stats_lk);
+    ++ g->stats.active_count[d->type];
+    UNLOCK(g->stats_lk);
+  }
+}
+
+void dev_deactivate(struct device *d)
+{
+  struct group *g = d->group;
+
+  d->active = 0;
+
+  if( d->type < array_size(g->stats.active_count) )
+  {
+    LOCK(g->stats_lk);
+    -- g->stats.active_count[d->type];
+    UNLOCK(g->stats_lk);
+  }
 }

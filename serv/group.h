@@ -27,7 +27,9 @@ struct group {
 
   struct {
     int dev_count[8];
+    int active_count[8];
   } stats;
+  pthread_mutex_t stats_lk;
 
   struct {
     struct db_discuss *current;

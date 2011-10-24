@@ -19,7 +19,8 @@ void dev_heartbeat(struct device *d)
       dbd->online = 1;
       device_save(d);
     }
-    d->active = 1;
+
+    dev_activate(d);
   }
 }
 
@@ -66,7 +67,7 @@ static void *run_heartbeat_god(void *arg)
             dbd->online = 0;
             device_save(d);
           }
-          d->active = 0;
+          dev_deactivate(d);
           trace_warn("dev %d is dead\n", (int)d->id);
 
           check_net(d);

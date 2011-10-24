@@ -85,9 +85,9 @@ static int cmd_sys_stats(struct cmd *cmd)
 
   REP_ADD(cmd, "OK");
 
-  REP_ADD_NUM(cmd, g->stats.dev_count[DEVTYPE_NORMAL]);
-  REP_ADD_NUM(cmd, g->stats.dev_count[DEVTYPE_CHAIR]);
-  REP_ADD_NUM(cmd, g->stats.dev_count[DEVTYPE_INTERP]);
+  REP_ADD_NUM(cmd, g->stats.active_count[DEVTYPE_NORMAL]);
+  REP_ADD_NUM(cmd, g->stats.active_count[DEVTYPE_CHAIR]);
+  REP_ADD_NUM(cmd, g->stats.active_count[DEVTYPE_INTERP]);
 
   REP_END(cmd);
 

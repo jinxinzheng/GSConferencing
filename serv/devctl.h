@@ -17,4 +17,7 @@ void device_cmd(struct device *d, const char *cmd, int len);
 
 void add_manager_dev();
 
+void dev_activate(struct device *d);
+void dev_deactivate(struct device *d);
+
 #endif

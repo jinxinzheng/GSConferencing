@@ -115,6 +115,7 @@ static int cmd_reg(struct cmd *cmd)
     d->bcast.sin_port = htons(BRCAST_PORT);
   }
 
+  dev_activate(d);
   dev_update_data(d);
 
   if (dev_register(d) != 0)

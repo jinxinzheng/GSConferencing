@@ -4,6 +4,7 @@
 #include <string.h>
 #include <include/pack.h>
 #include <include/thread.h>
+#include <include/util.h>
 #include "network.h"
 #include "../config.h"
 

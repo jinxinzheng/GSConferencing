@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include "util.h"
+#include <include/util.h>
 #include "net.h"
 #include "../include/pack.h"
 

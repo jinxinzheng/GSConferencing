@@ -23,9 +23,8 @@
 #include "hbeat.h"
 #include <include/ping.h>
 #include <include/thread.h>
+#include <include/util.h>
 
-#define die(s) do {perror(s); exit(1);} while(0)
-#define fail(s) do {perror(s); return -1;} while(0)
 #define perrorf(fmt, args...) do{ \
   char __buf[256];  \
   sprintf(__buf, fmt, ##args); \

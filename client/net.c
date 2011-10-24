@@ -10,7 +10,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <errno.h>
-#include "util.h"
+#include <include/util.h>
 #include <include/thread.h>
 #include "include/encode.h"
 #include "../config.h"

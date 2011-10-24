@@ -46,6 +46,5 @@ do { \
   (p)->datalen = ntohl((p)->datalen); \
 }while (0)
 
-#define offsetof(type, memb)  (size_t)&(((type *)0)->memb)
 
 #endif

@@ -270,30 +270,35 @@ void add_manager_dev()
 }
 
 
-void dev_activate(struct device *d)
+static void do_dev_activate(struct device *d, int a)
 {
   struct group *g = d->group;
 
-  d->active = 1;
+  LOCK(g->stats_lk);
+
+  if( d->active == a )
+    goto end;
+
+  d->active = a;
 
   if( d->type < array_size(g->stats.active_count) )
   {
-    LOCK(g->stats_lk);
-    ++ g->stats.active_count[d->type];
-    UNLOCK(g->stats_lk);
+    if( a )
+      ++ g->stats.active_count[d->type];
+    else
+      -- g->stats.active_count[d->type];
   }
+
+end:
+  UNLOCK(g->stats_lk);
+}
+
+void dev_activate(struct device *d)
+{
+  do_dev_activate(d, 1);
 }
 
 void dev_deactivate(struct device *d)
 {
-  struct group *g = d->group;
-
-  d->active = 0;
-
-  if( d->type < array_size(g->stats.active_count) )
-  {
-    LOCK(g->stats_lk);
-    -- g->stats.active_count[d->type];
-    UNLOCK(g->stats_lk);
-  }
+  do_dev_activate(d, 0);
 }

@@ -116,6 +116,7 @@ static int cmd_reg(struct cmd *cmd)
   }
 
   dev_activate(d);
+
   dev_update_data(d);
 
   if (dev_register(d) != 0)

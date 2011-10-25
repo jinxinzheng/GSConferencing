@@ -46,7 +46,7 @@ struct device
   int type;
   int mode;
   int privilege;
-  int active :1;
+  int active;
 
   struct db_device *db_data;
 

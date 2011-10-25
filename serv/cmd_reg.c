@@ -115,14 +115,14 @@ static int cmd_reg(struct cmd *cmd)
     d->bcast.sin_port = htons(BRCAST_PORT);
   }
 
-  dev_activate(d);
-
   dev_update_data(d);
 
   if (dev_register(d) != 0)
   {
     /* existing dev ok */
   }
+
+  dev_activate(d);
 
   get_client_info(buf, d);
 

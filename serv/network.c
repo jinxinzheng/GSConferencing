@@ -21,6 +21,7 @@
 #include "include/encode.h"
 #include "../config.h"
 #include "hbeat.h"
+#include "block.h"
 #include <include/ping.h>
 #include <include/thread.h>
 #include <include/util.h>
@@ -38,6 +39,8 @@ struct connection
 
   struct list_head l;
 };
+
+static struct block_pool *conn_pool;
 
 static struct blocking_queue connection_queue;
 
@@ -75,6 +78,12 @@ void run_listener_tcp(int port)
   socklen_t clntLen;
   int optval;
   struct connection *c;
+
+  if( sizeof(struct connection) > 32 )
+  {
+    die("connection object size is too big.");
+  }
+  conn_pool = init_block_pool(32, 256, 1);
 
   blocking_queue_init(&connection_queue);
 
@@ -114,8 +123,13 @@ void run_listener_tcp(int port)
 
     /* clntSock is connected to a client! */
 
+    /* get connection object */
+    while( !(c = (struct connection *)alloc_block(conn_pool)) )
+    {
+      sleep(1);
+    }
+
     /* put in the blocking queue*/
-    c = (struct connection *)malloc(sizeof (struct connection));
     c->sock = clntSock;
     c->addr = clntAddr;
     enque_connection(c);
@@ -226,7 +240,7 @@ CMDERR:
 
     if( c->sock )
       close(c->sock);
-    free(c);
+    free_block(conn_pool, c);
   }
 
   return NULL;

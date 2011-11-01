@@ -508,6 +508,16 @@ static int pack_recv(struct packet *pack)
         return 1;
 
       break;
+
+    case PACKET_REPEAT_REQ :
+    {
+      struct tag *t;
+      g = d->group;
+      t = get_tag(TAGUID(g->id, ntohs(p->tag)));
+      if(t)
+        tag_repeat_cast(t, ntohl(p->seq));
+      return 1;
+    }
   }
 
   return 0;

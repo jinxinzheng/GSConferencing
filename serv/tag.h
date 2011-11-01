@@ -2,9 +2,12 @@
 #define _TAG_H_
 
 #include "include/list.h"
+#include <include/queue.h>
 #include <pthread.h>
 
 struct device;
+
+struct packet;
 
 #define MAX_SUB 1
 #define MAX_MIX 8
@@ -41,6 +44,16 @@ struct tag {
   pthread_mutex_t mix_stat_mut;
 
   struct {
+#define REP_CAST_SIZE (1<<3)
+#define REP_CAST_MASK (REP_CAST_SIZE-1)
+    struct packet *rep_pack[REP_CAST_SIZE];
+    int rep_pos;
+    pthread_t outdated;
+    pthread_mutex_t lk;
+    struct blocking_queue outdate_queue;
+  } cast;
+
+  struct {
     int mode;
     struct list_head open_list;
     int maxuser;
@@ -71,8 +84,6 @@ struct tag {
 #define TAG_GETGID(tag) ( (long)(((tag->id)>>32)&0xffffffff) )
 
 struct tag *tag_create(long gid, long tid);
-
-struct packet;
 
 void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast);
 

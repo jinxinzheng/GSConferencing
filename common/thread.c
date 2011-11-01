@@ -1,6 +1,6 @@
 #include  <pthread.h>
 
-void start_thread(void *(*fn)(void *), void *arg)
+pthread_t start_thread(void *(*fn)(void *), void *arg)
 {
   pthread_attr_t attr;
   pthread_t thread;
@@ -11,4 +11,6 @@ void start_thread(void *(*fn)(void *), void *arg)
   pthread_create(&thread, &attr, fn, arg);
 
   pthread_attr_destroy(&attr);
+
+  return thread;
 }

@@ -12,6 +12,7 @@
 #include "include/cfifo.h"
 #include "include/debug.h"
 #include <include/thread.h>
+#include <include/util.h>
 #include "../config.h"
 #include "cyctl.h"
 
@@ -107,7 +108,8 @@ void set_event_callback(event_cb cb)
 #define HTON P_HTON
 #define NTOH P_NTOH
 
-#define headlen(p) ((char*)(*p).data - (char*)p)
+#define headlen(p)    (offsetof(struct pack, data))
+#define pack_size(p)  (offsetof(struct pack, data) + (p)->datalen)
 
 static void *run_heartbeat(void *arg)
 {
@@ -180,7 +182,7 @@ static void *run_send_udp(void *arg)
     qitem = (struct pack *)cfifo_get_out(&udp_snd_fifo);
 
     //send audio
-    l = headlen(qitem) + qitem->datalen;
+    l = pack_size(qitem);
     HTON(qitem);
     if( opts.audio_use_udp )
       send_udp(qitem, l, &servAddr);
@@ -217,6 +219,140 @@ static int is_recved(uint32_t seq)
   return 0;
 }
 
+
+static CFIFO(wait_packs, 3, 11);
+
+static int is_wait_full()
+{
+  return cfifo_full(&wait_packs);
+}
+
+static void put_wait(const struct pack *pack)
+{
+  void *in = cfifo_get_in(&wait_packs);
+  memcpy(in, pack, pack_size(pack));
+  cfifo_in(&wait_packs);
+}
+
+static const struct pack *get_wait()
+{
+  const void *out = cfifo_get_out(&wait_packs);
+  cfifo_out(&wait_packs);
+  return (const struct pack *)out;
+}
+
+static uint32_t get_wait_seq()
+{
+  struct pack *p;
+  if( cfifo_empty(&wait_packs) )
+    return 0;
+  p = (struct pack *)cfifo_get_out(&wait_packs);
+  return p->seq;
+}
+
+static void req_repeat(int tag, uint32_t seq)
+{
+  static int sock = -1;
+  struct pack req;
+  int l;
+
+  if( sock < 0 )
+  {
+    if( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
+    {
+      perror("socket()");
+      return;
+    }
+  }
+
+  req.id = id;
+  req.seq = seq;
+  req.type = PACKET_REPEAT_REQ;
+  req.tag = tag;
+  req.datalen = 0;
+
+  l = pack_size(&req);
+
+  HTON(&req);
+
+  sendto(sock, &req, l, 0, (struct sockaddr *)&servAddr, sizeof(servAddr));
+}
+
+static void queue_audio_pack(struct pack *pack, int len)
+{
+  static uint32_t expect_seq = 0;
+  const struct pack *next;
+  int tag = pack->tag;
+  uint32_t s;
+
+  if( pack->seq == expect_seq || expect_seq == 0 )
+  {
+    next = pack;
+  }
+  else
+  {
+    if( is_wait_full() )
+    {
+      /* move forward. */
+      next = get_wait();
+      put_wait(pack);
+    }
+    else
+    {
+      s = get_wait_seq();
+      if( s == 0 )
+      {
+        if( pack->seq - expect_seq <= 2 )
+        {
+          /* request repeat, only once. */
+          req_repeat(tag, expect_seq);
+          return;
+        }
+        else
+          next = pack;
+      }
+      else
+      {
+        /* put current pack to waiting. */
+        put_wait(pack);
+        return;
+      }
+    }
+  }
+
+  /* queue next */
+  do {
+    /* put a pack in */
+    void *in = cfifo_get_in(&udp_rcv_fifo);
+    memcpy(in, next, pack_size(next));
+    cfifo_in_signal(&udp_rcv_fifo);
+
+    expect_seq = next->seq+1;
+
+    /* queue any waiting packs if proper. */
+    s = get_wait_seq();
+    if( s == 0 )
+    {
+      /* no waiting */
+      break;
+    }
+    else if( s == expect_seq )
+    {
+      next = get_wait();
+    }
+    else
+    {
+      if( s - expect_seq <= 2 )
+      {
+        req_repeat(tag, expect_seq);
+        break;
+      }
+      else
+        next = get_wait();
+    }
+  } while(next);
+}
+
 static void audio_recved(struct pack *buf, int len)
 {
   struct pack *qitem = buf;
@@ -237,7 +373,7 @@ static void audio_recved(struct pack *buf, int len)
       qitem->tag != subscription[1] )
     return;
 
-  if (headlen(qitem)+qitem->datalen <= len)
+  if (pack_size(qitem) <= len)
     ;
   else
   {
@@ -251,10 +387,8 @@ static void audio_recved(struct pack *buf, int len)
     return;
   }
 
-  qitem = (struct pack *)cfifo_get_in(&udp_rcv_fifo);
-  memcpy(qitem, buf, len);
+  queue_audio_pack(qitem, len);
 
-  cfifo_in_signal(&udp_rcv_fifo);
 
   trace_dbg("%d packs in fifo\n", cfifo_len(&udp_rcv_fifo));
 

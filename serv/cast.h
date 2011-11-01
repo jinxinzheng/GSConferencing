@@ -11,4 +11,6 @@ void dev_unsubscribe(struct device *dev, struct tag *t);
 
 int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack);
 
+void tag_repeat_cast(struct tag *t, uint32_t seq);
+
 #endif

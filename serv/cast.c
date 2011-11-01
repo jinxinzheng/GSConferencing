@@ -12,6 +12,8 @@
 #include "include/pack.h"
 #include "include/types.h"
 #include "include/debug.h"
+#include <include/lock.h>
+#include <include/thread.h>
 #include "db/md.h"
 #include "interp.h"
 
@@ -46,6 +48,82 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   return 0;
 }
 
+void tag_repeat_cast(struct tag *t, uint32_t seq)
+{
+  struct packet *r;
+  pack_data *p;
+  int pos;
+  int i;
+
+  LOCK(t->cast.lk);
+
+  pos = t->cast.rep_pos;
+  for( i = REP_CAST_SIZE-1 ; i>=0 ; i-- )
+  {
+    if( (r=t->cast.rep_pack[(pos+i) & REP_CAST_MASK]) )
+    {
+      p = (pack_data *)r->data;
+      if( ntohl(p->seq) == seq )
+      {
+        if( r->rep_count < 3 )
+        {
+          broadcast(t, r->data, r->len);
+          ++ r->rep_count;
+        }
+        break;
+      }
+    }
+  }
+
+  UNLOCK(t->cast.lk);
+}
+
+static void *run_outdated(void *arg)
+{
+  struct tag *t = (struct tag *)arg;
+  struct packet *pack, *out;
+  struct list_head *e;
+
+  while(1)
+  {
+    e = blocking_deque(&t->cast.outdate_queue);
+    pack = list_entry(e, struct packet, queue_l);
+
+    /* free the most outdated pack, and put one in.
+     * this must be mutual-exclusively locked with
+     * the repeat cast. */
+
+    LOCK(t->cast.lk);
+
+    out = t->cast.rep_pack[t->cast.rep_pos];
+
+    t->cast.rep_pack[t->cast.rep_pos] = pack;
+
+    t->cast.rep_pos = (t->cast.rep_pos+1) & REP_CAST_MASK;
+
+    if( out )
+      pack_free(out);
+
+    UNLOCK(t->cast.lk);
+  }
+
+  return NULL;
+}
+
+static void tag_outdate_pack(struct tag *t, struct packet *pack)
+{
+  /* do this in another thread as
+   * the locking could be too lengthy. */
+  if( !t->cast.outdated )
+  {
+    blocking_queue_init(&t->cast.outdate_queue);
+    t->cast.outdated = start_thread(run_outdated, t);
+  }
+
+  /* the queue_l list member is not in use right now. */
+  blocking_enque(&t->cast.outdate_queue, &pack->queue_l);
+}
+
 /* send a packet to all of the tag members */
 void tag_cast_pack(struct tag *t, struct packet *pack)
 {
@@ -64,9 +142,6 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   if (opt_broadcast)
   {
     /* do broadcast here */
-    broadcast(t, pack->data, pack->len);
-    /* ensure not lost */
-    usleep(2000);
     broadcast(t, pack->data, pack->len);
     return;
   }
@@ -136,7 +211,7 @@ void *tag_run_casting(void *tag)
     //((char*)pack->data)[pack->len]=0;
     //printf("cast packet from %d: %s\n", *(int *)pack->data, ((char*)pack->data) +sizeof(int));
 
-    pack_free(pack);
+    tag_outdate_pack(t, pack);
 
   } while (1);
 

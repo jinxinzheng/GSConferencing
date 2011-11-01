@@ -12,6 +12,8 @@ struct packet
 
   struct list_head queue_l; /* queue */
 
+  int rep_count;  /* repeat count */
+
   size_t len; /* length of data */
   char data[MAXPACK];
 };

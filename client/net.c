@@ -470,7 +470,7 @@ static void _recv_udp(int s)
 {
   struct sockaddr_in other;
   size_t otherLen;
-  char buf[BUFLEN], *p;
+  char buf[BUFLEN];
   int len;
 
   otherLen = sizeof(other);
@@ -632,7 +632,6 @@ static void *run_recv_tcp(void *arg)
 
 void start_recv_udp(int listenPort, void (*recved)(char *buf, int l))
 {
-  pthread_t thread;
   udp_port = listenPort;
   udp_recved = recved;
   start_thread(run_recv_udp, NULL);
@@ -640,7 +639,6 @@ void start_recv_udp(int listenPort, void (*recved)(char *buf, int l))
 
 void start_recv_tcp(int listenPort, void (*recved)(int sock, int isfile, char *buf, int l))
 {
-  pthread_t thread;
   tcp_port = listenPort;
   file_port = listenPort+1;
   tcp_recved = recved;

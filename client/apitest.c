@@ -25,7 +25,8 @@ int on_event(int event, void *arg1, void *arg2)
       if( fdw > 0 )
       {
         struct audio_data *audio = (struct audio_data *)arg2;
-        int l = write(fdw, audio->data, audio->len);
+        int l;
+        l = write(fdw, audio->data, audio->len);
       }
     }
     break;
@@ -128,7 +129,6 @@ int main(int argc, char *const argv[])
 
   int id=3;
 
-  struct dev_info dev;
 
   while ((opt = getopt(argc, argv, "srS:a")) != -1) {
     switch (opt) {

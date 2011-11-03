@@ -103,6 +103,7 @@ void read_cmds()
   }
 }
 
+#if 0
 static struct
 {
   int id;
@@ -131,6 +132,7 @@ static struct
   {210, ">=#:''#>?(=*,';#<:',+#&$$>,(<=?;"},
   {0}
 };
+#endif
 
 static const char *uni = "*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&";
 
@@ -141,11 +143,9 @@ int main(int argc, char *const argv[])
   char buf[2048];
   int len;
 
-  pthread_t thread;
   int listenPort;
 
   int i;
-  char *p;
 
   while ((opt = getopt(argc, argv, "a:i:s:vu")) != -1) {
     switch (opt) {

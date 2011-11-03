@@ -171,7 +171,6 @@ int send_audio_end(int len)
 static void *run_send_udp(void *arg)
 {
   struct pack *qitem;
-  struct list_head *p;
   int l;
 
   while (1)
@@ -295,7 +294,6 @@ static inline void drop_rcv_queue(int count)
 static void *run_recv_udp(void *arg)
 {
   struct pack *qitem;
-  struct list_head *p;
   static int count=0;
 
   while (1)
@@ -340,7 +338,7 @@ static void *run_recv_udp(void *arg)
 
 #define BASICS \
   char buf[2048]; \
-  int l,i; \
+  int __attribute__((unused)) l,i; \
   struct cmd c;
 
 #define PRINTC(fmt, args...) \
@@ -673,7 +671,8 @@ static void try_reg_end(char *reply)
 
 void start_try_reg(const char *passwd)
 {
-  BASICS;
+  char buf[2048];
+  int l;
 
   _MAKE_REG();
 
@@ -1565,8 +1564,7 @@ static void handle_cmd(int sock, int type, char *buf, int l)
   else if (STREQU(c.cmd, "file"))
   {
     /* this is a file transfer. need to handle specially. */
-    char *p = c.args[i++];
-    int len = atoi(p);
+    //int len = atoi(c.args[i++]);
     /* handle file transfer.
      * caution: do not assume the order of the file port and
      * the cmd port. it is random on different archs. */
@@ -1575,15 +1573,17 @@ static void handle_cmd(int sock, int type, char *buf, int l)
 
   else if (STREQU(c.cmd, "ptc"))
   {
-    char *ptcid = c.args[i++];
-    char *ptcmd = c.args[i++];
+    char *ptcid, *ptcmd;
+    ptcid = c.args[i++];
+    ptcmd = c.args[i++];
     event_handler(EVENT_PTC, ptcmd, NULL);
   }
 
   else if (STREQU(c.cmd, "sysconfig"))
   {
-    char *cid = c.args[i++];
-    char *cmd = c.args[i++];
+    char *cid, *cmd;
+    cid = c.args[i++];
+    cmd = c.args[i++];
     CHECKOK(c.args[i++]);
 
     event_handler(EVENT_SYSCONFIG, (void *)c.device_id, cmd);
@@ -1598,8 +1598,9 @@ static void handle_cmd(int sock, int type, char *buf, int l)
 
   else if (STREQU(c.cmd, "set_user_id"))
   {
-    char *cid = c.args[i++];
-    char *user_id = c.args[i++];
+    char *cid, *user_id;
+    cid = c.args[i++];
+    user_id = c.args[i++];
     CHECKOK(c.args[i++]);
 
     event_handler(EVENT_SET_UID, user_id, NULL);

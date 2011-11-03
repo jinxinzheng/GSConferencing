@@ -2,14 +2,19 @@
 CFLAGS := -pipe -I. -I.. -O2 -Wall
 LDFLAGS := -pipe -lpthread -lrt -lsqlite
 
+ifneq (,$(ARCH))
+	CFLAGS += -march=$(ARCH)
+endif
+
 SRCS := $(wildcard *.c)
 OBJS := $(patsubst %.c,%.o,$(SRCS))
 
-ifdef ARCH
-sys = daya-sys-$(ARCH)
+ifneq (,$(HOST))
+sys = daya-sys-$(HOST)
 else
 sys = daya-sys
 endif
+
 
 SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.o sys.o hbeat.o pcm.o interp.o ptc.o\
 	async.o block.o ../threadpool/threadpool.o \

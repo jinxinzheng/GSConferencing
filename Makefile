@@ -1,9 +1,11 @@
-ARCH=arm-linux
+HOST=arm-linux
+SERVER_ARCH=armv6
+CLIENT_ARCH=armv4t
 
-ifdef ARCH
-CC:=$(ARCH)-gcc
-AR:=$(ARCH)-ar
-export ARCH
+ifdef HOST
+CC:=$(HOST)-gcc
+AR:=$(HOST)-ar
+export HOST
 export CC
 export AR
 endif
@@ -17,10 +19,10 @@ clean:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
 
 serv:
-	$(MAKE) -C $@
+	$(MAKE) -C $@ ARCH=$(SERVER_ARCH)
 
 client:
-	$(MAKE) -C $@
+	$(MAKE) -C $@ ARCH=$(CLIENT_ARCH)
 
 tar:
 	git archive -o daya.tar --prefix daya/ HEAD

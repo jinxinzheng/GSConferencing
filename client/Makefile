@@ -2,11 +2,15 @@
 CFLAGS := -pipe -I.. -O2 -Wall -Wno-unused-variable
 LDFLAGS := -pipe -lpthread -lrt
 
+ifneq (,$(ARCH))
+	CFLAGS += -march=$(ARCH)
+endif
+
 SRCS := $(wildcard *.c)
 
-ifdef ARCH
-libclient := libclient-$(ARCH).a
-test_client := test-client-$(ARCH)
+ifneq (,$(HOST))
+libclient := libclient-$(HOST).a
+test_client := test-client-$(HOST)
 else
 test_client := test-client
 libclient := libclient.a

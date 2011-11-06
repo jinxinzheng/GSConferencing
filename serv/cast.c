@@ -14,8 +14,12 @@
 #include "include/debug.h"
 #include <include/lock.h>
 #include <include/thread.h>
+#include <include/util.h>
 #include "db/md.h"
 #include "interp.h"
+
+//#define DGB_REPEAT(a...)  fprintf(stderr, "repeat: " a)
+#define DGB_REPEAT(a...)
 
 /* packets sent by devices with the same tag will be queued together.
  * There will be as many queues as the number of existing tags.
@@ -48,14 +52,12 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   return 0;
 }
 
-void tag_repeat_cast(struct tag *t, uint32_t seq)
+static void __repeat_cast(struct tag *t, struct device *d, uint32_t seq)
 {
   struct packet *r;
   pack_data *p;
   int pos;
   int i;
-
-  LOCK(t->cast.lk);
 
   pos = t->cast.rep_pos;
   for( i = REP_CAST_SIZE-1 ; i>=0 ; i-- )
@@ -65,15 +67,65 @@ void tag_repeat_cast(struct tag *t, uint32_t seq)
       p = (pack_data *)r->data;
       if( ntohl(p->seq) == seq )
       {
-        if( r->rep_count < 3 )
+        DGB_REPEAT("repeat %d\n", seq);
+        /* uni cast to the requester */
+        //sendto_dev_udp(t->sock, r->data, r->len, d);
+
+        if( r->rep_count < 8 )
         {
           broadcast(t, r->data, r->len);
           ++ r->rep_count;
         }
+        else
+          DGB_REPEAT("not repeating %d, rep_count=%d\n", seq, r->rep_count);
         break;
       }
     }
   }
+
+  if( i<0 )
+  {
+    /* notify all that this pack is outdated,
+     * to keep client from unnecessary wait. */
+    pack_data resp;
+    int len;
+    DGB_REPEAT("can't fulfill repeat req for %d\n", seq);
+
+    resp.id = 0;
+    resp.seq = seq;
+    resp.type = PACKET_SEQ_OUTDATE;
+    resp.tag = t->id;
+    resp.datalen = 0;
+
+    len = offsetof(pack_data, data);
+
+    P_HTON(&resp);
+
+    broadcast(t, &resp, len);
+  }
+}
+
+static void __outdate_pack(struct tag *t, struct packet *pack)
+{
+  struct packet *out;
+
+  out = t->cast.rep_pack[t->cast.rep_pos];
+
+  pack->rep_count = 0;
+  t->cast.rep_pack[t->cast.rep_pos] = pack;
+
+  t->cast.rep_pos = (t->cast.rep_pos+1) & REP_CAST_MASK;
+
+  if( out )
+    pack_free(out);
+}
+
+#if 0
+void tag_repeat_cast(struct tag *t, uint32_t seq)
+{
+  LOCK(t->cast.lk);
+
+  __repeat_cast(t, seq);
 
   UNLOCK(t->cast.lk);
 }
@@ -81,7 +133,7 @@ void tag_repeat_cast(struct tag *t, uint32_t seq)
 static void *run_outdated(void *arg)
 {
   struct tag *t = (struct tag *)arg;
-  struct packet *pack, *out;
+  struct packet *pack;
   struct list_head *e;
 
   while(1)
@@ -95,14 +147,7 @@ static void *run_outdated(void *arg)
 
     LOCK(t->cast.lk);
 
-    out = t->cast.rep_pack[t->cast.rep_pos];
-
-    t->cast.rep_pack[t->cast.rep_pos] = pack;
-
-    t->cast.rep_pos = (t->cast.rep_pos+1) & REP_CAST_MASK;
-
-    if( out )
-      pack_free(out);
+    __outdate_pack(t, pack);
 
     UNLOCK(t->cast.lk);
   }
@@ -122,6 +167,52 @@ static void tag_outdate_pack(struct tag *t, struct packet *pack)
 
   /* the queue_l list member is not in use right now. */
   blocking_enque(&t->cast.outdate_queue, &pack->queue_l);
+}
+#endif
+
+typedef struct
+{
+  struct device *d;
+  uint32_t seq;
+} rep_req_t;
+
+void tag_req_repeat(struct tag *t, struct device *d, uint32_t seq)
+{
+  rep_req_t *in;
+
+  if( !opt_broadcast )
+  {
+    return;
+  }
+
+  if( cfifo_full(&t->cast.rep_reqs) )
+  {
+    return ;
+  }
+
+  in = (rep_req_t *)cfifo_get_in(&t->cast.rep_reqs);
+  in->d = d;
+  in->seq = seq;
+  cfifo_in(&t->cast.rep_reqs);
+}
+
+static void tag_repeats(struct tag *t)
+{
+  rep_req_t *out;
+
+  if( !opt_broadcast )
+  {
+    return;
+  }
+
+  while( !cfifo_empty(&t->cast.rep_reqs) )
+  {
+    out = (rep_req_t *)cfifo_get_out(&t->cast.rep_reqs);
+
+    __repeat_cast(t, out->d, out->seq);
+
+    cfifo_out(&t->cast.rep_reqs);
+  }
 }
 
 /* send a packet to all of the tag members */
@@ -196,6 +287,8 @@ void *tag_run_casting(void *tag)
   }
 
   do {
+    /* fulfill all repeat requests before cast */
+    tag_repeats(t);
 
     /* mix packs from different devices */
     pack = tag_out_dev_mixed(t);
@@ -211,7 +304,8 @@ void *tag_run_casting(void *tag)
     //((char*)pack->data)[pack->len]=0;
     //printf("cast packet from %d: %s\n", *(int *)pack->data, ((char*)pack->data) +sizeof(int));
 
-    tag_outdate_pack(t, pack);
+    //tag_outdate_pack(t, pack);
+    __outdate_pack(t, pack);
 
   } while (1);
 

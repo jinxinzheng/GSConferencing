@@ -19,6 +19,9 @@
 #define MINRECV 0
 #define MAXRECV 30
 
+//#define DEBUG_REPEAT(a...)  fprintf(stderr, "repeat: " a)
+#define DEBUG_REPEAT(a...)
+
 static int id;
 static int devtype;
 static struct sockaddr_in servAddr;
@@ -196,16 +199,19 @@ static void *run_send_udp(void *arg)
   return NULL;
 }
 
+#define RECENT_SIZE (1<<3)
+#define RECENT_MASK (RECENT_SIZE-1)
+
 static int is_recved(uint32_t seq)
 {
-  static uint32_t recent_seqs[4] = {0};
+  static uint32_t recent_seqs[RECENT_SIZE] = {0};
   static int pos = 0;
 
   int i;
 
-  for( i=0 ; i<4 ; i++ )
+  for( i=0 ; i<RECENT_SIZE ; i++ )
   {
-    if( seq == recent_seqs[(pos+4-i)&3] )
+    if( seq == recent_seqs[(pos+RECENT_SIZE-i) & RECENT_MASK] )
     {
       return 1;
     }
@@ -213,14 +219,14 @@ static int is_recved(uint32_t seq)
 
   /* add the seq to recent.
    * the list is an 'fifo'. */
-  pos = (pos+1)&3;
+  pos = (pos+1) & RECENT_MASK;
   recent_seqs[pos] = seq;
 
   return 0;
 }
 
 
-static CFIFO(wait_packs, 3, 11);
+static CFIFO(wait_packs, 2, 11);
 
 static int is_wait_full()
 {
@@ -256,6 +262,8 @@ static void req_repeat(int tag, uint32_t seq)
   struct pack req;
   int l;
 
+  DEBUG_REPEAT("%s %d\n", __func__, seq);
+
   if( sock < 0 )
   {
     if( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
@@ -278,12 +286,30 @@ static void req_repeat(int tag, uint32_t seq)
   sendto(sock, &req, l, 0, (struct sockaddr *)&servAddr, sizeof(servAddr));
 }
 
+#define MAX_LOST  4
+
+static uint32_t expect_seq = 0;
+
 static void queue_audio_pack(struct pack *pack, int len)
 {
-  static uint32_t expect_seq = 0;
   const struct pack *next;
   int tag = pack->tag;
   uint32_t s;
+
+  if( pack->type == PACKET_SEQ_OUTDATE )
+  {
+    /* current expect_seq is oudated.
+     * continue to the waiting packs. */
+    DEBUG_REPEAT("outdated %d\n", expect_seq);
+    ++ expect_seq;
+    goto queue_wait;
+  }
+
+  if( pack->seq < expect_seq )
+  {
+    /* this could be outdated */
+    return;
+  }
 
   if( pack->seq == expect_seq || expect_seq == 0 )
   {
@@ -291,32 +317,19 @@ static void queue_audio_pack(struct pack *pack, int len)
   }
   else
   {
+    DEBUG_REPEAT("loss detect: expect=%d, pack=%d\n", expect_seq, pack->seq);
     if( is_wait_full() )
     {
+      DEBUG_REPEAT("queue full, go forward from %d\n", next->seq);
       /* move forward. */
       next = get_wait();
       put_wait(pack);
     }
     else
     {
-      s = get_wait_seq();
-      if( s == 0 )
-      {
-        if( pack->seq - expect_seq <= 2 )
-        {
-          /* request repeat, only once. */
-          req_repeat(tag, expect_seq);
-          return;
-        }
-        else
-          next = pack;
-      }
-      else
-      {
-        /* put current pack to waiting. */
-        put_wait(pack);
-        return;
-      }
+      req_repeat(tag, expect_seq);
+      put_wait(pack);
+      return;
     }
   }
 
@@ -329,8 +342,10 @@ static void queue_audio_pack(struct pack *pack, int len)
 
     expect_seq = next->seq+1;
 
+queue_wait:
     /* queue any waiting packs if proper. */
     s = get_wait_seq();
+    if(s) DEBUG_REPEAT("proceed waiting %d\n", s);
     if( s == 0 )
     {
       /* no waiting */
@@ -342,7 +357,7 @@ static void queue_audio_pack(struct pack *pack, int len)
     }
     else
     {
-      if( s - expect_seq <= 2 )
+      if( s - expect_seq <= MAX_LOST )
       {
         req_repeat(tag, expect_seq);
         break;
@@ -351,6 +366,16 @@ static void queue_audio_pack(struct pack *pack, int len)
         next = get_wait();
     }
   } while(next);
+}
+
+static void outdate_seq(struct pack *pack)
+{
+  if( expect_seq == pack->seq )
+  {
+    /* tell the waiting packs to continue.
+     * TODO: need refactor. */
+    queue_audio_pack(pack, 0);
+  }
 }
 
 static void audio_recved(struct pack *buf, int len)
@@ -412,6 +437,10 @@ static void udp_recved(char *buf, int len)
   {
     case PACKET_AUDIO :
     audio_recved(pack, len);
+    break;
+
+    case PACKET_SEQ_OUTDATE :
+    outdate_seq(pack);
     break;
   }
 }
@@ -754,7 +783,7 @@ int reg(const char *passwd, struct dev_info *info)
   subscription[0] = info->sub[0]; \
   if( subscription[0]==0 && subscription[1]==0 ) \
     subscription[0] = 1; \
-  if( !opts.audio_use_udp )  \
+  /*if( !opts.audio_use_udp )*/  \
   { \
     /* connect audio sock. this must be done after  \
      * the reg() is completed. */ \

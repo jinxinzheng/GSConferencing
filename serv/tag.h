@@ -4,6 +4,7 @@
 #include "include/list.h"
 #include <include/queue.h>
 #include <pthread.h>
+#include <include/cfifo.h>
 
 struct device;
 
@@ -44,13 +45,11 @@ struct tag {
   pthread_mutex_t mix_stat_mut;
 
   struct {
-#define REP_CAST_SIZE (1<<3)
+#define REP_CAST_SIZE (1<<4)
 #define REP_CAST_MASK (REP_CAST_SIZE-1)
     struct packet *rep_pack[REP_CAST_SIZE];
     int rep_pos;
-    pthread_t outdated;
-    pthread_mutex_t lk;
-    struct blocking_queue outdate_queue;
+    struct cfifo rep_reqs;
   } cast;
 
   struct {

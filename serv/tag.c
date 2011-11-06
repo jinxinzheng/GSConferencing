@@ -45,7 +45,7 @@ struct tag *tag_create(long gid, long tid)
 
   pthread_mutex_init(&t->mix_stat_mut, NULL);
 
-  pthread_mutex_init(&t->cast.lk, NULL);
+  cfifo_init(&t->cast.rep_reqs, 4, 6);
 
   INIT_LIST_HEAD(&t->discuss.open_list);
   t->discuss.openuser = 0;

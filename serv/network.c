@@ -515,7 +515,8 @@ static int pack_recv(struct packet *pack)
       g = d->group;
       t = get_tag(TAGUID(g->id, ntohs(p->tag)));
       if(t)
-        tag_repeat_cast(t, ntohl(p->seq));
+        //tag_repeat_cast(t, ntohl(p->seq));
+        tag_req_repeat(t, d, ntohl(p->seq));
       return 1;
     }
   }

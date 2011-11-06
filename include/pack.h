@@ -27,6 +27,7 @@ enum {
   PACKET_AUDIO,
   PACKET_ENOUNCE,
   PACKET_REPEAT_REQ,
+  PACKET_SEQ_OUTDATE,
 };
 
 #define P_HTON(p) \

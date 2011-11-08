@@ -13,6 +13,8 @@
 #include "db/md.h"
 #include "opts.h"
 #include <include/thread.h>
+#include <include/lock.h>
+#include <include/util.h>
 
 //#define MIX_DEBUG
 
@@ -132,6 +134,9 @@ void tag_add_outstanding(struct tag *t, struct device *d)
 {
   int i;
   trace_dbg("adding dev to outstanding\n");
+
+  LOCK(t->mut);
+
   /* find a place in the mix_devs,
    * we do not put all the non-empty queues together at top
    * because we found it too tricky to sync them. */
@@ -149,19 +154,22 @@ void tag_add_outstanding(struct tag *t, struct device *d)
 
       d->timeouts = 0;
 
-      pthread_mutex_lock(&t->mut);
       t->mix_count ++;
-      pthread_mutex_unlock(&t->mut);
       pthread_cond_signal(&t->cnd_nonempty);
 
       break;
     }
   }
+
+  UNLOCK(t->mut);
 }
 
 void tag_rm_outstanding(struct tag *t, struct device *d)
 {
   int i;
+
+  LOCK(t->mut);
+
   /* find the device in the mix_devs */
   for( i=0 ; i<8 ; i++ )
   {
@@ -174,14 +182,14 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
       bit = d->mixbit;
       d->mixbit = 0;
 
-      pthread_mutex_lock(&t->mut);
       t->mix_mask &= ~bit;
       t->mix_count --;
-      pthread_mutex_unlock(&t->mut);
 
       break;
     }
   }
+
+  UNLOCK(t->mut);
 
   /* todo: clear the queue of the dev */
 }

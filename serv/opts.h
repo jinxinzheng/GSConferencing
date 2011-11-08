@@ -9,6 +9,7 @@ extern int opt_flush;
 enum {
   SYNC_WAIT,
   SYNC_FIXED,
+  SYNC_REF,
 };
 extern int opt_sync_policy;
 

@@ -154,6 +154,12 @@ void tag_add_outstanding(struct tag *t, struct device *d)
 
       d->timeouts = 0;
 
+      /* set the mix reference if not set. */
+      if( !t->mix_devs[t->mix_ref] )
+      {
+        t->mix_ref = i;
+      }
+
       t->mix_count ++;
       pthread_cond_signal(&t->cnd_nonempty);
 
@@ -177,6 +183,24 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
     {
       int bit;
       trace_dbg("removing dev from outstanding\n");
+
+      /* update the mix reference if it's
+       * being removed */
+      if( t->mix_ref == i )
+      {
+        int j;
+        for( j=0 ; j<8 ; j++ )
+        {
+          if( j==i )
+            continue;
+          if( t->mix_devs[j] )
+          {
+            t->mix_ref = j;
+            break;
+          }
+        }
+      }
+
       t->mix_devs[i] = NULL;
 
       bit = d->mixbit;
@@ -478,6 +502,39 @@ static int wait_any_queue(struct tag *t)
   return (t->mix_stat != 0);
 }
 
+static int wait_ref_queue(struct tag *t)
+{
+  struct device *d;
+
+  if( !(d=t->mix_devs[t->mix_ref]) )
+  {
+    return 0;
+  }
+
+  while( !(t->mix_stat & d->mixbit) )
+  {
+    if( !d->mixbit )
+      /* dev removed in the while? */
+      return 0;
+
+    msleep(3);
+
+    if( ++ d->timeouts > 300 )
+    {
+      trace_err("clear hung %d\n", (int)d->id);
+      tag_rm_outstanding(t, d);
+
+      /* good point to sync all queues */
+      flush_all_queues(t);
+      return 0;
+    }
+  }
+
+  d->timeouts = 0;
+
+  return 1;
+}
+
 static struct packet *tag_mix_audio(struct tag *t)
 {
   struct device *d;
@@ -532,6 +589,12 @@ normal:
     /* wait for a while hoping to sync all queues at
      * different paces. */
     if( !wait_any_queue(t) )
+      return NULL;
+    break;
+
+    case SYNC_REF :
+    /* wait for one queue selected as 'reference' */
+    if( !wait_ref_queue(t) )
       return NULL;
     break;
   }

@@ -34,7 +34,7 @@ static void help()
       "-u: always use udp to cast audio.\n"
       "-f: enable packet flush dropping.\n"
       "-s: enable packet silence dropping.\n"
-      "-p POLICY: set syncing policy: wait(default), fixed.\n"
+      "-p POLICY: set syncing policy: wait(default), fixed, ref.\n"
   );
 }
 
@@ -67,6 +67,13 @@ int main(int argc, char *const argv[])
           opt_sync_policy = SYNC_WAIT;
         else if( strcmp("fixed", optarg) == 0 )
           opt_sync_policy = SYNC_FIXED;
+        else if( strcmp("ref", optarg) == 0 )
+          opt_sync_policy = SYNC_REF;
+        else
+        {
+          fprintf(stderr, "command parse error.\n");
+          return 1;
+        }
         break;
       case 's':
         opt_silence_drop = 1;

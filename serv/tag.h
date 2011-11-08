@@ -37,6 +37,7 @@ struct tag {
   int mix_count;
   unsigned int mix_mask;
   unsigned int mix_stat;
+  int mix_ref;
   int mix_silence;
 
   pthread_mutex_t mut;

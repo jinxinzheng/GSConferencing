@@ -180,15 +180,11 @@ void tag_req_repeat(struct tag *t, struct device *d, uint32_t seq)
 {
   rep_req_t *in;
 
-  if( !opt_broadcast )
-  {
+  if( opt_tcp_audio )
     return;
-  }
 
   if( cfifo_full(&t->cast.rep_reqs) )
-  {
     return ;
-  }
 
   in = (rep_req_t *)cfifo_get_in(&t->cast.rep_reqs);
   in->d = d;
@@ -200,10 +196,8 @@ static void tag_repeats(struct tag *t)
 {
   rep_req_t *out;
 
-  if( !opt_broadcast )
-  {
+  if( opt_tcp_audio )
     return;
-  }
 
   while( !cfifo_empty(&t->cast.rep_reqs) )
   {

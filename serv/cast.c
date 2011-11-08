@@ -216,6 +216,12 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   struct list_head *h;
   int i;
 
+  pack_data *p;
+
+  /* regenerate seq for the casted pack */
+  p = (pack_data *)pack->data;
+  p->seq = htonl(++t->cast.seq);
+
 #ifdef DEBUG_VERB
   {
     pack_data *pd = (pack_data *)pack->data;

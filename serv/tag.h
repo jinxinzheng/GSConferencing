@@ -50,6 +50,7 @@ struct tag {
     struct packet *rep_pack[REP_CAST_SIZE];
     int rep_pos;
     struct cfifo rep_reqs;
+    unsigned long seq;
   } cast;
 
   struct {

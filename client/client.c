@@ -27,8 +27,13 @@ static int devtype;
 static struct sockaddr_in servAddr;
 static int listenPort;
 
-static struct client_options opts = {
+static struct {
+  int audio_use_udp;
+  int enable_retransmit;
+}
+opts = {
   .audio_use_udp = 0,
+  .enable_retransmit = 1,
 };
 
 static int subscription[2] = {0};
@@ -96,9 +101,18 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   start_thread(run_recv_udp, NULL);
 }
 
-void set_options(const struct client_options *p)
+void set_option(int opt, int val)
 {
-  opts = *p;
+  switch ( opt )
+  {
+    case OPT_AUDIO_UDP :
+    opts.audio_use_udp = val;
+    break;
+
+    case OPT_ENABLE_RETRANSMIT :
+    opts.enable_retransmit = val;
+    break;
+  }
 }
 
 void set_event_callback(event_cb cb)
@@ -286,6 +300,13 @@ static void req_repeat(int tag, uint32_t seq)
   sendto(sock, &req, l, 0, (struct sockaddr *)&servAddr, sizeof(servAddr));
 }
 
+static void enque_pack(const struct pack *pack)
+{
+  void *in = cfifo_get_in(&udp_rcv_fifo);
+  memcpy(in, pack, pack_size(pack));
+  cfifo_in_signal(&udp_rcv_fifo);
+}
+
 #define MAX_LOST  4
 
 static uint32_t expect_seq = 0;
@@ -308,6 +329,12 @@ static void queue_audio_pack(struct pack *pack, int len)
   if( pack->seq < expect_seq )
   {
     /* this could be outdated */
+    return;
+  }
+
+  if( !opts.enable_retransmit )
+  {
+    enque_pack(pack);
     return;
   }
 
@@ -336,9 +363,7 @@ static void queue_audio_pack(struct pack *pack, int len)
   /* queue next */
   do {
     /* put a pack in */
-    void *in = cfifo_get_in(&udp_rcv_fifo);
-    memcpy(in, next, pack_size(next));
-    cfifo_in_signal(&udp_rcv_fifo);
+    enque_pack(next);
 
     expect_seq = next->seq+1;
 

@@ -7,12 +7,13 @@ extern "C" {
 
 void client_init(int id, int type, const char *serverIP, int localPort);
 
-struct client_options
+enum
 {
-  int audio_use_udp;
+  OPT_AUDIO_UDP,
+  OPT_ENABLE_RETRANSMIT,
 };
 
-void set_options(const struct client_options *opts);
+void set_option(int opt, int val);
 
 /* event callback routine.
  * event: EVENT_*

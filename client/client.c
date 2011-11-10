@@ -922,6 +922,9 @@ int sub(int tag)
 
   subscription[i] = tag;
 
+  /* reset retransmit expect seq */
+  expect_seq = 0;
+
   return 0;
 }
 

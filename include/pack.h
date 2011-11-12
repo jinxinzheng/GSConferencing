@@ -28,6 +28,7 @@ enum {
   PACKET_ENOUNCE,
   PACKET_REPEAT_REQ,
   PACKET_SEQ_OUTDATE,
+  PACKET_AUDIO_ZERO,  /* silence compressed */
 };
 
 #define P_HTON(p) \

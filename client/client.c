@@ -187,6 +187,26 @@ int send_audio_end(int len)
   return 0;
 }
 
+static int is_silent(const char *buf, int len)
+{
+  const short *pcm = (const short *)buf;
+  int pcmlen = len>>1;
+  int thresh = 100*len;
+  int i;
+  register int e=0;
+
+  for( i=0 ; i<pcmlen ; i++ )
+  {
+    e += abs(pcm[i]);
+    if( e > thresh )
+    {
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
 static void *run_send_udp(void *arg)
 {
   struct pack *qitem;
@@ -198,8 +218,16 @@ static void *run_send_udp(void *arg)
     cfifo_wait_empty(&udp_snd_fifo);
     qitem = (struct pack *)cfifo_get_out(&udp_snd_fifo);
 
+    /* compress silence */
+    if( is_silent(qitem->data, qitem->datalen) )
+    {
+      qitem->type = PACKET_AUDIO_ZERO;
+      l = headlen(qitem);
+    }
+    else
+      l = pack_size(qitem);
+
     //send audio
-    l = pack_size(qitem);
     HTON(qitem);
     if( opts.audio_use_udp )
       send_udp(qitem, l, &servAddr);

@@ -490,6 +490,7 @@ static int pack_recv(struct packet *pack)
 
 
     case PACKET_AUDIO :
+    case PACKET_AUDIO_ZERO :
 
       g = d->group;
 

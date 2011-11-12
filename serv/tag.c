@@ -404,6 +404,38 @@ static inline void flush_all_queues(struct tag *t)
   }
 }
 
+static void flush_queue_silence(struct tag *t, struct device *d)
+{
+  struct list_head *e;
+  struct packet *p;
+  pack_data *pd;
+  int n=0;
+
+  /* hold the enque/deque lock while flushing. */
+  LOCK(t->mix_stat_mut);
+
+  while( (e = queue_get_front(&d->pack_queue.head)) )
+  {
+    p = list_entry(e, struct packet, queue_l);
+    pd = (pack_data *) p->data;
+    if( ntohs(pd->type) == PACKET_AUDIO_ZERO )
+    {
+      drop_queue_front(d);
+      n++;
+    }
+    else
+      break;
+  }
+
+  UNLOCK(t->mix_stat_mut);
+
+  if( n>0 )
+  {
+    d->stats.flushed ++;
+    trace_warn("%ld drop silent packs %d\n", d->id, n);
+  }
+}
+
 static inline int flush_queues(struct tag *t)
 {
   struct device *d;
@@ -420,7 +452,7 @@ static inline int flush_queues(struct tag *t)
     {
       /* this queue is over-loaded.
        * flush it immediately */
-      flush_queue(t, d);
+      flush_queue_silence(t, d);
     }
     else if( len > 1 )
     {
@@ -429,7 +461,7 @@ static inline int flush_queues(struct tag *t)
       {
         /* it's been high-loaded for about 1 second.
          * trigger flush now. */
-        flush_queue(t, d);
+        flush_queue_silence(t, d);
       }
       else
         continue;
@@ -555,6 +587,11 @@ static struct packet *tag_mix_audio(struct tag *t)
     aupack = (pack_data *) (p)->data; \
     au[c] = (short *) aupack->data; \
     l = ntohl(aupack->datalen); \
+    if( ntohs(aupack->type) == PACKET_AUDIO_ZERO ) {\
+      memset(aupack->data, 0, l); \
+      aupack->type = htons(PACKET_AUDIO); \
+      p->len = offsetof(struct packet, data) + offsetof(pack_data, data) + l;  \
+    } \
     mixlen = min(mixlen, l); \
     c++; \
   }

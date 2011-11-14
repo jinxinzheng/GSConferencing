@@ -35,15 +35,12 @@ struct tag {
   /* support up to 8 devices mixing audio */
   struct device *mix_devs[MAX_MIX];
   int mix_count;
-  unsigned int mix_mask;
-  unsigned int mix_stat;
   int mix_ref;
   int mix_silence;
 
   pthread_mutex_t mut;
   pthread_cond_t  cnd_nonempty;
 
-  pthread_mutex_t mix_stat_mut;
 
   struct {
 #define REP_CAST_SIZE (1<<4)

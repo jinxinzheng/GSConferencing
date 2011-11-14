@@ -45,8 +45,6 @@ struct tag *tag_create(long gid, long tid)
   pthread_mutex_init(&t->mut, NULL);
   pthread_cond_init(&t->cnd_nonempty, NULL);
 
-  pthread_mutex_init(&t->mix_stat_mut, NULL);
-
   cfifo_init(&t->cast.rep_reqs, 4, 6);
 
   INIT_LIST_HEAD(&t->discuss.open_list);
@@ -145,10 +143,6 @@ void tag_add_outstanding(struct tag *t, struct device *d)
       t->mix_devs[i] = d;
 
       d->mixbit = 1<<i;
-      /* delay the mix mask update to when
-       * subsequent packet arrives in the
-       * tag_in_dev_packet(). */
-      //t->mix_mask |= d->mixbit;
 
       d->timeouts = 0;
 
@@ -179,7 +173,6 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
   {
     if( d == t->mix_devs[i] )
     {
-      int bit;
       trace_dbg("removing dev from outstanding\n");
 
       /* update the mix reference if it's
@@ -201,10 +194,8 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
 
       t->mix_devs[i] = NULL;
 
-      bit = d->mixbit;
       d->mixbit = 0;
 
-      t->mix_mask &= ~bit;
       t->mix_count --;
 
       break;
@@ -235,7 +226,6 @@ void tag_clear_outstanding(struct tag *t)
   }
 
   pthread_mutex_lock(&t->mut);
-  t->mix_mask = 0;
   t->mix_count = 0;
   pthread_mutex_unlock(&t->mut);
 
@@ -265,25 +255,9 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
     return;
   }
 
-  pthread_mutex_lock(&t->mix_stat_mut);
-
   /* put in */
   _dev_in_packet(d, pack);
 
-  /* change mix state */
-  t->mix_stat |= d->mixbit;
-
-  /* delayed update of the mix mask
-   * in order to avoid holding other
-   * queues back. */
-  if( !(t->mix_mask & d->mixbit) )
-  {
-    pthread_mutex_lock(&t->mut);
-    t->mix_mask |= d->mixbit;
-    pthread_mutex_unlock(&t->mut);
-  }
-
-  pthread_mutex_unlock(&t->mix_stat_mut);
 }
 
 /* this should only be called when dev's queue is not empty */
@@ -291,18 +265,13 @@ struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
 {
   struct packet *p;
 
-  pthread_mutex_lock(&t->mix_stat_mut);
-
   /* get out */
   p = __dev_out_packet(d);
 
   if( cfifo_empty(&d->pack_fifo) )
   {
     /* this queue has become empty */
-    t->mix_stat &= ~d->mixbit;
   }
-
-  pthread_mutex_unlock(&t->mix_stat_mut);
 
   return p;
 }
@@ -374,16 +343,11 @@ static void flush_queue(struct tag *t, struct device *d)
   trace_warn("flush queue %ld, len %d, %d\n",
       d->id, cfifo_len(&d->pack_fifo), d->stats.flushed);
 
-  /* hold the enque/deque lock while flushing. */
-  pthread_mutex_lock(&t->mix_stat_mut);
-
   l = cfifo_len(&d->pack_fifo);
   for( ; l>1 ; l-- )
   {
     drop_queue_front(d);
   }
-
-  pthread_mutex_unlock(&t->mix_stat_mut);
 
   d->stats.flushed ++;
 }
@@ -408,9 +372,6 @@ static void flush_queue_silence(struct tag *t, struct device *d)
   pack_data *pd;
   int n=0;
 
-  /* hold the enque/deque lock while flushing. */
-  LOCK(t->mix_stat_mut);
-
   while( !cfifo_empty(&d->pack_fifo) )
   {
     /* get packet at front but not getting out */
@@ -425,8 +386,6 @@ static void flush_queue_silence(struct tag *t, struct device *d)
     else
       break;
   }
-
-  UNLOCK(t->mix_stat_mut);
 
   if( n>0 )
   {
@@ -478,12 +437,35 @@ static inline int flush_queues(struct tag *t)
   return (c > 0);
 }
 
+static inline int queue_bell(struct device *d)
+{
+  return ! cfifo_empty(&d->pack_fifo);
+}
+
+static int all_queues_bell(struct tag *t)
+{
+  struct device *d;
+  int i;
+
+  for( i=0 ; i<8 ; i++ )
+  {
+    if( !(d = t->mix_devs[i]) )
+      continue;
+
+    if( !queue_bell(d) )
+    {
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
 static inline int wait_all_queues(struct tag *t)
 {
   int waited = 0;
 
-  trace_dbg("stat %02x, mask %02x\n", t->mix_stat, t->mix_mask);
-  while( (t->mix_stat & t->mix_mask) != t->mix_mask )
+  while( !(all_queues_bell(t)) )
   {
     /* wait for 3ms to allow the data to be queued.
      * this virtually syncs the clients sending
@@ -515,7 +497,7 @@ static int wait_any_queue(struct tag *t)
     /* immediately return if all queues have data.
      * checked every 1 ms. this ensures us not drifted
      * too much from the realtime data. */
-    if( (t->mix_stat & t->mix_mask) == t->mix_mask )
+    if( all_queues_bell(t) )
       return 1;
 
     if( usecs >= 1000 )
@@ -530,7 +512,7 @@ static int wait_any_queue(struct tag *t)
     }
   }
 
-  return (t->mix_stat != 0);
+  return 1;
 }
 
 static int wait_ref_queue(struct tag *t)
@@ -542,7 +524,7 @@ static int wait_ref_queue(struct tag *t)
     return 0;
   }
 
-  while( !(t->mix_stat & d->mixbit) )
+  while( !queue_bell(d) )
   {
     if( !d->mixbit )
       /* dev removed in the while? */

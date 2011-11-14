@@ -346,9 +346,12 @@ static void flush_queue_silence(struct tag *t, struct device *d)
 {
   struct packet *p;
   pack_data *pd;
+  int l;
   int n=0;
 
-  while( !cfifo_empty(&d->pack_fifo) )
+  l = cfifo_len(&d->pack_fifo);
+
+  for( ; l>1 ; l-- )
   {
     /* get packet at front but not getting out */
     p = *(struct packet **)cfifo_get_out(&d->pack_fifo);

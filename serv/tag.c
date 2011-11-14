@@ -110,22 +110,20 @@ void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast)
 }
 
 
-/* the following two mustn't be called simultaneously,
- * lock protecting is necessary. */
 static void _dev_in_packet(struct device *d, struct packet *p)
 {
-  enque(&d->pack_queue.head, &p->queue_l);
-  ++ d->pack_queue.len;
-  trace_dbg("avail %d packs in queue %d\n", &d->pack_queue.len, (int)d->id);
+  struct packet **pp = (struct packet **)cfifo_get_in(&d->pack_fifo);
+  *pp = p;
+  cfifo__in(&d->pack_fifo);
+  trace_dbg("avail %d packs in queue %d\n", cfifo_len(&d->pack_fifo), (int)d->id);
 }
 
-/* this must be used when list_empty is false */
+/* this must be used when pack queue is not empty */
 static inline struct packet *__dev_out_packet(struct device *d)
 {
   struct packet *p;
-  struct list_head *e = deque(&d->pack_queue.head);
-  -- d->pack_queue.len;
-  p = list_entry(e, struct packet, queue_l);
+  p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
+  cfifo__out(&d->pack_fifo);
   return p;
 }
 
@@ -261,7 +259,7 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
    * is crazily high-loaded, in order to avoid
    * resource exhausting. this usually means
    * we got a broken client ... */
-  if( d->pack_queue.len > MAX_DEV_PACKS )
+  if( cfifo_full(&d->pack_fifo) )
   {
     pack_free(pack);
     return;
@@ -298,7 +296,7 @@ struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
   /* get out */
   p = __dev_out_packet(d);
 
-  if( list_empty(&d->pack_queue.head) )
+  if( cfifo_empty(&d->pack_fifo) )
   {
     /* this queue has become empty */
     t->mix_stat &= ~d->mixbit;
@@ -339,7 +337,7 @@ static void tag_update_dev_timeouts(struct tag *t)
   {
     if( (d = t->mix_devs[i]) )
     {
-      if( list_empty(&d->pack_queue.head) )
+      if( cfifo_empty(&d->pack_fifo) )
       {
         if( ++ d->timeouts > 300 )
         {
@@ -374,12 +372,12 @@ static void flush_queue(struct tag *t, struct device *d)
   int l;
 
   trace_warn("flush queue %ld, len %d, %d\n",
-      d->id, d->pack_queue.len, d->stats.flushed);
+      d->id, cfifo_len(&d->pack_fifo), d->stats.flushed);
 
   /* hold the enque/deque lock while flushing. */
   pthread_mutex_lock(&t->mix_stat_mut);
 
-  l = d->pack_queue.len;
+  l = cfifo_len(&d->pack_fifo);
   for( ; l>1 ; l-- )
   {
     drop_queue_front(d);
@@ -406,7 +404,6 @@ static inline void flush_all_queues(struct tag *t)
 
 static void flush_queue_silence(struct tag *t, struct device *d)
 {
-  struct list_head *e;
   struct packet *p;
   pack_data *pd;
   int n=0;
@@ -414,9 +411,11 @@ static void flush_queue_silence(struct tag *t, struct device *d)
   /* hold the enque/deque lock while flushing. */
   LOCK(t->mix_stat_mut);
 
-  while( (e = queue_get_front(&d->pack_queue.head)) )
+  while( !cfifo_empty(&d->pack_fifo) )
   {
-    p = list_entry(e, struct packet, queue_l);
+    /* get packet at front but not getting out */
+    p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
+
     pd = (pack_data *) p->data;
     if( ntohs(pd->type) == PACKET_AUDIO_ZERO )
     {
@@ -447,7 +446,7 @@ static inline int flush_queues(struct tag *t)
     if( !(d = t->mix_devs[i]) )
       continue;
 
-    len = d->pack_queue.len;
+    len = cfifo_len(&d->pack_fifo);
     if( len > 6 )
     {
       /* this queue is over-loaded.
@@ -650,13 +649,13 @@ normal:
      * it's data here will lead to endless wait! */
 
     /* recheck to ensure the queue is not empty */
-    if( list_empty(&d->pack_queue.head) )
+    if( cfifo_empty(&d->pack_fifo) )
       continue;
 
 #ifdef MIX_DEBUG
     if( !count )
     {
-      printf("%ld: len %d\n", d->id, d->pack_queue.len);
+      printf("%ld: len %d\n", d->id, cfifo_len(&d->pack_fifo));
     }
 #endif
 

@@ -162,7 +162,8 @@ int dev_register(struct device *dev)
     INIT_LIST_HEAD(&dev->subscribe[i]);
   }
 
-  INIT_LIST_HEAD(&dev->pack_queue.head);
+  /* an fifo of 32 in length */
+  cfifo_init(&dev->pack_fifo, 5, 2);
 
   add_device(dev);
 

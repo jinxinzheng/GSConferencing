@@ -77,10 +77,7 @@ struct device
   struct device **hash_pprev;
 
   /* packet queue */
-  struct {
-    struct list_head head;
-    int len;
-  } pack_queue;
+  struct cfifo pack_fifo;
   /* used by the tag mixing code */
   unsigned int mixbit;
   int timeouts;

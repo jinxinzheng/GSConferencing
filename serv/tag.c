@@ -207,30 +207,6 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
   /* todo: clear the queue of the dev */
 }
 
-void tag_clear_outstanding(struct tag *t)
-{
-  int i;
-  struct device *d;
-
-  if( t->mix_count == 0 )
-  {
-    return;
-  }
-
-  for( i=0 ; i<8 ; i++ )
-  {
-    if( (d = t->mix_devs[i]) )
-    {
-      t->mix_devs[i] = NULL;
-    }
-  }
-
-  pthread_mutex_lock(&t->mut);
-  t->mix_count = 0;
-  pthread_mutex_unlock(&t->mut);
-
-}
-
 
 #define MAX_DEV_PACKS 32
 

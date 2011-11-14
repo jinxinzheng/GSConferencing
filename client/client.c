@@ -191,26 +191,23 @@ static int is_silent(const char *buf, int len)
 {
   const short *pcm = (const short *)buf;
   int pcmlen = len>>1;
-  int thresh = 100*len;
   int i;
-  register int e=0;
+  short top=0, bot=0;
 
-  for( i=0 ; i<pcmlen ; i++ )
+  for( i=0 ; i<pcmlen ; i+=2 )
   {
-    e += abs(pcm[i]);
-    if( e > thresh )
-    {
-      return 0;
-    }
+    if(pcm[i]>top) top = pcm[i];
+    if(pcm[i]<bot) bot = pcm[i];
   }
 
-  return 1;
+  return (top-bot<250);
 }
 
 static void *run_send_udp(void *arg)
 {
   struct pack *qitem;
   int l;
+  int sc=0;
 
   while (1)
   {
@@ -220,6 +217,11 @@ static void *run_send_udp(void *arg)
 
     /* compress silence */
     if( is_silent(qitem->data, qitem->datalen) )
+      sc ++;
+    else
+      sc = 0;
+
+    if(sc>30)
     {
       qitem->type = PACKET_AUDIO_ZERO;
       l = headlen(qitem);

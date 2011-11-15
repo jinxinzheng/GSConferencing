@@ -339,6 +339,7 @@ typedef struct
   int id;
   int type;
   char user_id[64];
+  int online;
 } dev_ent_t;
 
 int get_all_devs(__out dev_ent_t devs[], __out int *count);

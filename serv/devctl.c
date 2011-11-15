@@ -289,6 +289,8 @@ static void do_dev_activate(struct device *d, int a)
       -- g->stats.active_count[d->type];
   }
 
+  dirty_dev_ents_cache(g);
+
 end:
   UNLOCK(g->stats_lk);
 }

@@ -1478,6 +1478,7 @@ int get_all_devs(dev_ent_t devs[], int *count)
     PARSE_CFG_INT(dev_ent_t, id),
     PARSE_CFG_INT(dev_ent_t, type),
     PARSE_CFG_STR(dev_ent_t, user_id),
+    PARSE_CFG_INT(dev_ent_t, online),
     PARSE_CFG_END()
   };
 

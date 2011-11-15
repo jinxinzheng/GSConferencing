@@ -75,10 +75,12 @@ void group_save(struct group *g)
 
 void append_dev_ents_cache(struct group *g, struct device *d)
 {
-  LIST_ADD_FMT(g->caches.dev_ents, g->caches.dev_ents_len, "%ld:%d:%s",
+  LIST_ADD_FMT(g->caches.dev_ents, g->caches.dev_ents_len,
+      "%ld:%d:%s:%d",
       d->id,
       d->type,
-      d->db_data->user_id);
+      d->db_data->user_id,
+      d->active);
 }
 
 void refresh_dev_ents_cache(struct group *g)

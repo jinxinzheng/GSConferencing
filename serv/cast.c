@@ -67,7 +67,7 @@ static void __repeat_cast(struct tag *t, struct device *d, uint32_t seq)
       p = (pack_data *)r->data;
       if( ntohl(p->seq) == seq )
       {
-        DGB_REPEAT("repeat %d\n", seq);
+        DGB_REPEAT("repeat %d for %ld\n", seq, d->id);
         /* uni cast to the requester */
         //sendto_dev_udp(t->sock, r->data, r->len, d);
 

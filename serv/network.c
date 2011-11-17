@@ -480,7 +480,7 @@ static int pack_recv(struct packet *pack)
   if (!d)
     return 1;
 
-  i = ntohs(p->type);
+  i = p->type;
   switch ( i )
   {
     case PACKET_HBEAT :
@@ -514,7 +514,7 @@ static int pack_recv(struct packet *pack)
     {
       struct tag *t;
       g = d->group;
-      t = get_tag(TAGUID(g->id, ntohs(p->tag)));
+      t = get_tag(TAGUID(g->id, p->tag));
       if(t)
         //tag_repeat_cast(t, ntohl(p->seq));
         tag_req_repeat(t, d, ntohl(p->seq));

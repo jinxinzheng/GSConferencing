@@ -29,16 +29,14 @@
  * consideration. */
 int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
 {
-  pack_data *p = (pack_data *)pack->data;
+  pack_data *p;
   struct tag *t;
 
+  p = (pack_data *)pack->data;
   trace_verb("%d.%d ", ntohl(p->id), ntohl(p->seq));
   DEBUG_TIME_NOW();
 
   t = dev->tag;
-
-  /* fill the tag id */
-  p->tag = htons((uint16_t)t->id);
 
   /* enque packet to device's fifo */
   tag_in_dev_packet(t, dev, pack);
@@ -221,6 +219,9 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
   /* regenerate seq for the casted pack */
   p = (pack_data *)pack->data;
   p->seq = htonl(++t->cast.seq);
+
+  /* fill the tag id */
+  p->tag = (uint8_t)t->id;
 
 #ifdef DEBUG_VERB
   {

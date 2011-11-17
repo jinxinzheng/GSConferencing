@@ -132,6 +132,7 @@ static void *run_heartbeat(void *arg)
 {
   struct pack hb;
   int sock;
+  int len;
 
   /* use a different sock than the audio thread */
   if( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
@@ -142,14 +143,15 @@ static void *run_heartbeat(void *arg)
   hb.id = id;
   hb.seq = 0;
   hb.type = PACKET_HBEAT;
-  hb.datalen = 1;
+  hb.datalen = 0;
+
+  len = pack_size(&hb);
+
   HTON(&hb);
 
   while (1)
   {
-    hb.seq = htons( ntohs(hb.seq)+1 );
-
-    sendto(sock, &hb, sizeof hb, 0, (struct sockaddr *)&servAddr, sizeof(servAddr));
+    sendto(sock, &hb, len, 0, (struct sockaddr *)&servAddr, sizeof(servAddr));
 
     /* send heart beat every 3 seconds */
     sleep(3);
@@ -176,7 +178,7 @@ int send_audio_end(int len)
   audio_current->type = PACKET_AUDIO;
   audio_current->id = (uint32_t)id;
   audio_current->seq = ++qseq;
-  audio_current->datalen = (uint32_t)len;
+  audio_current->datalen = (uint16_t)len;
 
   trace_verb("%d.%d ", audio_current->id, audio_current->seq);
   DEBUG_TIME_NOW();

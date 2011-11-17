@@ -8,15 +8,13 @@ struct pack
 {
   uint32_t id;
   uint32_t seq;
-  uint16_t type;
-  uint16_t tag;
-  uint32_t datalen;
-
-  /* reserved, opaque across network */
-  //struct list_head q;
+  uint8_t type;
+  uint8_t tag;
+  uint16_t datalen;
 
   char data[1];
-};
+}
+__attribute__((packed));
 
 /* for server side */
 typedef struct pack pack_data;
@@ -35,18 +33,14 @@ enum {
 do { \
   (p)->id   = htonl((p)->id); \
   (p)->seq  = htonl((p)->seq); \
-  (p)->type = htons((p)->type); \
-  (p)->tag  = htons((p)->tag); \
-  (p)->datalen = htonl((p)->datalen); \
+  (p)->datalen = htons((p)->datalen); \
 }while(0)
 
 #define P_NTOH(p) \
 do { \
   (p)->id   = ntohl((p)->id); \
   (p)->seq  = ntohl((p)->seq); \
-  (p)->type = ntohs((p)->type); \
-  (p)->tag  = ntohs((p)->tag); \
-  (p)->datalen = ntohl((p)->datalen); \
+  (p)->datalen = ntohs((p)->datalen); \
 }while (0)
 
 

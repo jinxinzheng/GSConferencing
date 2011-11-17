@@ -357,7 +357,7 @@ static void flush_queue_silence(struct tag *t, struct device *d)
     p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
 
     pd = (pack_data *) p->data;
-    if( ntohs(pd->type) == PACKET_AUDIO_ZERO )
+    if( pd->type == PACKET_AUDIO_ZERO )
     {
       drop_queue_front(d);
       n++;
@@ -546,10 +546,10 @@ static struct packet *tag_mix_audio(struct tag *t)
     pp[c] = p; \
     aupack = (pack_data *) (p)->data; \
     au[c] = (short *) aupack->data; \
-    l = ntohl(aupack->datalen); \
-    if( ntohs(aupack->type) == PACKET_AUDIO_ZERO ) {\
+    l = ntohs(aupack->datalen); \
+    if( aupack->type == PACKET_AUDIO_ZERO ) {\
       memset(aupack->data, 0, l); \
-      aupack->type = htons(PACKET_AUDIO); \
+      aupack->type = PACKET_AUDIO; \
       p->len = offsetof(struct packet, data) + offsetof(pack_data, data) + l;  \
     } \
     mixlen = min(mixlen, l); \

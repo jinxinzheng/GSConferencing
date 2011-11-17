@@ -36,7 +36,7 @@ static void *auto_send_udp(void *arg)
   for(;;)
   {
     pack->seq = htonl(s++);
-    pack->type = htons(PACKET_AUDIO);
+    pack->type = PACKET_AUDIO;
     len = sprintf(p, "%x", rand());
     len += sizeof(int);
 

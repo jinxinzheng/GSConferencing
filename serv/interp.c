@@ -64,7 +64,7 @@ void interp_dup_pack(struct tag *dup, struct packet *pack)
     newp = pack_dup(pack);
 
     pdata = (pack_data *)(newp->data);
-    pdata->tag = htons((uint16_t)t->id);
+    pdata->tag = (uint8_t)t->id;
 
     tag_in_dev_packet(t, t->interp.curr_dev, newp);
   }

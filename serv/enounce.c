@@ -27,9 +27,11 @@ static void *run_enounce(void *arg)
   }
 
   memset(&pack, 0, sizeof pack);
-  pack.id = htonl(0xE2012CE); /* the magic */
-  pack.type = htons(PACKET_ENOUNCE);
-  pack.tag = htons(SERVER_PORT);  /* use tag to store the port */
+  pack.id = 0xE2012CE; /* the magic */
+  pack.type = PACKET_ENOUNCE;
+  pack.seq = SERVER_PORT;  /* use seq to store the port */
+  P_HTON(&pack);
+
   len = offsetof(pack_data, data);
 
   for(;;sleep(5))

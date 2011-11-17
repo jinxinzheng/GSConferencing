@@ -384,9 +384,9 @@ static void queue_audio_pack(struct pack *pack, int len)
     DEBUG_REPEAT("loss detect: expect=%d, pack=%d\n", expect_seq, pack->seq);
     if( is_wait_full() )
     {
-      DEBUG_REPEAT("queue full, go forward from %d\n", next->seq);
       /* move forward. */
       next = get_wait();
+      DEBUG_REPEAT("queue full, go forward from %d\n", next->seq);
       put_wait(pack);
     }
     else

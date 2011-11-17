@@ -6,17 +6,19 @@
 #define HASH_SZ (4096 >> 2)
 //extern struct task_struct *pidhash[PIDHASH_SZ];
 
-#define hash_id(hash, p)                      \
+#define hash_memb(hash, memb, p)              \
 do                                            \
 {                                             \
-  typeof ((hash)[0]) *htable = &(hash)[hashfn((p)->id)];  \
+  typeof ((hash)[0]) *htable = &(hash)[hashfn((p)->memb)];  \
   if(((p)->hash_next = *htable) != NULL)      \
     (*htable)->hash_pprev = &(p)->hash_next;  \
   *htable = (p);                              \
   (p)->hash_pprev = htable;                   \
 } while (0)
 
-#define unhash_id(p)                              \
+#define hash_id(hash, p)  hash_memb(hash, id, p)
+
+#define unhash(p)                                 \
 do                                                \
 {                                                 \
   if((p)->hash_next)                              \
@@ -24,12 +26,16 @@ do                                                \
   *(p)->hash_pprev = (p)->hash_next;              \
 } while (0)
 
-#define find_by_id(hash, _id) ({                            \
+#define unhash_id   unhash
+
+#define find_by_memb(hash, memb, val) ({                    \
   typeof ((hash)[0]) p;                                     \
-  typeof ((hash)[0]) *htable = &(hash)[hashfn(_id)];        \
-  for(p = *htable; p && !equal(p->id, (_id)); p = p->hash_next) ; \
+  typeof ((hash)[0]) *htable = &(hash)[hashfn(val)];        \
+  for(p = *htable; p && !equal(p->memb, (val)); p = p->hash_next) ; \
   p;                                                        \
 })
+
+#define find_by_id(hash, val)   find_by_memb(hash, id, val)
 
 /* other types can override these two functions
  * by #undef and #define */

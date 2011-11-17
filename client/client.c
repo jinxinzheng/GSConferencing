@@ -358,8 +358,15 @@ static void queue_audio_pack(struct pack *pack, int len)
 
   if( pack->seq < expect_seq )
   {
-    /* this could be outdated */
-    return;
+    if( expect_seq - pack->seq < 100 )
+      /* this could be recently outdated */
+      return;
+    else
+    {
+      /* probably reset */
+      trace_warn("drop outdated %d, expect %d\n", pack->seq, expect_seq);
+      expect_seq = 0;
+    }
   }
 
   if( !opts.enable_retransmit )

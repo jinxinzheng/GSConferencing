@@ -25,14 +25,16 @@ void add_group(struct group *g)
 }
 
 
-struct tag *get_tag(long long tid)
+/* don't use tag.id to hash tags.
+ * it's not unique. use the unique tuid. */
+struct tag *get_tag(long id)
 {
-  return find_by_id(tag_hash, tid);
+  return find_by_memb(tag_hash, tuid, id);
 }
 
 void add_tag(struct tag *t)
 {
-  hash_id(tag_hash, t);
+  hash_memb(tag_hash, tuid, t);
 }
 
 

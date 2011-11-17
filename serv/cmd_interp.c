@@ -37,7 +37,7 @@ static int cmd_interp(struct cmd *cmd)
       case INTERP_OR :
       {
         int gid = d->group->id;
-        long long tuid = TAGUID(gid, 1);
+        long tuid = TAGUID(gid, 1);
         struct tag *dup = get_tag(tuid);
 
         interp_add_dup_tag(t, dup);

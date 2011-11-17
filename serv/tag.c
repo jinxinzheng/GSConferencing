@@ -21,15 +21,15 @@
 struct tag *tag_create(long gid, long tid)
 {
   struct tag *t;
-  long long tuid;
+  long tuid;
   int i;
 
   tuid = TAGUID(gid, tid);
 
   t = (struct tag *)malloc(sizeof (struct tag));
   memset(t, 0, sizeof (struct tag));
-  t->tid = tid;
-  t->id = tuid;
+  t->id = tid;
+  t->tuid = tuid;
   //t->name[0]=0;
 
   INIT_LIST_HEAD(&t->device_head);
@@ -93,7 +93,7 @@ void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast)
 
   if (t->bcast_size >= sizeof(t->bcasts)/sizeof(t->bcasts[0]))
   {
-    trace_err("tag %d exceeding max broadcast addresses!\n", (int)t->tid);
+    trace_err("tag %d exceeding max broadcast addresses!\n", (int)t->id);
     return;
   }
 

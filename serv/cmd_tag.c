@@ -28,7 +28,7 @@ static int cmd_switch_tag(struct cmd *cmd)
   char *p;
   long gid;
   long tid;
-  long long tuid;
+  long tuid;
 
   struct device *d;
   struct tag *t;

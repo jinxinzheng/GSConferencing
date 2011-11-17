@@ -348,7 +348,7 @@ int dev_subscribe(struct device *dev, struct tag *tag)
 
   dev->subscription[i] = tag;
 
-  trace_info("device %ld subscribed to tag %ld\n", dev->id, tag->tid);
+  trace_info("device %ld subscribed to tag %ld\n", dev->id, tag->id);
 
   {
     int *states[] = { &dev->db_data->sub1, &dev->db_data->sub2 };

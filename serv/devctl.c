@@ -106,7 +106,7 @@ int dev_register(struct device *dev)
   long gid, tid;
   struct group *g;
   struct tag *t;
-  long long tuid;
+  long tuid;
   int i;
 
   if( get_device(dev->id) )

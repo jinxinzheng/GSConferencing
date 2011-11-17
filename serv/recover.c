@@ -28,7 +28,7 @@ static inline void restore_sub(struct device *d)
   struct tag *t;
   int gid = d->group->id;
   int tid;
-  long long tuid;
+  long tuid;
   int i;
 
   int subs[] = {dd->sub1, dd->sub2};

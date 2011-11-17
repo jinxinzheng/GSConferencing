@@ -17,7 +17,7 @@ static int cmd_sub(struct cmd *cmd)
     struct device *d;
     struct tag *t;
     long tid, gid;
-    long long tuid;
+    long tuid;
     int unsub = 0;
 
     THIS_DEVICE(cmd, d);

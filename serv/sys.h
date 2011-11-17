@@ -8,7 +8,7 @@ int init_groups();
 struct group *get_group(long gid);
 void add_group(struct group *g);
 
-struct tag *get_tag(long long tid);
+struct tag *get_tag(long tuid);
 void add_tag(struct tag *t);
 
 struct device *get_device(long did);

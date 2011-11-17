@@ -14,9 +14,9 @@ struct packet;
 #define MAX_MIX 8
 
 struct tag {
-  long tid;
-  /*as tid is not unique, need to use group_id<<32 + tag_id as the unique id. */
-  long long id;
+  long id;
+  /*as id is not unique, need to use group_id<<16 + tag_id as the unique id. */
+  long tuid;
   char name[64];
 
   /* the socket used for casting */
@@ -77,9 +77,9 @@ struct tag {
   int bcast_size;
 };
 
-#define TAGUID(gid,tid) (((long long)gid<<32) ^ tid)
+#define TAGUID(gid,tid) ((gid<<16) ^ tid)
 
-#define TAG_GETGID(tag) ( (long)(((tag->id)>>32)&0xffffffff) )
+#define TAG_GETGID(tag) ( ((tag->tuid)>>16)&0xffff )
 
 struct tag *tag_create(long gid, long tid);
 

@@ -13,7 +13,7 @@ static void ptc_send(struct device *d);
 /* all the ptc devs that we have ever known. */
 static struct device *ptcs[32] = {NULL};
 
-static inline void add_ptc(struct device *ptc)
+void add_ptc(struct device *ptc)
 {
   int i;
 
@@ -30,7 +30,7 @@ static inline void add_ptc(struct device *ptc)
   }
 }
 
-static inline void ptc_default()
+static void ptc_default()
 {
   int i;
   for( i=0 ; i<sizeof(ptcs)/sizeof(ptcs[0]) ; ++i )
@@ -66,14 +66,19 @@ static void ptc_send(struct device *d)
 static LIST_HEAD(ptc_head);
 static struct device *curr = NULL;
 
-void ptc_push(struct device *d)
+void ptc_put(struct device *d)
 {
   list_add(&d->ptc.l, &ptc_head);
 
+  curr = d;
+}
+
+void ptc_push(struct device *d)
+{
+  ptc_put(d);
+
   /* send ptc cmd for newly pushed dev */
   ptc_send(d);
-
-  curr = d;
 }
 
 void ptc_remove(struct device *d)
@@ -103,5 +108,17 @@ void ptc_remove(struct device *d)
      * the ptc should go to the prev dev. */
     curr = list_entry(ptc_head.next, struct device, ptc.l);
     ptc_send(curr);
+  }
+}
+
+void ptc_go_current()
+{
+  if( curr )
+  {
+    ptc_send(curr);
+  }
+  else
+  {
+    ptc_default();
   }
 }

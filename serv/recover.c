@@ -6,6 +6,7 @@
 #include "cast.h"
 #include "cmd_handler.h"
 #include "discuss.h"
+#include "ptc.h"
 
 static inline void set_dev_from_data(struct device *d, const struct db_device *data)
 {
@@ -51,10 +52,18 @@ static inline void restore_discuss(struct device *d)
 {
   struct db_device *dd = d->db_data;
 
-  if( !dd->discuss_open )
-    return;
+  /* detect ptc device */
+  if( dd->ptc_id == d->id )
+  {
+    add_ptc(d);
+  }
 
-  add_open(d->tag, d);
+  if( dd->discuss_open )
+  {
+    add_open(d->tag, d);
+
+    ptc_put(d);
+  }
 }
 
 static inline void restore_regist(struct device *d)
@@ -137,6 +146,8 @@ static void recover_devs()
 
     restore_vote(d);
   }
+
+  ptc_go_current();
 }
 
 void recover_server()

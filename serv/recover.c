@@ -53,7 +53,7 @@ static inline void restore_discuss(struct device *d)
   struct db_device *dd = d->db_data;
 
   /* detect ptc device */
-  if( dd->ptc_id == d->id )
+  if( is_ptc(d) )
   {
     add_ptc(d);
   }

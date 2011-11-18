@@ -7,6 +7,7 @@
 #include "include/debug.h"
 #include "../config.h"
 #include "db/md.h"
+#include "ptc.h"
 
 static void get_client_info(char *info, const struct device *d)
 {
@@ -123,6 +124,12 @@ static int cmd_reg(struct cmd *cmd)
   }
 
   dev_activate(d);
+
+  if( is_ptc(d) )
+  {
+    /* re-set ptc if it's restarted. */
+    ptc_go_current();
+  }
 
   get_client_info(buf, d);
 

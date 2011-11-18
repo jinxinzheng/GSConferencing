@@ -122,3 +122,8 @@ void ptc_go_current()
     ptc_default();
   }
 }
+
+int is_ptc(struct device *d)
+{
+  return (d->db_data->ptc_id == d->id);
+}

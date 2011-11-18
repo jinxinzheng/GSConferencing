@@ -13,5 +13,7 @@ void ptc_remove(struct device *d);
 
 void ptc_go_current();
 
+int is_ptc(struct device *d);
+
 
 #endif  /*__PTC_H__*/

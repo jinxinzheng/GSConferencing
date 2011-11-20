@@ -542,11 +542,17 @@ static struct packet *tag_mix_audio(struct tag *t)
 #endif
 
 #define add_mix_pack(p) \
-  { \
+  do { \
     pp[c] = p; \
     aupack = (pack_data *) (p)->data; \
     au[c] = (short *) aupack->data; \
     l = ntohs(aupack->datalen); \
+    /* sanity check */  \
+    if( l>MAXPACK-100 ) { \
+      trace_warn("pack data len=%d, drop!\n", l); \
+      pack_free(p); \
+      break;  \
+    } \
     if( aupack->type == PACKET_AUDIO_ZERO ) {\
       memset(aupack->data, 0, l); \
       aupack->type = PACKET_AUDIO; \
@@ -554,7 +560,7 @@ static struct packet *tag_mix_audio(struct tag *t)
     } \
     mixlen = min(mixlen, l); \
     c++; \
-  }
+  } while(0)
 
   if( t->mix_count == 1 )
   {

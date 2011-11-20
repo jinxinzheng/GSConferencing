@@ -550,7 +550,7 @@ static struct packet *tag_mix_audio(struct tag *t)
     if( aupack->type == PACKET_AUDIO_ZERO ) {\
       memset(aupack->data, 0, l); \
       aupack->type = PACKET_AUDIO; \
-      p->len = offsetof(struct packet, data) + offsetof(pack_data, data) + l;  \
+      p->len = offsetof(pack_data, data) + l;  \
     } \
     mixlen = min(mixlen, l); \
     c++; \

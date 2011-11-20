@@ -446,6 +446,7 @@ static inline int wait_all_queues(struct tag *t)
 
   while( !(all_queues_bell(t)) )
   {
+    trace_dbg("no data, waited=%d\n", waited);
     /* wait for 3ms to allow the data to be queued.
      * this virtually syncs the clients sending
      * at different rates. */

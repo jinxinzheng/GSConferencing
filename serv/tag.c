@@ -647,8 +647,6 @@ normal:
 
    case 1:
     /* no need to mix */
-    trace_dbg("only 1 pack from %d, mix not needed.\n",
-          (int)pp[0]->dev->id);
     break;
 
    default:

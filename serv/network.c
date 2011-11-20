@@ -504,7 +504,6 @@ static int pack_recv(struct packet *pack)
         return 1;
 
       /* put packet into processing queue */
-      pack->dev = d;
       if (dev_cast_packet(d, 0, pack) != 0)
         return 1;
 

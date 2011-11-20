@@ -8,8 +8,6 @@
 
 struct packet
 {
-  struct device *dev; /* by what device it was sent */
-
   struct list_head queue_l; /* queue */
 
   int rep_count;  /* repeat count */

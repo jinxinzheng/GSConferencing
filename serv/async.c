@@ -12,6 +12,7 @@
 #include <include/debug.h>
 
 #define THREADS 64
+#define BLKSZ   2048
 
 static threadpool tp;
 static struct block_pool *bp;
@@ -20,7 +21,7 @@ void async_init()
 {
   /* kick some threads off */
   tp = create_threadpool(THREADS);
-  bp = init_block_pool(2048, THREADS, 1);
+  bp = init_block_pool(BLKSZ, THREADS, 1);
 }
 
 struct _send_args
@@ -42,6 +43,12 @@ static void _sendto_dev(void *arg)
 void async_sendto_dev(const void *buf, int len, struct device *d)
 {
   struct _send_args *args;
+
+  if( len > BLKSZ-100 )
+  {
+    trace_err("can't dispatch the cmd is too long: %d\n", len);
+    return;
+  }
 
   while( !(args = (struct _send_args *) alloc_block(bp)) )
   {

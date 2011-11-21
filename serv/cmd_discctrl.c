@@ -220,13 +220,24 @@ static int cmd_discctrl(struct cmd *cmd)
     NEXT_ARG(p);
     open = atoi(p);
 
+    REP_OK(cmd);
+
     if( d->discuss.open == open )
     {
       trace_warn("dev is already open/closed\n");
-      return ERR_OTHER;
+      if( open )
+      {
+        /* restore the open state. */
+        tag_add_outstanding(tag, d);
+        ptc_push(d);
+        return 0;
+      }
+      else
+      {
+        /* if it's already closed. just return ok. */
+        return 0;
+      }
     }
-
-    REP_OK(cmd);
 
     if( open )
     {

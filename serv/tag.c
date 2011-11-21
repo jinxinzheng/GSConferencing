@@ -214,15 +214,14 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
 
 #define MAX_DEV_PACKS 32
 
-void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
+int tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
 {
   /* don't en-queue if the dev is not outstanding.
    * in the small window when client is opening or
    * closing the mic. */
   if( !d->mixbit )
   {
-    pack_free(pack);
-    return;
+    return 0;
   }
 
   /* immediately free the packet if the queue
@@ -231,13 +230,13 @@ void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
    * we got a broken client ... */
   if( cfifo_full(&d->pack_fifo) )
   {
-    pack_free(pack);
-    return;
+    return 0;
   }
 
   /* put in */
   _dev_in_packet(d, pack);
 
+  return 1;
 }
 
 /* this should only be called when dev's queue is not empty */

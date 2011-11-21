@@ -85,7 +85,7 @@ struct tag *tag_create(long gid, long tid);
 
 void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast);
 
-void tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack);
+int tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack);
 
 struct packet *tag_out_dev_mixed(struct tag *t);
 

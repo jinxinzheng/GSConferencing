@@ -39,7 +39,8 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   t = dev->tag;
 
   /* enque packet to device's fifo */
-  tag_in_dev_packet(t, dev, pack);
+  if( !tag_in_dev_packet(t, dev, pack) )
+    return -1;
 
   /* dup packet for interpreting */
   if( !list_empty(&t->interp.dup_head) )

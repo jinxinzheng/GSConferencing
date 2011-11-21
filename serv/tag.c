@@ -119,8 +119,10 @@ static void _dev_in_packet(struct device *d, struct packet *p)
 /* this must be used when pack queue is not empty */
 static inline struct packet *__dev_out_packet(struct device *d)
 {
-  struct packet *p;
-  p = *(struct packet **)cfifo_get_out(&d->pack_fifo);
+  struct packet *p, **pp;
+  pp = (struct packet **)cfifo_get_out(&d->pack_fifo);
+  p = *pp;
+  *pp = NULL; /* clear data to avoid incorrect use.. */
   cfifo__out(&d->pack_fifo);
   return p;
 }

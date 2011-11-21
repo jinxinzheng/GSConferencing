@@ -68,7 +68,17 @@ static struct device *curr = NULL;
 
 void ptc_put(struct device *d)
 {
-  list_add(&d->ptc.l, &ptc_head);
+  /* is it pushed? */
+  if( !d->ptc.l.prev || !d->ptc.l.next )
+  {
+    /* fresh add. */
+    list_add(&d->ptc.l, &ptc_head);
+  }
+  else
+  {
+    /* it's already pushed. move to the top. */
+    list_move(&d->ptc.l, &ptc_head);
+  }
 
   curr = d;
 }

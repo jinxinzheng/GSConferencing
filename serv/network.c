@@ -83,7 +83,7 @@ void run_listener_tcp(int port)
   {
     die("connection object size is too big.");
   }
-  conn_pool = init_block_pool(32, 256, 1);
+  conn_pool = init_block_pool(40, 256, 1);
 
   blocking_queue_init(&connection_queue);
 

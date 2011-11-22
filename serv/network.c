@@ -298,7 +298,7 @@ static void *run_recv_audio(void *arg)
 
   struct packet *pack;
 
-  const int pksize = 528;
+  const int pksize = 524;
   int pklen = 0;
   int pkrem = pksize;
   int boff = 0;

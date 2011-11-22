@@ -20,6 +20,8 @@ void init_pack_pool();
 
 struct packet *pack_get_new();
 
+struct packet *pack_get_fast();
+
 void pack_free(struct packet *p);
 
 struct packet *pack_dup(struct packet *p);

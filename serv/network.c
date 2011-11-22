@@ -554,7 +554,7 @@ void run_listener_udp(int port)
     die("bind()");
 
 
-  pack = pack_get_new();
+  pack = pack_get_fast();
 
   for (;;) /* Run forever */
   {
@@ -574,7 +574,7 @@ void run_listener_udp(int port)
 
     /* Send any reply here */
 
-    pack = pack_get_new();
+    pack = pack_get_fast();
   }
   /* NOT REACHED */
 }

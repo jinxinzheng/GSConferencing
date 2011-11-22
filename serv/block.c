@@ -6,6 +6,13 @@
 #include <pthread.h>
 #include <include/debug.h>
 
+//#define BLOCK_DEBUG
+#ifdef  BLOCK_DEBUG
+#define BLK_DBG(a...) fprintf(stderr, "block: " a)
+#else
+#define BLK_DBG(...)
+#endif
+
 struct block_pool
 {
   struct list_head free_list;
@@ -31,6 +38,8 @@ struct block
 struct block_pool *init_block_pool(int block_size, int init_count, int limited)
 {
   struct block_pool *pool = (struct block_pool *)malloc(sizeof(struct block_pool));
+
+  BLK_DBG("init block pool: block size %d, count %d, at %p\n", block_size, init_count, pool);
 
   INIT_LIST_HEAD(&pool->free_list);
   pthread_mutex_init(&pool->m, NULL);
@@ -70,6 +79,8 @@ void *alloc_block(struct block_pool *bp)
 
     l = bp->free_list.next;
     b = list_entry(l, struct block, free);
+    BLK_DBG("get block at pool %p. block=%p, next=%p, prev=%p\n",
+      bp, b, l->next, l->prev);
     list_del(l);
   }
 
@@ -97,6 +108,8 @@ void *alloc_block(struct block_pool *bp)
 void free_block(struct block_pool *bp, void *buf)
 {
   struct block *b = block_entry(buf);
+  BLK_DBG("free block to pool %p. block=%p, next=%p, prev=%p\n",
+    bp, b, b->free.next, b->free.prev);
 
   pthread_mutex_lock(&bp->m);
 

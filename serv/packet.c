@@ -82,21 +82,26 @@ static void pack_free_cache(struct packet *p)
 
 static struct packet *pack_get_cache()
 {
+  int pos;
   int i;
-  if( !cache_use[cache_pos] )
+
+  /* take a shot of current pos */
+  pos = cache_pos;
+
+  if( !cache_use[pos] )
   {
     /* hit */
-    i = cache_pos;
     /* try to make next call hit more possible. */
-    cache_pos ++;
-    cache_use[i] = 1;
-    return CACHE_GET(i);
+    cache_pos = (pos+1)&COUNT_MASK;
+    cache_use[pos] = 1;
+    PACK_DBG(" get cache %d (hit)\n", pos);
+    return CACHE_GET(pos);
   }
   else
   {
     /* find a free block */
-    for ( i=cache_pos+1;
-          i!=cache_pos;
+    for ( i=(pos+1)&COUNT_MASK;
+          i!=pos;
           i=(i+1)&COUNT_MASK )
     {
       if( !cache_use[i] )

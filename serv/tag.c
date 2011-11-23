@@ -131,7 +131,7 @@ static inline struct packet *__dev_out_packet(struct device *d)
 void tag_add_outstanding(struct tag *t, struct device *d)
 {
   int i;
-  trace_dbg("adding dev to outstanding\n");
+  trace_dbg("adding dev %ld to outstanding\n", d->id);
 
   LOCK(t->mut);
 
@@ -179,7 +179,7 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
   {
     if( d == t->mix_devs[i] )
     {
-      trace_dbg("removing dev from outstanding\n");
+      trace_dbg("removing dev %ld from outstanding\n", d->id);
 
       /* update the mix reference if it's
        * being removed */

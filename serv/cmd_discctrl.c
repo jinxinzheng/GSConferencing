@@ -80,6 +80,8 @@ static void kick_user(struct device *d, struct device *kick)
   char buf[256];
   int l;
 
+  trace_info("kick %ld\n", kick->id);
+
   l = sprintf(buf, "%d discctrl kick %d\n", (int)d->id, (int)kick->id);
   device_cmd(kick, buf, l);
 }

@@ -113,7 +113,7 @@ static struct packet *pack_get_cache()
       {
         cache_pos = (i+1)&COUNT_MASK;
         cache_use[i] = 1;
-        PACK_DBG(" get cache %d (find)\n", pos);
+        PACK_DBG(" get cache %d (find %d<)\n", i, pos);
         return CACHE_GET(i);
       }
     }

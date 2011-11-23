@@ -213,6 +213,7 @@ int main(int argc, char *const argv[])
 
   if (s)
   {
+    set_option(OPT_AUDIO_UDP, 1);
     switch_tag(2);
 
     discctrl_query(buf);

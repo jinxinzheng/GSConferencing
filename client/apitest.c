@@ -1,6 +1,7 @@
 #include "client.h"
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <linux/soundcard.h>
 #include <sys/ioctl.h>
@@ -127,18 +128,21 @@ int main(int argc, char *const argv[])
   int i=0;
   int idlist[1000];
 
-  int id=3;
+  int id=0;
 
 
-  while ((opt = getopt(argc, argv, "srS:a")) != -1) {
+  while ((opt = getopt(argc, argv, "i:srS:a")) != -1) {
     switch (opt) {
+      case 'i':
+        id = atoi(optarg);
+        break;
       case 's':
         s=1;
-        id = 1001;
+        if(id==0) id = 1001;
         break;
       case 'r':
         r=1;
-        id = 2001;
+        if(id==0) id = 2001;
         break;
       case 'S':
         srvaddr = optarg;
@@ -148,6 +152,9 @@ int main(int argc, char *const argv[])
         break;
     }
   }
+
+  if( id==0 )
+    id = 3;
 
   client_init(id,id, srvaddr, 20000+id);
 

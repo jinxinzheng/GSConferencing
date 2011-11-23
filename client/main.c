@@ -13,7 +13,6 @@
 /* options */
 int id=0;
 int verbose=0;
-static int subscribe=0;
 static int udp_auto=0;
 
 static char *servIP = "127.0.0.1";
@@ -147,16 +146,13 @@ int main(int argc, char *const argv[])
 
   int i;
 
-  while ((opt = getopt(argc, argv, "a:i:s:vu")) != -1) {
+  while ((opt = getopt(argc, argv, "S:i:vu")) != -1) {
     switch (opt) {
-      case 'a':
+      case 'S':
         servIP = optarg;
         break;
       case 'i':
         id = atoi(optarg);
-        break;
-      case 's':
-        subscribe = atoi(optarg);
         break;
       case 'v':
         verbose = 1;
@@ -206,16 +202,6 @@ int main(int argc, char *const argv[])
 
   buf[i] = 0;
   printf("%s\n", buf);
-
-  /* subscribe to tag */
-
-  if (subscribe != 0)
-  {
-    len = sprintf(buf, "%d sub %d\n", id, subscribe);
-
-    if (send_tcp(buf, len, &servAddr) < 0)
-      return 2;
-  }
 
   /* auto cast packets */
   if (udp_auto)

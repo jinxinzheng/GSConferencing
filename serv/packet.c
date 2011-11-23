@@ -5,6 +5,13 @@
 #include "block.h"
 #include "include/debug.h"
 
+//#define PACK_DEBUG
+#ifdef  PACK_DEBUG
+#define PACK_DBG(a...) fprintf(stderr, "packet: " a)
+#else
+#define PACK_DBG(...)
+#endif
+
 #define PACK_SHIFT  11
 #define PACK_SIZE   (1<<PACK_SHIFT)
 #define PACK_COUNT  1024
@@ -75,6 +82,7 @@ static void pack_free_cache(struct packet *p)
 {
   int i;
   i = CACHE_OFFSET(p);
+  PACK_DBG("free cache %d\n", i);
   cache_use[i] = 0;
   /* make next pack_get_cache() hit. */
   cache_pos = i;
@@ -108,6 +116,7 @@ static struct packet *pack_get_cache()
       {
         cache_pos = (i+1)&COUNT_MASK;
         cache_use[i] = 1;
+        PACK_DBG(" get cache %d (find)\n", pos);
         return CACHE_GET(i);
       }
     }

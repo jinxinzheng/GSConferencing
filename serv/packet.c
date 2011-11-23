@@ -30,7 +30,7 @@ static int cache_pos = 0;
 #define CACHE_SIZE        (PACK_COUNT<<PACK_SHIFT)
 
 #define PACK_IS_CACHE(p)  \
-  ((char *)p > cache_base && (char *)(p) < cache_base+CACHE_SIZE )
+  ((char *)p >= cache_base && (char *)(p) < cache_base+CACHE_SIZE )
 
 #define CACHE_OFFSET(p)   (((char*)(p) - cache_base) >> PACK_SHIFT)
 

@@ -24,17 +24,17 @@
 static struct block_pool *free_pool;
 
 /* the fast lockless cache */
-static char *cache_base;
+#define CACHE_SIZE        (PACK_COUNT<<PACK_SHIFT)
+static char cache_base[CACHE_SIZE];
 static char cache_use[PACK_COUNT] = {0};
 static int cache_pos = 0;
-#define CACHE_SIZE        (PACK_COUNT<<PACK_SHIFT)
 
 #define PACK_IS_CACHE(p)  \
-  ((char *)p >= cache_base && (char *)(p) < cache_base+CACHE_SIZE )
+  ((char *)p >= &cache_base[0] && (char *)(p) < &cache_base[CACHE_SIZE] )
 
-#define CACHE_OFFSET(p)   (((char*)(p) - cache_base) >> PACK_SHIFT)
+#define CACHE_OFFSET(p)   (((char*)(p) - &cache_base[0]) >> PACK_SHIFT)
 
-#define CACHE_GET(off)    ((struct packet *)(cache_base + ((off)<<PACK_SHIFT)))
+#define CACHE_GET(off)    ((struct packet *)(&cache_base[(off)<<PACK_SHIFT]))
 
 void init_pack_pool()
 {
@@ -44,9 +44,6 @@ void init_pack_pool()
    * packets are in use at most. allocing 1024 helps in
    * performance. */
   free_pool = init_block_pool(PACK_SIZE, PACK_COUNT, 1);
-
-  /* alloc the lockless cache */
-  cache_base = (char *)malloc(CACHE_SIZE);
 }
 
 struct packet *pack_get_new()

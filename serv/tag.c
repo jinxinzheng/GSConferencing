@@ -15,6 +15,7 @@
 #include <include/thread.h>
 #include <include/lock.h>
 #include <include/util.h>
+#include <include/compiler.h>
 
 //#define MIX_DEBUG
 
@@ -91,7 +92,7 @@ void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast)
 {
   void *p;
 
-  if (t->bcast_size >= sizeof(t->bcasts)/sizeof(t->bcasts[0]))
+  if (t->bcast_size >= (int)(sizeof(t->bcasts)/sizeof(t->bcasts[0])))
   {
     trace_err("tag %d exceeding max broadcast addresses!\n", (int)t->id);
     return;
@@ -216,7 +217,7 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
 
 #define MAX_DEV_PACKS 32
 
-int tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
+int tag_in_dev_packet(struct tag *t __unused, struct device *d, struct packet *pack)
 {
   /* don't en-queue if the dev is not outstanding.
    * in the small window when client is opening or
@@ -242,7 +243,7 @@ int tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
 }
 
 /* this should only be called when dev's queue is not empty */
-struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
+struct packet *tag_out_dev_packet(struct tag *t __unused, struct device *d)
 {
   struct packet *p;
 
@@ -317,7 +318,7 @@ static inline void drop_queue_front(struct device *d)
   pack_free(p);
 }
 
-static void flush_queue(struct tag *t, struct device *d)
+static void flush_queue(struct device *d)
 {
   int l;
 
@@ -343,11 +344,11 @@ static inline void flush_all_queues(struct tag *t)
     if( !(d = t->mix_devs[i]) )
       continue;
 
-    flush_queue(t, d);
+    flush_queue(d);
   }
 }
 
-static void flush_queue_silence(struct tag *t, struct device *d)
+static void flush_queue_silence(struct device *d)
 {
   struct packet *p;
   pack_data *pd;
@@ -394,7 +395,7 @@ static inline int flush_queues(struct tag *t)
     {
       /* this queue is over-loaded.
        * flush it immediately */
-      flush_queue_silence(t, d);
+      flush_queue_silence(d);
     }
     else if( len > 1 )
     {
@@ -403,7 +404,7 @@ static inline int flush_queues(struct tag *t)
       {
         /* it's been high-loaded for about 1 second.
          * trigger flush now. */
-        flush_queue_silence(t, d);
+        flush_queue_silence(d);
       }
       else
         continue;

@@ -5,10 +5,11 @@
 #include <include/pack.h>
 #include <include/thread.h>
 #include <include/util.h>
+#include <include/compiler.h>
 #include "network.h"
 #include "../config.h"
 
-static void *run_enounce(void *arg)
+static void *run_enounce(void *arg __unused)
 {
   int sock;
   int r, optval;

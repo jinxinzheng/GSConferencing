@@ -8,6 +8,6 @@
 
 #define offsetof(type, memb)  (size_t)&(((type *)0)->memb)
 
-#define array_size(arr)   (sizeof(arr) / sizeof((arr)[0]))
+#define array_size(arr)   ((int)(sizeof(arr) / sizeof((arr)[0])))
 
 #endif

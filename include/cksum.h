@@ -25,7 +25,7 @@ static inline void cksum(void *data, int len, char *sum)
 
   shaHashData(data, len, (unsigned char *)sum);
 
-  for (i=0; i<sizeof(salt)/sizeof(int); i++)
+  for (i=0; i<(int)(sizeof(salt)/sizeof(int)); i++)
   {
     ps[i] ^= pu[i];
   }

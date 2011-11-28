@@ -15,6 +15,7 @@
 #include <include/lock.h>
 #include <include/thread.h>
 #include <include/util.h>
+#include <include/compiler.h>
 #include "db/md.h"
 #include "interp.h"
 
@@ -27,7 +28,7 @@
  * in sequence.
  * Each queue will be managed within one thread for performance
  * consideration. */
-int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
+int dev_cast_packet(struct device *dev, struct packet *pack)
 {
   pack_data *p;
   struct tag *t;
@@ -51,7 +52,7 @@ int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack)
   return 0;
 }
 
-static void __repeat_cast(struct tag *t, struct device *d, uint32_t seq)
+static void __repeat_cast(struct tag *t, struct device *d __unused, uint32_t seq)
 {
   struct packet *r;
   pack_data *p;
@@ -76,7 +77,9 @@ static void __repeat_cast(struct tag *t, struct device *d, uint32_t seq)
           ++ r->rep_count;
         }
         else
+        {
           DGB_REPEAT("not repeating %d, rep_count=%d\n", seq, r->rep_count);
+        }
         break;
       }
     }

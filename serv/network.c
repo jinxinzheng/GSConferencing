@@ -25,6 +25,7 @@
 #include <include/ping.h>
 #include <include/thread.h>
 #include <include/util.h>
+#include <include/compiler.h>
 
 #define perrorf(fmt, args...) do{ \
   char __buf[256];  \
@@ -162,7 +163,7 @@ static int do_send(int sock, const void *buf, int len)
   return send(sock, tmp, l, 0);
 }
 
-void *run_proceed_connection(void *arg)
+void *run_proceed_connection(void *arg __unused)
 {
   struct connection *c;
   char buf[BUFLEN];
@@ -246,7 +247,7 @@ CMDERR:
   return NULL;
 }
 
-void *listener_tcp_proc(void *p)
+void *listener_tcp_proc(void *arg __unused)
 {
   int port;
 
@@ -452,7 +453,7 @@ static int __run_listen_audio()
   return 0;
 }
 
-static void *run_listen_audio(void *arg)
+static void *run_listen_audio(void *arg __unused)
 {
   __run_listen_audio();
   return NULL;
@@ -504,7 +505,7 @@ static int pack_recv(struct packet *pack)
         return 1;
 
       /* put packet into processing queue */
-      if (dev_cast_packet(d, 0, pack) != 0)
+      if (dev_cast_packet(d, pack) != 0)
         return 1;
 
       break;
@@ -601,7 +602,10 @@ int sendto_dev_udp(int sock, const void *buf, size_t len, struct device *dev)
 int broadcast_local(int sock, const void *buf, size_t len)
 {
   /* broadcast address for within the local subnet */
-  static struct sockaddr_in ba = {0};
+  static struct sockaddr_in ba = {
+    .sin_family = 0,
+  };
+
   if( !ba.sin_family )
   {
     ba.sin_family = AF_INET;

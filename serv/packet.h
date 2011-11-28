@@ -12,7 +12,7 @@ struct packet
 
   int rep_count;  /* repeat count */
 
-  size_t len; /* length of data */
+  int len; /* length of data */
   char data[MAXPACK];
 };
 

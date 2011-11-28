@@ -15,7 +15,7 @@ static struct device *ptcs[32] = {NULL};
 
 void add_ptc(struct device *ptc)
 {
-  int i;
+  unsigned int i;
 
   for( i=0 ; i<sizeof(ptcs)/sizeof(ptcs[0]) ; ++i )
   {
@@ -32,7 +32,7 @@ void add_ptc(struct device *ptc)
 
 static void ptc_default()
 {
-  int i;
+  unsigned int i;
   for( i=0 ; i<sizeof(ptcs)/sizeof(ptcs[0]) ; ++i )
   {
     if( !ptcs[i] )

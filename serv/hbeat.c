@@ -6,6 +6,7 @@
 #include "network.h"
 #include "include/debug.h"
 #include <include/thread.h>
+#include <include/compiler.h>
 
 void dev_heartbeat(struct device *d)
 {
@@ -42,7 +43,7 @@ static void check_net(struct device *d)
   }
 }
 
-static void *run_heartbeat_god(void *arg)
+static void *run_heartbeat_god(void *arg __unused)
 {
   struct group *g;
   struct device *d;

@@ -60,7 +60,7 @@ static int cmd_switch_tag(struct cmd *cmd)
     t = tag_create(gid, tid);
   }
 
-  tag_del_device(d->tag, d);
+  tag_del_device(d);
 
   tag_add_device(t, d);
 

@@ -60,7 +60,7 @@ void tag_add_device(struct tag *t, struct device *dev)
   list_add_tail(&dev->tlist, &t->device_head);
 }
 
-void tag_del_device(struct tag *t, struct device *d)
+void tag_del_device(struct device *d)
 {
   list_del(&d->tlist);
 }

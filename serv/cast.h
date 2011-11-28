@@ -9,7 +9,7 @@ int dev_subscribe(struct device *dev, struct tag *tag);
 
 void dev_unsubscribe(struct device *dev, struct tag *t);
 
-int dev_cast_packet(struct device *dev, int packet_type, struct packet *pack);
+int dev_cast_packet(struct device *dev, struct packet *pack);
 
 void tag_req_repeat(struct tag *t, struct device *d, uint32_t seq);
 

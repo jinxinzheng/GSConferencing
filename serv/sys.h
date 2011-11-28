@@ -16,6 +16,6 @@ void add_device(struct device *dev);
 
 void group_add_device(struct group *g, struct device *dev);
 void tag_add_device(struct tag *t, struct device *dev);
-void tag_del_device(struct tag *t, struct device *d);
+void tag_del_device(struct device *d);
 
 #endif

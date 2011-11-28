@@ -133,7 +133,7 @@ static void *serv_manage(void *arg)
   char buf[BUFLEN+200];
   int l;
 
-  struct cmd c = {0};
+  struct cmd c;
   int r;
   int a=0;
   char *p;

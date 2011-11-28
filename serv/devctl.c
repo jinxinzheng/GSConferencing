@@ -234,13 +234,14 @@ void device_cmd(struct device *d, const char *cmd, int len)
   }
 }
 
+#if 0
 /* passed up to server */
 int dev_event(struct device *dev, int event, void *args)
 {
   /* invoke event handler */
   return 0;
 }
-
+#endif
 
 /* manager dev is the dev with id 0 and
  * only exists in runtime, never saved

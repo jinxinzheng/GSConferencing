@@ -1,5 +1,5 @@
 #CC:=arm-linux-gcc
-CFLAGS := -pipe -I. -I.. -O2 -Wall
+CFLAGS := -pipe -I. -I.. -Wall -Wextra -O
 LDFLAGS := -pipe -lpthread -lrt -lsqlite
 
 ifneq (,$(ARCH))

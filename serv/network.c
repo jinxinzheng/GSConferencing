@@ -569,6 +569,12 @@ void run_listener_udp(int port)
       continue;
     }
 
+    if( pack->len < offsetof(pack_data, data) )
+    {
+      trace_warn("malformed pack len=%d\n", pack->len);
+      continue;
+    }
+
     /* analyze the packet data. */
     if( pack_recv(pack) )
       continue;

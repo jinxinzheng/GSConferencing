@@ -260,7 +260,8 @@ void tag_cast_pack(struct tag *t, struct packet *pack)
       }
       else
       {
-        sendto_dev_udp(t->sock, pack->data, pack->len, d);
+        if( d->active )
+          sendto_dev_udp(t->sock, pack->data, pack->len, d);
       }
     }
   }

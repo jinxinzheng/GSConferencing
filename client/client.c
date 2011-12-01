@@ -1836,4 +1836,14 @@ static void handle_cmd(int sock, int type, char *buf, int l)
 
     event_handler(EVENT_SET_UID, user_id, NULL);
   }
+
+  else if (STREQU(c.cmd, "allow_chair_ctl"))
+  {
+    char *cid;
+    int allow;
+    cid = c.args[i++];
+    allow = atoi(c.args[i++]);
+
+    event_handler(EVENT_CHAIR_CTL, (void *)allow, NULL);
+  }
 }

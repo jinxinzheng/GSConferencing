@@ -4,6 +4,7 @@
 #include "db/md.h"
 #include "include/debug.h"
 #include <include/thread.h>
+#include "manage.h"
 
 #define BUFLEN 20480
 
@@ -178,6 +179,23 @@ static void *serv_manage(void *arg)
         goto end_cmd;
       }
 
+      if( strcmp(cmd,"chair_ctl")==0 )
+      {
+        int allow = 0;
+
+        if( c.args[1] )
+          allow = atoi(c.args[1]);
+        else
+        {
+          sprintf(rep, "FAIL 1\n");
+          goto end_cmd;
+        }
+
+        manage_set_allow_chair(allow);
+        manage_notify_all_chairs();
+        sprintf(rep, "OK\n");
+      }
+      else
       if( strcmp(cmd,"discctrl")==0 ||
           strcmp(cmd,"votectrl")==0 ||
           strcmp(cmd,"regist")==0   ||
@@ -295,6 +313,10 @@ end_cmd:
   }
 
   close(s);
+
+  manage_set_active(0);
+  manage_notify_all_chairs();
+
   trace_info("manager client closed\n");
   return NULL;
 }
@@ -370,6 +392,9 @@ static int cmd_manage(struct cmd *cmd)
     }
 
     response(cmd, "OK\n");
+
+    manage_set_active(1);
+    manage_notify_all_chairs();
 
     start_thread(serv_manage, (void *)s);
   }

@@ -20,6 +20,7 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	async.o block.o ../threadpool/threadpool.o \
 	init.o \
 	enounce.o \
+	manage.o \
 	cmd_handler.o \
 	cmd_debug.o \
 	cmd_tag.o \

@@ -11,6 +11,7 @@
 #include "include/debug.h"
 #include <include/util.h>
 #include <include/lock.h>
+#include "manage.h"
 
 static inline struct device *new_dev()
 {
@@ -186,6 +187,11 @@ int dev_register(struct device *dev)
   }
 
   append_dev_ents_cache(g, dev);
+
+  if( dev->type == DEVTYPE_CHAIR )
+  {
+    manage_add_chair(dev);
+  }
 
   return 0;
 }

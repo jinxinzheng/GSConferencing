@@ -8,6 +8,8 @@
 #include "../config.h"
 #include "db/md.h"
 #include "ptc.h"
+#include <include/types.h>
+#include "manage.h"
 
 static void get_client_info(char *info, const struct device *d)
 {
@@ -130,6 +132,11 @@ static int cmd_reg(struct cmd *cmd)
   {
     /* re-set ptc if it's restarted. */
     ptc_go_current();
+  }
+
+  if( d->type == DEVTYPE_CHAIR )
+  {
+    manage_notify_chair(d);
   }
 
   get_client_info(buf, d);

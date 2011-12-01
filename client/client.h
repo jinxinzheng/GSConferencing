@@ -171,6 +171,9 @@ enum {
 
   /* arg1: char *, user id */
   EVENT_SET_UID,
+
+  /* arg1: int, 1 chair control, 0 manager control */
+  EVENT_CHAIR_CTL,
 };
 
 

@@ -99,8 +99,9 @@ static int cmd_reg(struct cmd *cmd)
   if( !d )
   {
     d = dev_create(did);
-    d->type = type;
   }
+
+  d->type = type;
 
   d->addr = *cmd->saddr;
   d->addr.sin_port = htons(port);

@@ -427,7 +427,7 @@ static inline int flush_queues(struct tag *t)
     {
       /* this queue is over-loaded.
        * flush it immediately */
-      flush_queue_silence(d);
+      flush_queue(d);
     }
     else if( len > 1 )
     {
@@ -436,7 +436,7 @@ static inline int flush_queues(struct tag *t)
       {
         /* it's been high-loaded for about 1 second.
          * trigger flush now. */
-        flush_queue_silence(d);
+        flush_queue(d);
       }
       else
         continue;

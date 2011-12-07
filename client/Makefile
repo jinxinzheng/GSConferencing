@@ -1,5 +1,5 @@
 #CC:=arm-linux-gcc
-CFLAGS := -pipe -I.. -O2 -Wall
+CFLAGS := -pipe -I.. -Wall -O
 LDFLAGS := -pipe -lpthread -lrt
 
 ifneq (,$(ARCH))

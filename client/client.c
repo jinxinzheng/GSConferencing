@@ -881,8 +881,10 @@ static void try_reg_end(char *reply)
   char *p;
   struct dev_info tmp, *info = &tmp;
 
-  if( (e = parse_cmd(reply, &c)) == 0 )
+  if( (e = parse_cmd(reply, &c)) != 0 )
   {
+    event_handler(EVENT_REG_OK, (void *)e, NULL);
+    return;
   }
 
   i = FIND_OK(c);
@@ -893,7 +895,7 @@ static void try_reg_end(char *reply)
 
   _POST_REG();
 
-  event_handler(EVENT_REG_OK, (void *)e, info);
+  event_handler(EVENT_REG_OK, NULL, info);
 }
 
 void start_try_reg(const char *passwd)

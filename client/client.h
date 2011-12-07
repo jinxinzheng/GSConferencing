@@ -82,9 +82,9 @@ enum {
    * arg2: struct audio_data*, audio data and length. */
   EVENT_AUDIO,
 
-  /* arg1: unused
+  /* arg1: int, error code. should be 0 if reg succeeds.
    * arg2: struct dev_info*, device info. the pointer
-   *  is only valid until the event handler returns */
+   *  is only valid if arg1 is 0. */
   EVENT_REG_OK,
 
   /* arg1, arg2: unused */

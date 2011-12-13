@@ -42,6 +42,9 @@ int main(int argc, char *const argv[])
 {
   int opt;
 
+  if( init() != 0 )
+    return 1;
+
   printf("daya server %s\n", VERSION);
 
   while ((opt = getopt(argc, argv, "hq:Bufp:s")) != -1) {
@@ -82,9 +85,6 @@ int main(int argc, char *const argv[])
         break;
     }
   }
-
-  if( init() != 0 )
-    return 1;
 
   basic_setup();
 

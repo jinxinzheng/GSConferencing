@@ -18,6 +18,7 @@
 #include <include/compiler.h>
 #include "db/md.h"
 #include "interp.h"
+#include "mix.h"
 
 //#define DGB_REPEAT(a...)  fprintf(stderr, "repeat: " a)
 #define DGB_REPEAT(a...)
@@ -39,9 +40,8 @@ int dev_cast_packet(struct device *dev, struct packet *pack)
 
   t = dev->tag;
 
-  /* enque packet to device's fifo */
-  if( !tag_in_dev_packet(t, dev, pack) )
-    return -1;
+  if( mix_put(dev, pack) )
+    return 1;
 
   /* dup packet for interpreting */
   if( !list_empty(&t->interp.dup_head) )
@@ -285,7 +285,7 @@ void *tag_run_casting(void *tag)
     tag_repeats(t);
 
     /* mix packs from different devices */
-    pack = tag_out_dev_mixed(t);
+    pack = mix_get(t);
     trace_dbg("got mixed pack=%x from tag\n", (uint32_t)pack);
 
     /* the pack might be NULL since it could be

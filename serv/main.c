@@ -11,6 +11,7 @@
 #include "recover.h"
 #include "async.h"
 #include <config.h>
+#include "mix.h"
 
 static void basic_setup()
 {
@@ -47,7 +48,7 @@ int main(int argc, char *const argv[])
 
   printf("daya server %s\n", VERSION);
 
-  while ((opt = getopt(argc, argv, "hq:Bufp:s")) != -1) {
+  while ((opt = getopt(argc, argv, "hq:Bufp:sm:")) != -1) {
     switch (opt) {
       case 'h':
         help();
@@ -81,7 +82,19 @@ int main(int argc, char *const argv[])
       case 's':
         opt_silence_drop = 1;
         break;
-      default:
+      case 'm':
+        if( strcmp("simple", optarg) == 0 )
+          set_mixer(simple_mixer);
+        else
+        {
+          fprintf(stderr, "invalid command arg.\n");
+          help();
+          return 1;
+        }
+        break;
+      case '?':
+        help();
+        return 1;
         break;
     }
   }

@@ -6,15 +6,17 @@ ifneq (,$(ARCH))
 	CFLAGS += -march=$(ARCH)
 endif
 
-SRCS := $(wildcard *.c)
-OBJS := $(patsubst %.c,%.o,$(SRCS))
-
 ifneq (,$(HOST))
 sys = daya-sys-$(HOST)
+CFLAGS += -I../sqlite/include
+LDFLAGS += -L../sqlite/lib
 else
 sys = daya-sys
 endif
 
+
+SRCS := $(wildcard *.c)
+OBJS := $(patsubst %.c,%.o,$(SRCS))
 
 SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.o sys.o hbeat.o pcm.o interp.o ptc.o\
 	async.o block.o ../threadpool/threadpool.o \

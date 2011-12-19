@@ -8,8 +8,19 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <time.h>
 
 static int fdw = -1;
+static int latency_test = 0;
+
+struct latency_data
+{
+  unsigned int magic;
+  int zero;  // protect from silence detect
+  struct timespec sendtime;
+};
+
+#define LATENCY_MAGIC 0x1f1e1d1c
 
 int on_event(int event, void *arg1, void *arg2)
 {
@@ -28,6 +39,25 @@ int on_event(int event, void *arg1, void *arg2)
         struct audio_data *audio = (struct audio_data *)arg2;
         int l;
         l = write(fdw, audio->data, audio->len);
+      }
+      else if( latency_test )
+      {
+        struct audio_data *audio = (struct audio_data *)arg2;
+        struct latency_data *lat = (struct latency_data *)audio->data;
+        if( lat->magic == LATENCY_MAGIC )
+        {
+          struct timespec ts;
+          int dsec, dnano;
+          clock_gettime(CLOCK_REALTIME, &ts);
+          if( ts.tv_nsec < lat->sendtime.tv_nsec )
+          {
+            ts.tv_sec -= 1;
+            ts.tv_nsec += 1000000000;
+          }
+          dsec = ts.tv_sec - lat->sendtime.tv_sec;
+          dnano = ts.tv_nsec - lat->sendtime.tv_nsec;
+          printf("time drift %d.%09d\n", dsec, dnano);
+        }
       }
     }
     break;
@@ -131,7 +161,7 @@ int main(int argc, char *const argv[])
   int id=0;
 
 
-  while ((opt = getopt(argc, argv, "i:srS:a")) != -1) {
+  while ((opt = getopt(argc, argv, "i:srS:al")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -149,6 +179,10 @@ int main(int argc, char *const argv[])
         break;
       case 'a':
         audiotest = 1;
+        break;
+      case 'l':
+        latency_test = 1;
+        s = 1;
         break;
     }
   }
@@ -215,6 +249,7 @@ int main(int argc, char *const argv[])
   {
     set_option(OPT_AUDIO_UDP, 1);
     switch_tag(2);
+    switch_tag(1);
 
     discctrl_query(buf);
     discctrl_select(0, idlist, buf);
@@ -227,7 +262,16 @@ int main(int argc, char *const argv[])
     if (s)
     {
       char *p = send_audio_start();
-      sprintf(p, "%x", i++);
+      if( latency_test )
+      {
+        struct latency_data *lat = (struct latency_data *)p;
+        lat->magic = LATENCY_MAGIC;
+        lat->zero = 0;
+        clock_gettime(CLOCK_REALTIME, &lat->sendtime);
+      }
+      else
+        sprintf(p, "%x", i++);
+
       send_audio_end(512);
     }
   }

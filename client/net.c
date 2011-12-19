@@ -13,6 +13,7 @@
 #include <include/util.h>
 #include <include/thread.h>
 #include "include/encode.h"
+#include <include/compiler.h>
 #include "../config.h"
 
 #define BUFLEN 4096
@@ -322,7 +323,7 @@ static void __run_recv_audio()
   }
 }
 
-static void *run_recv_audio(void *arg)
+static void *run_recv_audio(void *arg __unused)
 {
   __run_recv_audio();
   return NULL;
@@ -378,7 +379,7 @@ static int udp_port;
 
 static void _recv_udp(int s);
 
-static void *run_recv_udp(void *arg)
+static void *run_recv_udp(void *arg __unused)
 {
   int sock, br_sock;
   int on;
@@ -497,7 +498,7 @@ static void _recv_udp(int s)
 static int tcp_port;
 static int file_port;
 
-static void *run_recv_tcp(void *arg)
+static void *run_recv_tcp(void *arg __unused)
 {
   int port;
   int lisn_sock;

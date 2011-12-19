@@ -7,6 +7,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <include/util.h>
+#include <include/compiler.h>
 #include "net.h"
 #include "../include/pack.h"
 
@@ -20,7 +21,7 @@ static int servPort = 7650;
 
 static struct sockaddr_in servAddr;
 
-static void *auto_send_udp(void *arg)
+static void *auto_send_udp(void *arg __unused)
 {
   char buf[512], *p;
   int len;
@@ -61,6 +62,7 @@ static void udp_recved(char *buf, int l)
 {
   uint32_t *phead, i,s;
   phead = (uint32_t *)buf;
+  buf[l] = 0;
   if (verbose)
   {
     i = ntohl(phead[0]);

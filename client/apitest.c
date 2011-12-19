@@ -83,7 +83,7 @@ int on_event(int event, void *arg1, void *arg2)
 
 static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsigned int hz)
 {
-  int ioctl_val;
+  unsigned int ioctl_val;
 
   /*reset and sync*/
   ioctl_val=0;

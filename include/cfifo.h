@@ -21,15 +21,15 @@ struct cfifo
   pthread_cond_t empty_cnd;
 };
 
-#define CFIFO(ff, sord, eord) \
-  char ff##_data[(1<<(sord)) * (1<<(eord))]; \
-  struct cfifo ff = \
+#define CFIFO(name, _sord, _eord) \
+  char __##name##_data[(1<<(_sord)) * (1<<(_eord))]; \
+  struct cfifo name = \
   { \
-    0, \
-    0, \
-    (1<<(sord))-1, \
-    eord,  \
-    ff##_data, \
+    .in   = 0, \
+    .out  = 0, \
+    .mask = (1<<(_sord))-1, \
+    .eord = _eord,  \
+    .data = __##name##_data, \
   }
 
 static inline void cfifo_init(struct cfifo *cf, int size_order, int e_order)

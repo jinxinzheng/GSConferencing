@@ -13,6 +13,7 @@
 #include "include/debug.h"
 #include <include/thread.h>
 #include <include/util.h>
+#include <include/compiler.h>
 #include "../config.h"
 #include "cyctl.h"
 
@@ -128,7 +129,7 @@ void set_event_callback(event_cb cb)
 #define headlen(p)    (offsetof(struct pack, data))
 #define pack_size(p)  (offsetof(struct pack, data) + (p)->datalen)
 
-static void *run_heartbeat(void *arg)
+static void *run_heartbeat(void *arg __unused)
 {
   struct pack hb;
   int sock;
@@ -205,7 +206,7 @@ static int is_silent(const char *buf, int len)
   return (top-bot<250);
 }
 
-static void *run_send_udp(void *arg)
+static void *run_send_udp(void *arg __unused)
 {
   struct pack *qitem;
   int l;
@@ -343,7 +344,7 @@ static void enque_pack(const struct pack *pack)
 
 static uint32_t expect_seq = 0;
 
-static void queue_audio_pack(struct pack *pack, int len)
+static void queue_audio_pack(struct pack *pack, int len __unused)
 {
   const struct pack *next;
   int tag = pack->tag;
@@ -409,7 +410,7 @@ static void queue_audio_pack(struct pack *pack, int len)
 queue_wait:
     /* queue any waiting packs if proper. */
     s = get_wait_seq();
-    if(s) DEBUG_REPEAT("proceed waiting %d\n", s);
+    if(s) { DEBUG_REPEAT("proceed waiting %d\n", s); }
     if( s == 0 )
     {
       /* no waiting */
@@ -518,7 +519,7 @@ static inline void drop_rcv_queue(int count)
   }
 }
 
-static void *run_recv_udp(void *arg)
+static void *run_recv_udp(void *arg __unused)
 {
   struct pack *qitem;
   static int count=0;
@@ -612,7 +613,7 @@ static inline char *null_safe(char *s)
 int send_cmd(char *buf, int len, struct cmd *reply)
 {
   int i,l;
-  struct cmd c = {0};
+  struct cmd c = {.cmd=0};
 
   l = len;
 
@@ -729,7 +730,7 @@ struct parse_cfg
 #define PARSE_CFG_STR(etype, emember)   \
   PARSE_CFG(etype, emember, 's')
 
-#define PARSE_CFG_END()   {0}
+#define PARSE_CFG_END()   {0,0,0}
 
 static int parse_entries(void *ents, char *str, const struct parse_cfg *cfg)
 {
@@ -829,7 +830,7 @@ static void parse_dev_info(char *str, struct dev_info *info)
     info_int(vote_total)
     info_int_list(vote_results)
     info_int(vote_choice)
-    ;
+    {}
   }
 }
 
@@ -1543,13 +1544,13 @@ static struct
 {
   int len;
   char data[1024*100];
-} transfile = {0};
+} transfile;
 
 static void handle_file(int sock, char *buf, int l)
 {
   if (sock)
   {
-    if( transfile.len + l >= sizeof(transfile.data) )
+    if( transfile.len + l >= (int)sizeof(transfile.data) )
       return;
     memcpy(transfile.data+transfile.len, buf, l);
     transfile.len += l;
@@ -1585,7 +1586,7 @@ static void handle_cmd(int sock, int type, char *buf, int l)
   }
   contex = { 0, 0, NULL, 0 };
 
-  struct cmd c = {0};
+  struct cmd c = {.cmd=0};
   int i;
 
   int isfile;

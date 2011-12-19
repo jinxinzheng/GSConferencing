@@ -51,7 +51,7 @@ static void read_config()
   is_cyctl = read_profile_int("con", "is_cyctl", 0, file);
 }
 
-int main(int argc, char *argv[])
+int main()
 {
   read_config();
 

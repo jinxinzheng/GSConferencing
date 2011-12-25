@@ -26,6 +26,9 @@ $1=="table"{
   adds=""
 }
 t&&$1=="i"{
+  field=$2;
+  table_type[table, field]="i";
+
   printf " int %s;\n", $2 >>hfile;
   gets=gets"  if(values["i"]) rec->"$2" = atoi(values["i"]);\n";
   if( $2 != "id")
@@ -42,6 +45,9 @@ t&&$1=="i"{
   i++
 }
 t&&$1=="s"{
+  field=$2;
+  table_type[table, field]="s";
+
   printf " char %s[%d];\n", $2, $3 >>hfile;
   gets=gets"  if(values["i"]) strcpy(rec->"$2", values["i"]);\n";
   updatef=updatef $2"='%s',";
@@ -57,6 +63,8 @@ t&&$1=="x"{
   print "/*extra*/ "a[2] >>hfile;
 }
 t&&/^$/{
+  table_gets[table]=gets;
+
   t=0;
   print "};\n" >>hfile;
 
@@ -176,6 +184,47 @@ t&&/^$/{
   return ret; \
 }\n\
 " >>cfile;
+}
+
+$1=="query"{
+  table=$2
+  arg=$3
+
+  if (table_type[table, arg]=="i")
+    argfmt="%d";
+  else if (table_type[table, arg]=="s")
+    argfmt="'%s'";
+
+  query_signature="int db_get_" table "_by_" arg "(struct db_"table" *data, int max)";
+
+  print query_signature";\n" >>hfile
+
+  print query_signature" \
+{ \
+ const char **values, **columnNames; \
+ char *errmsg; \
+ int ret, cols, rows; \
+ char sqlcmd[256]; \
+ struct db_"table" *rec = data; \
+ sqlite_vm *vm; \
+\
+ rows = 0; \
+ sprintf(sqlcmd, \"select * from '"table"' where "arg"="argfmt";\", data->"arg"); \
+ ret = sqlite_compile(db, sqlcmd, NULL, &vm, &errmsg); \
+\
+ while (rows<max && sqlite_step(vm, &cols, &values, &columnNames) == SQLITE_ROW) \
+ { \
+" table_gets[table]" \
+  rec++; \
+  rows++; \
+ } \
+\
+ ret = sqlite_finalize(vm, &errmsg); \
+ if (ret != SQLITE_OK) \
+  fprintf(stderr, \"SQL error: %s\\n\", errmsg); \
+ return rows; \
+} \
+" >>cfile
 }
 
 END{

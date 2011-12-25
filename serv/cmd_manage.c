@@ -290,6 +290,7 @@ end_cmd:
     GEN_OP(user)
     GEN_OP(device)
     GEN_OP(tag)
+    GEN_OP(auth_card)
     GEN_OP(discuss)
     GEN_OP(vote)
     GEN_OP(video)

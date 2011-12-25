@@ -23,6 +23,7 @@ DECLARE(group);
 DECLARE(user);
 DECLARE(device);
 DECLARE(tag);
+DECLARE(auth_card);
 DECLARE(vote);
 DECLARE(discuss);
 DECLARE(video);

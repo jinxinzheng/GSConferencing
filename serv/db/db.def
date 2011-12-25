@@ -42,6 +42,12 @@ table tag
 i id
 s name 32
 
+table auth_card
+i id auto
+s card_id 256
+s card_info 256
+s extra 256
+
 table vote
 i id
 s name 32
@@ -63,3 +69,4 @@ table file
 i id auto
 s path 260
 
+query auth_card card_id

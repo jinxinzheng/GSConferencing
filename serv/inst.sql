@@ -57,6 +57,14 @@ create table device
  foreign key (tagid) references tag(id)
 );
 
+create table auth_card
+(
+ id         integer primary key,  -- id, auto increment
+ card_id    varchar(256),         -- 卡号
+ card_info  varchar(256),         -- 卡内信息
+ extra      varchar(256)          -- 其他信息
+);
+
 -- 投票表决
 create table vote
 (

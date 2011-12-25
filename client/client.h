@@ -347,6 +347,8 @@ typedef struct
 
 int get_all_devs(__out dev_ent_t devs[], __out int *count);
 
+int auth(const char *card_id, const char *card_info, __out char * extra);
+
 #ifdef __cplusplus
 }
 #endif

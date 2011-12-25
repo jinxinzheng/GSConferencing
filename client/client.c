@@ -1505,6 +1505,21 @@ int get_all_devs(dev_ent_t devs[], int *count)
   return 0;
 }
 
+int auth(const char *card_id, const char *card_info, char * extra)
+{
+  BASICS;
+
+  PRINTC("auth %s %s", card_id, card_info);
+
+  SEND_CMD();
+
+  i = FIND_OK(c);
+
+  strcpy(extra, c.args[i+1]);
+
+  return 0;
+}
+
 
 int synctime()
 {

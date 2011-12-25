@@ -204,6 +204,8 @@ int main(int argc, char *const argv[])
     return 0;
   }
 
+  auth("100", "hello", buf);
+
   {
     struct tag_info tags[32];
     int ntag;

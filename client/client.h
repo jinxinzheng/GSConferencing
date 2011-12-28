@@ -174,6 +174,11 @@ enum {
 
   /* arg1: int, 1 chair control, 0 manager control */
   EVENT_CHAIR_CTL,
+
+  /* arg1: void *, video frame data.
+   * arg2: int, video frame length . */
+  EVENT_VIDEO,
+
 };
 
 
@@ -348,6 +353,12 @@ typedef struct
 int get_all_devs(__out dev_ent_t devs[], __out int *count);
 
 int auth(const char *card_id, const char *card_info, __out char * extra);
+
+int video_start();
+
+int video_stop();
+
+int send_video(const char *buf, int len);
 
 #ifdef __cplusplus
 }

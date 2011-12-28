@@ -41,6 +41,7 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	cmd_misc.o \
 	cmd_ptc.o \
 	cmd_auth.o \
+	cmd_video.o \
 	../sha/sha128.o \
 	../common/ping.o \
 	../common/thread.o \

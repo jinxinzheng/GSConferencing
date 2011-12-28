@@ -491,6 +491,8 @@ static void audio_recved(struct pack *buf, int len)
   }*/
 }
 
+static void video_recved(struct pack *pack, int len);
+
 static void udp_recved(char *buf, int len)
 {
   struct pack *pack;
@@ -506,6 +508,10 @@ static void udp_recved(char *buf, int len)
 
     case PACKET_SEQ_OUTDATE :
     outdate_seq(pack);
+    break;
+
+    case PACKET_VIDEO:
+    video_recved(pack, len);
     break;
   }
 }
@@ -560,6 +566,139 @@ static void *run_recv_udp(void *arg __unused)
   }
 
   return NULL;
+}
+
+#define FRAGSIZE  1400
+
+static int do_send_video(const void *buf, int len)
+{
+  static int sock = -1;
+
+  if( sock < 0 )
+  {
+    if( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
+    {
+      perror("socket()");
+      return -1;
+    }
+  }
+
+  sendto(sock, buf, len, 0, (struct sockaddr *)&servAddr, sizeof(servAddr));
+
+  return 0;
+}
+
+int send_video(const char *buf, int len)
+{
+  /* fragmentise */
+  char data[FRAGSIZE+100];
+  struct pack *pack = (struct pack *)data;
+  int off;
+  int i,n,m;
+  int frags;
+
+  static uint8_t fseq = 0;
+
+  if( len<0 || len>(1<<16) )
+  {
+    return -1;
+  }
+
+  n = len / FRAGSIZE; /* frags count minus 1 */
+  m = len % FRAGSIZE; /* size of last frag */
+  frags = n + (m==0?0:1);
+
+  pack->type = PACKET_VIDEO;
+  pack->id = (uint32_t)id;
+  HTON(pack);
+
+  fseq++;
+  off = 0;
+
+  for( i=0 ; i<n ; i++ )
+  {
+    /* to fully utilize our small header,
+     * tag is used for sequence,
+     * high word of seq is frag offset,
+     * low word of seq is frag count and
+     * frag index.. */
+    pack->tag = fseq;
+    pack->seq = htonl( (off<<16) | (frags<<8) | i);
+    pack->datalen = htons(FRAGSIZE);
+    memcpy(pack->data, buf+off, FRAGSIZE);
+
+    do_send_video(pack, headlen(pack)+FRAGSIZE);
+
+    off += FRAGSIZE;
+  }
+
+  if( m!=0 )
+  {
+    pack->tag = fseq;
+    pack->seq = htonl( (off<<16) | (frags<<8) | n);
+    pack->datalen = htons(m);
+    memcpy(pack->data, buf+off, m);
+
+    do_send_video(pack, headlen(pack)+m);
+  }
+
+  return 0;
+}
+
+static void video_recved(struct pack *pack, int len)
+{
+  /* defragment */
+  static char frame[1<<16];
+  static int flen;
+  static int fseq;
+  static char frag_map[128];
+  static char frag_std[128] = {[0 ... 127] = 1};
+
+  int off;
+  int count;
+  int index;
+
+  /* sanity check */
+  if( pack_size(pack) != len )
+  {
+    trace_err("broken video pack %d<>%d\n", pack_size(pack), len);
+    return;
+  }
+
+  if( fseq != pack->tag )
+  {
+    /* start recv for a new frame */
+    fseq = pack->tag;
+    memset(frag_map, 0, sizeof(frag_map));
+    flen = 0;
+  }
+
+  off = (pack->seq >>16) & 0xffff;
+  count = (pack->seq >>8) & 0xff;
+  index = (pack->seq) & 0xff;
+
+  memcpy(frame+off, pack->data, pack->datalen);
+
+  if( index == count-1 )
+  {
+    /* the last frag */
+    flen = off + pack->datalen;
+  }
+
+  frag_map[index] = 1;
+
+  if( memcmp(frag_map, frag_std, count) == 0 )
+  {
+    /* all fragments complete */
+    /* directly notify the playback side.. */
+    event_handler(EVENT_VIDEO,
+        (void*)frame,
+        (void*)flen);
+
+    /* reset */
+    memset(frag_map, 0, sizeof(frag_map));
+    flen = 0;
+  }
 }
 
 /* cmd delegates */
@@ -1517,6 +1656,24 @@ int auth(const char *card_id, const char *card_info, char * extra)
 
   strcpy(extra, c.args[i+1]);
 
+  return 0;
+}
+
+int video_start()
+{
+  BASICS;
+  PRINTC("video start 0");
+  SEND_CMD();
+  i = FIND_OK(c);
+  return 0;
+}
+
+int video_stop()
+{
+  BASICS;
+  PRINTC("video stop");
+  SEND_CMD();
+  i = FIND_OK(c);
   return 0;
 }
 

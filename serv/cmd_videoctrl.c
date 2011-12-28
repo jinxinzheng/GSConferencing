@@ -1,3 +1,5 @@
+/* this is video file controling...
+ * the realtime video is in cmd_video.c */
 #include "cmd_handler.h"
 #include "db/md.h"
 

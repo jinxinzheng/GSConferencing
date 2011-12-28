@@ -27,6 +27,9 @@
 #include <include/util.h>
 #include <include/compiler.h>
 
+/* in cmd_video.c */
+int cast_video(struct device *d, const void *buf, int len);
+
 #define perrorf(fmt, args...) do{ \
   char __buf[256];  \
   sprintf(__buf, fmt, ##args); \
@@ -520,6 +523,10 @@ static int pack_recv(struct packet *pack)
         tag_req_repeat(t, d, ntohl(p->seq));
       return 1;
     }
+
+    case PACKET_VIDEO:
+      cast_video(d, pack->data, pack->len);
+      return 1;
   }
 
   return 0;

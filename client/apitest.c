@@ -73,6 +73,12 @@ int on_event(int event, void *arg1, void *arg2)
     }
     break;
 
+    case EVENT_VIDEO :
+    {
+      printf("video frame len=%d\n", (int)arg2);
+      break;
+    }
+
     default :
     printf("e: %d, %p, %p\n", event, arg1, arg2);
     break;
@@ -154,7 +160,7 @@ int main(int argc, char *const argv[])
 
   int audiotest = 0;
 
-  char buf[2048];
+  char buf[10240];
   int i=0;
   int idlist[1000];
 
@@ -238,6 +244,11 @@ int main(int argc, char *const argv[])
   interp_set_mode(0);
 
   //synctime();
+
+  video_start();
+  send_video(buf, 9999);
+  sleep(2);
+  video_stop();
 
   if (r)
   {

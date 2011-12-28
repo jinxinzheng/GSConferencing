@@ -749,3 +749,25 @@ int ping_dev(struct device *dev)
 {
   return ping(&dev->addr);
 }
+
+int open_broadcast_sock()
+{
+  int sock;
+  int val;
+
+  if( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
+  {
+    perror("socket()");
+    return -1;
+  }
+
+  val = 1;
+  if( setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &val, sizeof val) < 0 )
+  {
+    perror("setsockopt(SO_BROADCAST)");
+    close(sock);
+    return -1;
+  }
+
+  return sock;
+}

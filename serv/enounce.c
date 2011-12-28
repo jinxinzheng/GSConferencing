@@ -12,20 +12,11 @@
 static void *run_enounce(void *arg __unused)
 {
   int sock;
-  int r, optval;
   pack_data pack;
   int len;
 
-  if( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
+  if( (sock = open_broadcast_sock()) < 0 )
     return NULL;
-
-  optval = 1;
-  if( (r = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &optval, sizeof optval)) < 0 )
-  {
-    perror("setsockopt()");
-    close(sock);
-    return NULL;
-  }
 
   memset(&pack, 0, sizeof pack);
   pack.id = 0xE2012CE; /* the magic */

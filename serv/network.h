@@ -20,4 +20,6 @@ void send_file_to_dev(const char *path, struct device *dev);
 
 int ping_dev(struct device *dev);
 
+int open_broadcast_sock();
+
 #endif

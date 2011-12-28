@@ -277,20 +277,8 @@ void *tag_run_casting(void *tag)
   /* the udp socket. one created for each thread,
    * so the threads could send data simultaneously
    * without intefering with each other. */
-  if ((t->sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+  if( (t->sock = open_broadcast_sock()) < 0 )
     return NULL;
-
-  if (opt_broadcast)
-  {
-    int r, optval;
-    optval = 1;
-    if( (r = setsockopt(t->sock, SOL_SOCKET, SO_BROADCAST, &optval, sizeof optval)) )
-    {
-      perror("setsockopt(SO_BROADCAST)");
-      close(t->sock);
-      return NULL;
-    }
-  }
 
   do {
     /* fulfill all repeat requests before cast */

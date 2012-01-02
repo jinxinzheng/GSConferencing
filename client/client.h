@@ -11,6 +11,7 @@ enum
 {
   OPT_AUDIO_UDP,
   OPT_ENABLE_RETRANSMIT,
+  OPT_ZERO_COMPRESSION,
 };
 
 void set_option(int opt, int val);

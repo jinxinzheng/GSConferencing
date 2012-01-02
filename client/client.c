@@ -31,10 +31,12 @@ static int listenPort;
 static struct {
   int audio_use_udp;
   int enable_retransmit;
+  int zero_compression;
 }
 opts = {
-  .audio_use_udp = 0,
-  .enable_retransmit = 1,
+  .audio_use_udp = 1,
+  .enable_retransmit = 0,
+  .zero_compression = 0,
 };
 
 static int subscription[2] = {0};
@@ -112,6 +114,10 @@ void set_option(int opt, int val)
 
     case OPT_ENABLE_RETRANSMIT :
     opts.enable_retransmit = val;
+    break;
+
+    case OPT_ZERO_COMPRESSION:
+    opts.zero_compression = val;
     break;
   }
 }
@@ -218,11 +224,14 @@ static void *run_send_udp(void *arg __unused)
     cfifo_wait_empty(&udp_snd_fifo);
     qitem = (struct pack *)cfifo_get_out(&udp_snd_fifo);
 
-    /* compress silence */
-    if( is_silent(qitem->data, qitem->datalen) )
-      sc ++;
-    else
-      sc = 0;
+    if( opts.zero_compression )
+    {
+      /* compress silence */
+      if( is_silent(qitem->data, qitem->datalen) )
+        sc ++;
+      else
+        sc = 0;
+    }
 
     if(sc>30)
     {

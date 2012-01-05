@@ -70,6 +70,7 @@ static inline int parse_cmd(char *line, struct cmd *pcmd)
   else
     pcmd->cmd=p;
 
+  memset(pcmd->args, 0, sizeof(pcmd->args));
   i=0;
   do
   {

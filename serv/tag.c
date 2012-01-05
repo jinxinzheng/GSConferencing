@@ -149,7 +149,7 @@ void tag_add_outstanding(struct tag *t, struct device *d)
 
   /* check if it's already added. */
   if( d->mixbit )
-    return;
+    goto end;
 
   /* find a place in the mix_devs,
    * we do not put all the non-empty queues together at top
@@ -180,6 +180,7 @@ void tag_add_outstanding(struct tag *t, struct device *d)
     }
   }
 
+end:
   UNLOCK(t->mut);
 }
 

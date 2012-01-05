@@ -67,6 +67,7 @@ static void *run_recv_udp(void *arg);
 void client_init(int dev_id, int type, const char *servIP, int localPort)
 {
   int servPort = SERVER_PORT;
+  int netplay;
 
   printf("daya client %s\n", VERSION);
 
@@ -88,22 +89,33 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
 
   memset(&net_mixer_addr, 0, sizeof(net_mixer_addr));
 
+  /* the special netplay mode,
+   * only a few functions are enabled. */
+  netplay = (type==222);
+
   /* listen cmds */
-  start_recv_tcp(listenPort, handle_cmd);
+  if(!netplay)
+    start_recv_tcp(listenPort, handle_cmd);
 
   /* listen udp - audio, video and other */
-  start_recv_udp(listenPort, udp_recved);
+  start_recv_udp(listenPort, udp_recved, !netplay);
 
   /* udp sending and recving queues */
-  cfifo_init(&udp_snd_fifo, 8, 11); //256 of size and 2K of element size
-  cfifo_enable_locking(&udp_snd_fifo);
+  if(!netplay)
+  {
+    cfifo_init(&udp_snd_fifo, 8, 11); //256 of size and 2K of element size
+    cfifo_enable_locking(&udp_snd_fifo);
+  }
 
   cfifo_init(&udp_rcv_fifo, 8, 11);
   cfifo_enable_locking(&udp_rcv_fifo);
 
   /* udp sender thread */
-  start_thread(run_heartbeat, NULL);
-  start_thread(run_send_udp, NULL);
+  if(!netplay)
+  {
+    start_thread(run_heartbeat, NULL);
+    start_thread(run_send_udp, NULL);
+  }
   start_thread(run_recv_udp, NULL);
 }
 

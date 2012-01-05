@@ -376,6 +376,7 @@ int send_audio(void *buf, size_t len)
 
 
 static int udp_port;
+static int udp_recv_br;
 
 static void _recv_udp(int s);
 
@@ -412,26 +413,33 @@ static void *run_recv_udp(void *arg __unused)
   printf("listen on %d\n", port);
 
 
-  /* Create socket for receving broadcasted packets */
-  if ((br_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-    die("socket()");
-
-  on = 1;
-  if (setsockopt(br_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
-    die("setsockopt");
-
-  on = 1;
-  if (setsockopt(br_sock, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on)) < 0)
-    die("setsockopt");
-
-  /* Bind to the broadcast port */
-  addr.sin_port = htons(BRCAST_PORT);
-
-  if (bind(br_sock, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+  if( !udp_recv_br )
   {
-    close(br_sock);
     br_sock = 0;
-    perror("bind to broadcast port");
+  }
+  else
+  {
+    /* Create socket for receving broadcasted packets */
+    if ((br_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+      die("socket()");
+
+    on = 1;
+    if (setsockopt(br_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+      die("setsockopt");
+
+    on = 1;
+    if (setsockopt(br_sock, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on)) < 0)
+      die("setsockopt");
+
+    /* Bind to the broadcast port */
+    addr.sin_port = htons(BRCAST_PORT);
+
+    if (bind(br_sock, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+    {
+      close(br_sock);
+      br_sock = 0;
+      perror("bind to broadcast port");
+    }
   }
 
   n = (sock>br_sock? sock:br_sock) +1;
@@ -631,10 +639,11 @@ static void *run_recv_tcp(void *arg __unused)
   /* NOT REACHED */
 }
 
-void start_recv_udp(int listenPort, void (*recved)(char *buf, int l))
+void start_recv_udp(int listenPort, void (*recved)(char *buf, int l), int recv_br)
 {
   udp_port = listenPort;
   udp_recved = recved;
+  udp_recv_br = recv_br;
   start_thread(run_recv_udp, NULL);
 }
 

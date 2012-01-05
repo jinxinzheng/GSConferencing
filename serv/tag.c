@@ -58,6 +58,7 @@ struct tag *tag_create(long gid, long tid)
 
     struct mixer *mixers[] = {
       [MIXER_SIMPLE] = simple_mixer,
+      [MIXER_NET] = net_mixer,
     };
 
     set_mixer(t, mixers[opt_mixer]);

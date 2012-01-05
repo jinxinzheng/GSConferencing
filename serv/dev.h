@@ -84,6 +84,11 @@ struct device
   int highload;
 
   struct {
+    int res;
+    const char *info;
+  } mixer;
+
+  struct {
     int flushed;
   } stats;
 

@@ -17,6 +17,8 @@ struct mixer
 
 /* in simple_mixer.c */
 extern struct mixer *simple_mixer;
+/* in net_mixer.c */
+extern struct mixer *net_mixer;
 
 
 static inline void set_mixer(struct tag *t, struct mixer *m)

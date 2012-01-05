@@ -24,6 +24,7 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	enounce.o \
 	manage.o \
 	simple_mixer.o \
+	net_mixer.o \
 	cmd_handler.o \
 	cmd_debug.o \
 	cmd_tag.o \

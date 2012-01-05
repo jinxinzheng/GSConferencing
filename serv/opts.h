@@ -17,6 +17,7 @@ extern int opt_silence_drop;
 
 enum {
   MIXER_SIMPLE,
+  MIXER_NET,
 };
 extern int opt_mixer;
 

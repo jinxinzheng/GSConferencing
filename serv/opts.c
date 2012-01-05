@@ -6,4 +6,4 @@ int opt_tcp_audio = 1;
 int opt_flush = 0;
 int opt_sync_policy = SYNC_WAIT;
 int opt_silence_drop = 0;
-int opt_mixer = MIXER_SIMPLE;
+int opt_mixer = MIXER_NET;

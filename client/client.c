@@ -27,6 +27,7 @@ static int id;
 static int devtype;
 static struct sockaddr_in servAddr;
 static int listenPort;
+static struct sockaddr_in net_mixer_addr;
 
 static struct {
   int audio_use_udp;
@@ -84,6 +85,8 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   servAddr.sin_port        = htons(servPort); /* Server port */
 
   listenPort = localPort;
+
+  memset(&net_mixer_addr, 0, sizeof(net_mixer_addr));
 
   /* listen cmds */
   start_recv_tcp(listenPort, handle_cmd);
@@ -244,7 +247,14 @@ static void *run_send_udp(void *arg __unused)
     //send audio
     HTON(qitem);
     if( opts.audio_use_udp )
-      send_udp(qitem, l, &servAddr);
+    {
+      if( net_mixer_addr.sin_family )
+        /* send to the net mixer if we have one */
+        send_udp(qitem, l, &net_mixer_addr);
+      else
+        /* send to server */
+        send_udp(qitem, l, &servAddr);
+    }
     else
       send_audio(qitem, l);
 
@@ -1258,6 +1268,21 @@ int discctrl_request(int open)
   SEND_CMD();
 
   i = FIND_OK(c);
+
+  if( open )
+  {
+    char *minfo = c.args[++i];
+    if( minfo )
+    {
+      net_mixer_addr.sin_family      = AF_INET;
+      net_mixer_addr.sin_addr.s_addr = inet_addr(minfo);
+      net_mixer_addr.sin_port        = htons(AUDIO_PORT);
+    }
+  }
+  else
+  {
+    memset(&net_mixer_addr, 0, sizeof(net_mixer_addr));
+  }
 
   return 0;
 }

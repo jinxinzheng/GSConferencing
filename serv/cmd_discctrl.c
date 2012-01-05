@@ -222,7 +222,7 @@ static int cmd_discctrl(struct cmd *cmd)
     NEXT_ARG(p);
     open = atoi(p);
 
-    REP_OK(cmd);
+    REP_ADD(cmd, "OK");
 
     if( d->discuss.open == open )
     {
@@ -232,11 +232,17 @@ static int cmd_discctrl(struct cmd *cmd)
         /* restore the open state. */
         tag_add_outstanding(tag, d);
         ptc_push(d);
+
+        /* return the info for the net mixer if present */
+        if( d->mixer.info )
+          REP_ADD(cmd, d->mixer.info);
+        REP_END(cmd);
         return 0;
       }
       else
       {
         /* if it's already closed. just return ok. */
+        REP_END(cmd);
         return 0;
       }
     }
@@ -312,6 +318,10 @@ openit:
       ptc_remove(d);
     }
 
+    /* return the info for the (net) mixer if present */
+    if( d->mixer.info )
+      REP_ADD(cmd, d->mixer.info);
+    REP_END(cmd);
   }
 
   SUBCMD("status")

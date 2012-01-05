@@ -34,7 +34,7 @@ static void help()
       "-u:        always use udp to cast audio.\n"
       "-f:        enable packet flush dropping.\n"
       "-s:        enable packet silence dropping.\n"
-      "-m MIX:    set mix method: simple(default).\n"
+      "-m MIX:    set mix method: simple, net(default).\n"
       "-p POLICY: (for only -m simple) set syncing policy: wait(default), fixed, ref.\n"
   );
 }
@@ -85,6 +85,8 @@ int main(int argc, char *const argv[])
       case 'm':
         if( strcmp("simple", optarg) == 0 )
           opt_mixer = MIXER_SIMPLE;
+        else if( strcmp("net", optarg) == 0 )
+          opt_mixer = MIXER_NET;
         else
         {
           fprintf(stderr, "invalid command arg.\n");

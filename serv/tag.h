@@ -10,6 +10,8 @@ struct device;
 
 struct packet;
 
+struct mixer;
+
 #define MAX_SUB 1
 #define MAX_MIX 8
 
@@ -31,6 +33,8 @@ struct tag {
   /* ID hash table linkage. */
   struct tag *hash_next;
   struct tag **hash_pprev;
+
+  struct mixer *mixer;
 
   /* support up to 8 devices mixing audio */
   struct device *mix_devs[MAX_MIX];

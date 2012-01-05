@@ -11,7 +11,6 @@
 #include "recover.h"
 #include "async.h"
 #include <config.h>
-#include "mix.h"
 
 static void basic_setup()
 {
@@ -30,12 +29,13 @@ static void help()
 {
   printf(
       "options:\n"
-      "-h: print this help.\n"
-      "-B: don't use broadcast.\n"
-      "-u: always use udp to cast audio.\n"
-      "-f: enable packet flush dropping.\n"
-      "-s: enable packet silence dropping.\n"
-      "-p POLICY: set syncing policy: wait(default), fixed, ref.\n"
+      "-h:        print this help.\n"
+      "-B:        don't use broadcast.\n"
+      "-u:        always use udp to cast audio.\n"
+      "-f:        enable packet flush dropping.\n"
+      "-s:        enable packet silence dropping.\n"
+      "-m MIX:    set mix method: simple(default).\n"
+      "-p POLICY: (for only -m simple) set syncing policy: wait(default), fixed, ref.\n"
   );
 }
 
@@ -84,7 +84,7 @@ int main(int argc, char *const argv[])
         break;
       case 'm':
         if( strcmp("simple", optarg) == 0 )
-          set_mixer(simple_mixer);
+          opt_mixer = MIXER_SIMPLE;
         else
         {
           fprintf(stderr, "invalid command arg.\n");

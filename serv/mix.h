@@ -6,6 +6,9 @@
 
 struct mixer
 {
+  int (*open_dev)(struct device *d);
+  int (*close_dev)(struct device *d);
+
   /* return 1 if the packet is done use, otherwise 0. */
   int (*put)(struct device *d, struct packet *p);
 
@@ -16,11 +19,22 @@ struct mixer
 extern struct mixer *simple_mixer;
 
 
-void set_mixer(struct mixer *m);
+static inline void set_mixer(struct tag *t, struct mixer *m)
+{
+  t->mixer = m;
+}
 
-int mix_put(struct device *d, struct packet *p);
+#define MIX_OPEN_DEV(dev) \
+  if ((dev)->tag->mixer->open_dev) \
+    (dev)->tag->mixer->open_dev(dev)
 
-struct packet *mix_get(struct tag *t);
+#define MIX_CLOSE_DEV(dev) \
+  if ((dev)->tag->mixer->close_dev) \
+    (dev)->tag->mixer->close_dev(dev)
+
+#define MIX_PUT(tag,dev,pack)   (tag)->mixer->put(dev,pack)
+
+#define MIX_GET(tag)            (tag)->mixer->get(tag)
 
 
 #endif  /*__MIX_H__*/

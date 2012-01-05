@@ -40,7 +40,7 @@ int dev_cast_packet(struct device *dev, struct packet *pack)
 
   t = dev->tag;
 
-  if( mix_put(dev, pack) )
+  if( MIX_PUT(t, dev, pack) )
     return 1;
 
   /* dup packet for interpreting */
@@ -285,7 +285,7 @@ void *tag_run_casting(void *tag)
     tag_repeats(t);
 
     /* mix packs from different devices */
-    pack = mix_get(t);
+    pack = MIX_GET(t);
     trace_dbg("got mixed pack=%x from tag\n", (uint32_t)pack);
 
     /* the pack might be NULL since it could be

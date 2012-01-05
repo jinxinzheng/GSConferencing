@@ -16,6 +16,7 @@
 #include <include/lock.h>
 #include <include/util.h>
 #include <include/compiler.h>
+#include "mix.h"
 
 //#define MIX_DEBUG
 
@@ -53,7 +54,15 @@ struct tag *tag_create(long gid, long tid)
 
   if( tid == 1 )
   {
-    struct group *g = get_group(gid);
+    struct group *g;
+
+    struct mixer *mixers[] = {
+      [MIXER_SIMPLE] = simple_mixer,
+    };
+
+    set_mixer(t, mixers[opt_mixer]);
+
+    g = get_group(gid);
     t->discuss.mode = g->db_data->discuss_mode;
     if( g->db_data->discuss_maxuser == 0 )
       t->discuss.maxuser = MAX_MIX;
@@ -62,6 +71,8 @@ struct tag *tag_create(long gid, long tid)
   }
   else
   {
+    set_mixer(t, simple_mixer);
+
     t->discuss.mode = DISCMODE_FIFO;
     t->discuss.maxuser = 1;
   }
@@ -162,6 +173,9 @@ void tag_add_outstanding(struct tag *t, struct device *d)
       t->mix_count ++;
       pthread_cond_signal(&t->cnd_nonempty);
 
+      /* e.g. esd */
+      MIX_OPEN_DEV(d);
+
       break;
     }
   }
@@ -210,6 +224,9 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
   d->mixbit = 0;
 
   UNLOCK(t->mut);
+
+  /* e.g. esd */
+  MIX_CLOSE_DEV(d);
 
   /* todo: clear the queue of the dev */
 }

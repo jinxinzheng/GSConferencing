@@ -15,4 +15,10 @@ extern int opt_sync_policy;
 
 extern int opt_silence_drop;
 
+enum {
+  MIXER_SIMPLE,
+};
+extern int opt_mixer;
+
+
 #endif

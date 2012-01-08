@@ -117,6 +117,12 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
     start_thread(run_send_udp, NULL);
   }
   start_thread(run_recv_udp, NULL);
+
+  if(netplay)
+  {
+    /* only listen to tag 1 */
+    subscription[0] = 1;
+  }
 }
 
 void set_option(int opt, int val)

@@ -292,6 +292,7 @@ static int cmd_discctrl(struct cmd *cmd)
 
           /* kick one out */
           del_open(tag, kick);
+          ptc_remove(kick);
 
           /* notify the kicked user */
           kick_user(d, kick);

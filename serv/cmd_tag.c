@@ -28,7 +28,6 @@ static int cmd_switch_tag(struct cmd *cmd)
   char *p;
   long gid;
   long tid;
-  long tuid;
 
   struct device *d;
   struct tag *t;
@@ -52,13 +51,7 @@ static int cmd_switch_tag(struct cmd *cmd)
 
   gid = d->group->id;
 
-  tuid = TAGUID(gid, tid);
-
-  t = get_tag(tuid);
-  if (!t)
-  {
-    t = tag_create(gid, tid);
-  }
+  t = request_tag(gid, tid);
 
   tag_del_device(d);
 

@@ -85,6 +85,8 @@ struct tag {
 
 #define TAG_GETGID(tag) ( ((tag->tuid)>>16)&0xffff )
 
+struct tag *request_tag(long gid, long tid);
+
 struct tag *tag_create(long gid, long tid);
 
 void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast);

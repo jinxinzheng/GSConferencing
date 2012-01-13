@@ -20,6 +20,19 @@
 
 //#define MIX_DEBUG
 
+/* return the tag. create if it does
+ * not exist. */
+struct tag *request_tag(long gid, long tid)
+{
+  struct tag *t;
+  t = get_tag(TAGUID(gid, tid));
+  if (!t)
+  {
+    t = tag_create(gid, tid);
+  }
+  return t;
+}
+
 struct tag *tag_create(long gid, long tid)
 {
   struct tag *t;

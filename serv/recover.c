@@ -28,7 +28,6 @@ static inline void restore_sub(struct device *d)
   struct tag *t;
   int gid = d->group->id;
   int tid;
-  long tuid;
   int i;
 
   int subs[] = {dd->sub1, dd->sub2};
@@ -37,11 +36,7 @@ static inline void restore_sub(struct device *d)
   {
     if( (tid = subs[i]) )
     {
-      tuid = TAGUID(gid, tid);
-      t = get_tag(tuid);
-
-      if( !t )
-        t = tag_create(gid, tid);
+      t = request_tag(gid, tid);
 
       dev_subscribe(d, t);
     }

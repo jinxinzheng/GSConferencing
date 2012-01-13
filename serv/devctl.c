@@ -107,7 +107,6 @@ int dev_register(struct device *dev)
   long gid, tid;
   struct group *g;
   struct tag *t;
-  long tuid;
   int i;
 
   if( get_device(dev->id) )
@@ -132,9 +131,6 @@ int dev_register(struct device *dev)
   gid = 1;
   tid = dev->db_data->tagid;
 
-  /* tag unique id */
-  tuid = TAGUID(gid, tid);
-
   g = get_group(gid);
   if (!g)
   {
@@ -143,11 +139,7 @@ int dev_register(struct device *dev)
 
   group_add_device(g, dev);
 
-  t = get_tag(tuid);
-  if (!t)
-  {
-    t = tag_create(gid, tid);
-  }
+  t = request_tag(gid, tid);
 
   tag_add_device(t, dev);
 
@@ -174,9 +166,7 @@ int dev_register(struct device *dev)
       dev->db_data->sub2 == 0 )
   {
     /* any client default subscribes to tag 1 */
-    t = get_tag(TAGUID(gid, 1));
-    if( !t )
-      t = tag_create(gid, 1);
+    t = request_tag(gid, 1);
     dev_subscribe(dev, t);
   }
 

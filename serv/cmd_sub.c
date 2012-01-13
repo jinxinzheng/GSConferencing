@@ -17,7 +17,6 @@ static int cmd_sub(struct cmd *cmd)
     struct device *d;
     struct tag *t;
     long tid, gid;
-    long tuid;
     int unsub = 0;
 
     THIS_DEVICE(cmd, d);
@@ -36,23 +35,16 @@ static int cmd_sub(struct cmd *cmd)
       unsub = 1;
     }
 
-    tuid = TAGUID(gid, tid);
-    t = get_tag(tuid);
-
-    if (d) {
-      if( unsub )
-      {
-        if( t )
-          dev_unsubscribe(d, t);
-        break;
-      }
-
-      if (!t)
-        /* create an 'empty' tag that has no registered device.
-         * this ensures the subscription not lost if there are
-         * still not any device of the tag registered. */
-        t = tag_create(gid, tid);
-
+    if( unsub )
+    {
+      t = get_tag(TAGUID(gid, tid));
+      if( t )
+        dev_unsubscribe(d, t);
+      break;
+    }
+    else
+    {
+      t = request_tag(gid, tid);
       dev_subscribe(d, t);
     }
   } while(0);

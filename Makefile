@@ -10,6 +10,9 @@ export CC
 export AR
 endif
 
+CFLAGS = -pipe -Wall -Wextra -O
+export CFLAGS
+
 SUBDIRS:=serv client
 
 all: $(SUBDIRS)

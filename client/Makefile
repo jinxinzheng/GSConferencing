@@ -1,6 +1,6 @@
 #CC:=arm-linux-gcc
-CFLAGS := -pipe -I.. -Wall -Wextra -O
-LDFLAGS := -pipe -lpthread -lrt
+CFLAGS += -I..
+LDFLAGS := -lpthread -lrt
 
 ifneq (,$(ARCH))
 	CFLAGS += -march=$(ARCH)

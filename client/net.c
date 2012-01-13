@@ -211,10 +211,11 @@ static int dev_id;
 
 static void repack_audio(const void *buf, int len)
 {
-  const int pksize = 524;
+#define PKSIZE  524
+  const int pksize = PKSIZE;
   static char pack[1000];
   static int pklen = 0;
-  static int pkrem = pksize;
+  static int pkrem = PKSIZE;
   int boff = 0;
   int l;
 

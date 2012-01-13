@@ -565,6 +565,7 @@ static inline void drop_rcv_queue(int count)
 static void *run_recv_udp(void *arg __unused)
 {
   struct pack *qitem;
+  int qlen;
   static int count=0;
 
   while (1)
@@ -575,7 +576,7 @@ static void *run_recv_udp(void *arg __unused)
     count = (count+1) & ((1<<8)-1);
     if( !count )
     {
-      int qlen = cfifo_len(&udp_rcv_fifo);
+      qlen = cfifo_len(&udp_rcv_fifo);
       if( qlen > 4 )
       {
         int drop = qlen - 1;
@@ -585,7 +586,23 @@ static void *run_recv_udp(void *arg __unused)
       }
     }
 
+take1:
     qitem = (struct pack *)cfifo_get_out(&udp_rcv_fifo);
+
+    /* quick drop silence packs */
+    qlen = cfifo_len(&udp_rcv_fifo);
+    if(qlen > 1)
+    {
+      if( is_silent(qitem->data, qitem->datalen) )
+      {
+        trace_warn("dropping 1 silent\n");
+        drop_rcv_queue(1);
+        if( !cfifo_empty(&udp_rcv_fifo) )
+          goto take1;
+        else
+          continue;
+      }
+    }
 
     /* generate event */
     if (qitem->type == PACKET_AUDIO)

@@ -21,10 +21,14 @@ clean:
 	rm -rf common/*.o sha/*.o threadpool/*.o
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
 
-serv:
+COMMON_SRC = $(wildcard common/*.c) $(wildcard sha/*.c)
+COMMON_OBJ = $(COMMON_SRC:.c=.o)
+common: $(COMMON_OBJ)
+
+serv: common
 	$(MAKE) -C $@ ARCH=$(SERVER_ARCH)
 
-client:
+client: common
 	$(MAKE) -C $@ ARCH=$(CLIENT_ARCH)
 
 tar:

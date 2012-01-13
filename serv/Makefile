@@ -1,6 +1,6 @@
 #CC:=arm-linux-gcc
 CFLAGS := -pipe -I. -I.. -Wall -Wextra -O
-LDFLAGS := -pipe -lpthread -lrt -lsqlite
+LDFLAGS := -rdynamic -lpthread -lrt -lsqlite
 
 ifneq (,$(ARCH))
 	CFLAGS += -march=$(ARCH)
@@ -25,6 +25,7 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	manage.o \
 	simple_mixer.o \
 	net_mixer.o \
+	sigsegv.o \
 	cmd_handler.o \
 	cmd_debug.o \
 	cmd_tag.o \

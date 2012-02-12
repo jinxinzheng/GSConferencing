@@ -16,9 +16,9 @@ struct mixer;
 #define MAX_MIX 8
 
 struct tag {
-  long id;
+  int id;
   /*as id is not unique, need to use group_id<<16 + tag_id as the unique id. */
-  long tuid;
+  int tuid;
   char name[64];
 
   /* the socket used for casting */
@@ -52,7 +52,7 @@ struct tag {
     struct packet *rep_pack[REP_CAST_SIZE];
     int rep_pos;
     struct cfifo rep_reqs;
-    unsigned long seq;
+    unsigned int seq;
   } cast;
 
   struct {
@@ -78,9 +78,9 @@ struct tag {
 
 #define TAG_GETGID(tag) ( ((tag->tuid)>>16)&0xffff )
 
-struct tag *request_tag(long gid, long tid);
+struct tag *request_tag(int gid, int tid);
 
-struct tag *tag_create(long gid, long tid);
+struct tag *tag_create(int gid, int tid);
 
 void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast);
 

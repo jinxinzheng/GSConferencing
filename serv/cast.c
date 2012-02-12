@@ -61,7 +61,7 @@ static void __repeat_cast(struct tag *t, struct device *d __unused, uint32_t seq
       p = (pack_data *)r->data;
       if( ntohl(p->seq) == seq )
       {
-        DGB_REPEAT("repeat %d for %ld\n", seq, d->id);
+        DGB_REPEAT("repeat %d for %d\n", seq, d->id);
         /* uni cast to the requester */
         //sendto_dev_udp(t->sock, r->data, r->len, d);
 
@@ -335,7 +335,7 @@ int dev_subscribe(struct device *dev, struct tag *tag)
 
   dev->subscription[i] = tag;
 
-  trace_info("device %ld subscribed to tag %ld\n", dev->id, tag->id);
+  trace_info("device %d subscribed to tag %d\n", dev->id, tag->id);
 
   {
     int *states[] = { &dev->db_data->sub1, &dev->db_data->sub2 };

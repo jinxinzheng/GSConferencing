@@ -334,7 +334,7 @@ static int cmd_votectrl(struct cmd *cmd)
   else if (strcmp(scmd, "remind") == 0)
   {
     struct device *m;
-    long id;
+    int id;
 
     REP_OK(cmd);
 
@@ -342,7 +342,7 @@ static int cmd_votectrl(struct cmd *cmd)
     p = cmd->args[ai++];
     if (!p)
       return 1;
-    id = atol(p);
+    id = atoi(p);
 
     m = get_device(id);
     if (!m)
@@ -353,7 +353,7 @@ static int cmd_votectrl(struct cmd *cmd)
   else if (strcmp(scmd, "forbid") == 0)
   {
     struct device *m;
-    long id;
+    int id;
     int fbd;
 
     REP_OK(cmd);
@@ -362,7 +362,7 @@ static int cmd_votectrl(struct cmd *cmd)
     p = cmd->args[ai++];
     if (!p)
       return 1;
-    id = atol(p);
+    id = atoi(p);
 
     m = get_device(id);
     if (!m)

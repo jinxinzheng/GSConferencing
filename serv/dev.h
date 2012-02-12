@@ -36,9 +36,7 @@ struct device
 {
   struct dev_ops *ops;
 
-  long id;
-  /*unsigned long ip;
-  long port;*/
+  int id;
   struct sockaddr_in addr;
   /* the address which receives file */
   struct sockaddr_in fileaddr;

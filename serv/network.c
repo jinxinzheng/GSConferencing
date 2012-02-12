@@ -83,11 +83,12 @@ void run_listener_tcp(int port)
   int optval;
   struct connection *c;
 
-  if( sizeof(struct connection) > 32 )
+  if( sizeof(struct connection) > 64 )
   {
+    fprintf(stderr, "connection size %d\n", (int)sizeof(struct connection));
     die("connection object size is too big.");
   }
-  conn_pool = init_block_pool(40, 256, 1);
+  conn_pool = init_block_pool(64, 256, 1);
 
   blocking_queue_init(&connection_queue);
 
@@ -269,7 +270,7 @@ int dev_send_audio(struct device *d, const void *buf, int len)
    * try only once as it works generally on good connection. */
   if( send(d->audio_sock, buf, len, 0) < 0 )
   {
-    perrorf("%ld send audio fail", d->id);
+    perrorf("%d send audio fail", d->id);
     if( errno == EAGAIN )
     {
       if( ++d->audio_bad > 30 )
@@ -278,7 +279,7 @@ int dev_send_audio(struct device *d, const void *buf, int len)
          * is unplugged without any prompt. but the recv thread
          * cannot detect any error as the connection is still
          * in established state. */
-        fprintf(stderr, "%ld remote is inactive, shutdown.\n", d->id);
+        fprintf(stderr, "%d remote is inactive, shutdown.\n", d->id);
         shutdown(d->audio_sock, SHUT_RDWR);
         d->audio_bad = 0;
       }
@@ -363,7 +364,7 @@ static void *run_recv_audio(void *arg)
 
   close(conn_sock);
 
-  trace_info("audio of dev %ld disconnected\n", d->id);
+  trace_info("audio of dev %d disconnected\n", d->id);
 
   return NULL;
 }
@@ -437,7 +438,7 @@ static int __run_listen_audio()
   for(;;)
   {
     struct sockaddr_in remtAddr;
-    size_t remtLen;
+    socklen_t remtLen;
 
     /* Set the size of the in-out parameter */
     remtLen = sizeof remtAddr;
@@ -476,7 +477,7 @@ static int pack_recv(struct packet *pack)
   struct device *d;
   struct group *g;
   int i;
-  long did;
+  uint32_t did;
 
   /* work out the device object */
   did = ntohl(p->id);
@@ -679,7 +680,7 @@ void sendto_dev_tcp(const void *buf, size_t len, struct device *dev)
 
 #ifdef DEBUG_INFO
   ((char*)buf)[len] = 0;
-  trace_info("%s( '%s', %d, %d )\n", __func__, (char*)buf, len, (int)dev->id);
+  trace_info("%s( '%s', %d, %d )\n", __func__, (char*)buf, (int)len, (int)dev->id);
 #endif
 
   _CONNECT_DEV(dev, sock);

@@ -16,7 +16,7 @@ static int cmd_sub(struct cmd *cmd)
   {
     struct device *d;
     struct tag *t;
-    long tid, gid;
+    int tid, gid;
     int unsub = 0;
     int repid = 0;
 

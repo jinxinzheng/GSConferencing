@@ -62,7 +62,7 @@ static int cmd_reg(struct cmd *cmd)
   char *p;
   struct device *d;
   char sum[64];
-  unsigned long n;
+  unsigned int n;
   int type;
   char *pass;
   int port;
@@ -85,7 +85,7 @@ static int cmd_reg(struct cmd *cmd)
   bcast = p;
 
   /* authenticate the passwd based on id and type */
-  n = (unsigned long)cmd->device_id ^ (unsigned long)type;
+  n = (unsigned int)cmd->device_id ^ (unsigned int)type;
   cksum(&n, sizeof n, sum);
   if (strcmp(pass, sum) != 0)
   {

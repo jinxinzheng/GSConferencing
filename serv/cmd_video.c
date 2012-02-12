@@ -28,7 +28,7 @@ int cast_video(struct device *d, const void *buf, int len)
   }
   else
   {
-    trace_warn("unexpected video packet from %ld, len=%d\n", d->id, len);
+    trace_warn("unexpected video packet from %d, len=%d\n", d->id, len);
     return -1;
   }
   return 0;

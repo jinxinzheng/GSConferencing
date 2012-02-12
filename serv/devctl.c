@@ -37,7 +37,7 @@ static struct dev_ops default_dev_ops = {
 };
 
 /* create new dev with default config */
-struct device *dev_create(long did)
+struct device *dev_create(int did)
 {
   struct device *d;
 
@@ -91,7 +91,7 @@ void dev_update_data(struct device *dev)
       };
       strcpy(tmp.ip, ip);
       /* user_id is defaultly copy of id */
-      sprintf(tmp.user_id, "%ld", dev->id);
+      sprintf(tmp.user_id, "%d", dev->id);
 
       md_add_device(&tmp);
 
@@ -104,7 +104,7 @@ void dev_update_data(struct device *dev)
 
 int dev_register(struct device *dev)
 {
-  long gid, tid;
+  int gid, tid;
   struct group *g;
   struct tag *t;
   int i;
@@ -113,7 +113,7 @@ int dev_register(struct device *dev)
   {
     /* this device has already been registered.
      * this may be due to a reset of the device or some. */
-    trace_info("device %ld already registered, ignoring.\n", dev->id);
+    trace_info("device %d already registered, ignoring.\n", dev->id);
 
     /* work around: update tag's broadcast address list.
      * this is the case that the server is restarted.
@@ -160,7 +160,7 @@ int dev_register(struct device *dev)
 
   add_device(dev);
 
-  trace_info("device %ld registered\n", dev->id);
+  trace_info("device %d registered\n", dev->id);
 
   if( dev->db_data->sub1 == 0 &&
       dev->db_data->sub2 == 0 )

@@ -26,8 +26,8 @@ static int cmd_switch_tag(struct cmd *cmd)
   int a=0;
 
   char *p;
-  long gid;
-  long tid;
+  int gid;
+  int tid;
 
   struct device *d;
   struct tag *t;
@@ -36,7 +36,7 @@ static int cmd_switch_tag(struct cmd *cmd)
 
   NEXT_ARG(p);
 
-  tid = atol(p);
+  tid = atoi(p);
   if( tid <= 0 )
   {
     return ERR_OTHER;

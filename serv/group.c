@@ -8,7 +8,7 @@
 #include "strutil.h"
 #include "include/debug.h"
 
-struct group *group_create(long gid)
+struct group *group_create(int gid)
 {
   struct group *g;
   struct db_group *dg;
@@ -64,7 +64,7 @@ struct group *group_create(long gid)
     }
   }
 
-  trace_info("group %ld created\n", gid);
+  trace_info("group %d created\n", gid);
   return g;
 }
 
@@ -76,7 +76,7 @@ void group_save(struct group *g)
 void append_dev_ents_cache(struct group *g, struct device *d)
 {
   LIST_ADD_FMT(g->caches.dev_ents, g->caches.dev_ents_len,
-      "%ld:%d:%s:%d",
+      "%d:%d:%s:%d",
       d->id,
       d->type,
       d->db_data->user_id,

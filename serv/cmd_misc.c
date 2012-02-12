@@ -29,7 +29,7 @@ static int cmd_report_cyc_ctl(struct cmd *cmd)
 
   if( g->cyctl )
   {
-    trace_warn("received multiple cyc-ctl dev report: was %ld, to %ld\n",
+    trace_warn("received multiple cyc-ctl dev report: was %d, to %d\n",
       g->cyctl->id, d->id);
   }
 

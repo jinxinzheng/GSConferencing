@@ -10,7 +10,7 @@ struct db_vote;
 struct device;
 
 struct group {
-  long id;
+  int id;
 
   struct db_group *db_data;
 
@@ -63,7 +63,7 @@ struct group {
 };
 
 
-struct group *group_create(long gid);
+struct group *group_create(int gid);
 
 void group_save(struct group *g);
 

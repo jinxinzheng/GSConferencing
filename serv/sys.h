@@ -5,13 +5,13 @@
 
 int init_groups();
 
-struct group *get_group(long gid);
+struct group *get_group(int gid);
 void add_group(struct group *g);
 
-struct tag *get_tag(long tuid);
+struct tag *get_tag(int tuid);
 void add_tag(struct tag *t);
 
-struct device *get_device(long did);
+struct device *get_device(int did);
 void add_device(struct device *dev);
 
 void group_add_device(struct group *g, struct device *dev);

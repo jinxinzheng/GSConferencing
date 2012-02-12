@@ -3,7 +3,7 @@
 
 #include "dev.h"
 
-struct device *dev_create(long did);
+struct device *dev_create(int did);
 
 void dev_update_data(struct device *d);
 

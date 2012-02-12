@@ -42,7 +42,7 @@ static void __notify_chair(struct device *d, int allow)
   char buf[1024];
   int l;
 
-  l = sprintf(buf, "0 allow_chair_ctl %ld %d\n", d->id, allow);
+  l = sprintf(buf, "0 allow_chair_ctl %d %d\n", d->id, allow);
   device_cmd(d, buf, l);
 }
 

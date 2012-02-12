@@ -22,7 +22,7 @@
 
 /* return the tag. create if it does
  * not exist. */
-struct tag *request_tag(long gid, long tid)
+struct tag *request_tag(int gid, int tid)
 {
   struct tag *t;
   t = get_tag(TAGUID(gid, tid));
@@ -33,10 +33,10 @@ struct tag *request_tag(long gid, long tid)
   return t;
 }
 
-struct tag *tag_create(long gid, long tid)
+struct tag *tag_create(int gid, int tid)
 {
   struct tag *t;
-  long tuid;
+  int tuid;
   int i;
 
   tuid = TAGUID(gid, tid);
@@ -100,7 +100,7 @@ struct tag *tag_create(long gid, long tid)
   /* create the tag's casting queue thread */
   start_thread(tag_run_casting, t);
 
-  trace_info("tag %ld:%ld created\n", gid, tid);
+  trace_info("tag %d:%d created\n", gid, tid);
   return t;
 }
 
@@ -155,7 +155,7 @@ static inline struct packet *__dev_out_packet(struct device *d)
 void tag_add_outstanding(struct tag *t, struct device *d)
 {
   int i;
-  trace_dbg("adding dev %ld to outstanding\n", d->id);
+  trace_dbg("adding dev %d to outstanding\n", d->id);
 
   LOCK(t->mut);
 
@@ -207,7 +207,7 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
   {
     if( d == t->mix_devs[i] )
     {
-      trace_dbg("removing dev %ld from outstanding\n", d->id);
+      trace_dbg("removing dev %d from outstanding\n", d->id);
 
       /* update the mix reference if it's
        * being removed */
@@ -352,7 +352,7 @@ static void flush_queue(struct device *d)
 {
   int l;
 
-  trace_warn("flush queue %ld, len %d, %d\n",
+  trace_warn("flush queue %d, len %d, %d\n",
       d->id, cfifo_len(&d->pack_fifo), d->stats.flushed);
 
   l = cfifo_len(&d->pack_fifo);
@@ -405,7 +405,7 @@ static void flush_queue_silence(struct device *d)
   if( n>0 )
   {
     d->stats.flushed ++;
-    trace_warn("%ld drop silent packs %d\n", d->id, n);
+    trace_warn("%d drop silent packs %d\n", d->id, n);
   }
 }
 
@@ -659,7 +659,7 @@ normal:
 #ifdef MIX_DEBUG
     if( !count )
     {
-      printf("%ld: len %d\n", d->id, cfifo_len(&d->pack_fifo));
+      printf("%d: len %d\n", d->id, cfifo_len(&d->pack_fifo));
     }
 #endif
 

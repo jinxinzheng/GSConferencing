@@ -14,7 +14,7 @@ int init_groups()
   return 0;
 }
 
-struct group *get_group(long gid)
+struct group *get_group(int gid)
 {
   return find_by_id(group_hash, gid);
 }
@@ -27,7 +27,7 @@ void add_group(struct group *g)
 
 /* don't use tag.id to hash tags.
  * it's not unique. use the unique tuid. */
-struct tag *get_tag(long id)
+struct tag *get_tag(int id)
 {
   return find_by_memb(tag_hash, tuid, id);
 }
@@ -38,7 +38,7 @@ void add_tag(struct tag *t)
 }
 
 
-struct device *get_device(long did)
+struct device *get_device(int did)
 {
   return find_by_id(device_hash, did);
 }

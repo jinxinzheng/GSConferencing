@@ -1,73 +1,35 @@
 #include "include/pack.h"
-#include "include/types.h"
-#include "packet.h"
+#include "tag.h"
+#include "network.h"
 
-static void _interp_add_dup_tag(struct tag *t, struct tag *dup)
+/* notify all clients that the tag
+ * is replicated. */
+static void notify_interp_rep(struct tag *t)
 {
-  if( t->interp.dup )
-  {
-    list_move(&t->interp.dup_l, &dup->interp.dup_head);
-  }
-  else
-  {
-    list_add(&t->interp.dup_l, &dup->interp.dup_head);
-  }
+  static int sock = 0;
+  struct pack_ucmd ucmd;
 
-  t->interp.dup = dup;
+  ucmd.type = PACKET_UCMD;
+  ucmd.cmd = UCMD_INTERP_REP_TAG;
+  ucmd.u.interp.tag = t->id;
+  ucmd.u.interp.rep = t->interp.rep? t->interp.rep->id:0;
+
+  /* don't use the tag's cast sock.
+   * we are not in the casting thread.. */
+  if( !sock )
+    sock = open_broadcast_sock();
+
+  broadcast_local(sock, &ucmd, sizeof(ucmd));
 }
 
-static void _interp_del_dup_tag(struct tag *t)
+void interp_set_rep_tag(struct tag *t, struct tag *rep)
 {
-  list_del(&t->interp.dup_l);
-  t->interp.dup = NULL;
+  t->interp.rep = rep;
+  notify_interp_rep(t);
 }
 
-void interp_add_dup_tag(struct tag *t, struct tag *dup)
+void interp_del_rep(struct tag *t)
 {
-  pthread_mutex_lock(&dup->interp.mx);
-  _interp_add_dup_tag(t, dup);
-  pthread_mutex_unlock(&dup->interp.mx);
-}
-
-void interp_del_dup_tag(struct tag *t)
-{
-  struct tag *dup = t->interp.dup;
-  pthread_mutex_lock(&dup->interp.mx);
-  _interp_del_dup_tag(t);
-  pthread_mutex_unlock(&dup->interp.mx);
-}
-
-void interp_dup_pack(struct tag *dup, struct packet *pack)
-{
-  struct tag *t;
-  struct packet *newp;
-  pack_data *pdata;
-
-  pthread_mutex_lock(&dup->interp.mx);
-
-  list_for_each_entry(t, &dup->interp.dup_head, interp.dup_l)
-  {
-    /* sanity check. */
-    if( t->interp.mode == INTERP_NO ||
-        t->interp.dup != dup )
-    {
-      continue;
-    }
-
-    /* only dup when the current dev is closed. */
-    if( !t->interp.curr_dev ||
-        t->interp.curr_dev->discuss.open )
-    {
-      continue;
-    }
-
-    newp = pack_dup(pack);
-
-    pdata = (pack_data *)(newp->data);
-    pdata->tag = (uint8_t)t->id;
-
-    tag_in_dev_packet(t, t->interp.curr_dev, newp);
-  }
-
-  pthread_mutex_unlock(&dup->interp.mx);
+  t->interp.rep = NULL;
+  notify_interp_rep(t);
 }

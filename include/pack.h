@@ -28,6 +28,28 @@ enum {
   PACKET_SEQ_OUTDATE,
   PACKET_AUDIO_ZERO,  /* silence compressed */
   PACKET_VIDEO,
+  PACKET_UCMD,
+};
+
+/* cmd sent in udp packet.
+ * usually broadcasted cmd. */
+struct pack_ucmd
+{
+  uint16_t cmd;
+  union {
+    uint8_t data[6];
+    struct {
+      uint8_t tag;
+      uint8_t rep;
+    } interp;
+  } u;
+  uint8_t type; /* type must be compatible with type of struct pack,
+                   and always set to PACKET_CMD. */
+}
+__attribute__((packed));
+
+enum {
+  UCMD_INTERP_REP_TAG,   /* interpreter has set or reset replicate tag */
 };
 
 #define P_HTON(p) \

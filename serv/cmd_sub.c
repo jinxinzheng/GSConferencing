@@ -12,12 +12,13 @@ static int cmd_sub(struct cmd *cmd)
 
   if (!p)
     return 1;
-  else do
+  else
   {
     struct device *d;
     struct tag *t;
     long tid, gid;
     int unsub = 0;
+    int repid = 0;
 
     THIS_DEVICE(cmd, d);
 
@@ -40,16 +41,22 @@ static int cmd_sub(struct cmd *cmd)
       t = get_tag(TAGUID(gid, tid));
       if( t )
         dev_unsubscribe(d, t);
-      break;
     }
     else
     {
       t = request_tag(gid, tid);
       dev_subscribe(d, t);
+      if( t->interp.rep )
+      {
+        repid = t->interp.rep->id;
+      }
     }
-  } while(0);
 
-  REP_OK(cmd);
+    REP_ADD(cmd, "OK");
+    REP_ADD_NUM(cmd, repid);
+    REP_END(cmd);
+  }
+
   return 0;
 }
 

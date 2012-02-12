@@ -41,6 +41,7 @@ opts = {
 };
 
 static int subscription[2] = {0};
+static int replicate[2];
 
 static event_cb event_handler;
 
@@ -51,6 +52,7 @@ static char br_addr[32];
 #define CHECKOK(s) if (!STREQU(s,"OK")) return;
 
 static void handle_cmd(int, int isfile, char *buf, int l);
+static void handle_ucmd(struct pack_ucmd *ucmd);
 
 static void udp_recved(char *buf, int l);
 
@@ -497,7 +499,9 @@ static void audio_recved(struct pack *buf, int len)
 
   /* broadcasted packet needs to be checked by tag */
   if( qitem->tag != subscription[0] &&
-      qitem->tag != subscription[1] )
+      qitem->tag != subscription[1] &&
+      qitem->tag != replicate[0] &&
+      qitem->tag != replicate[1] )
     return;
 
   if (pack_size(qitem) <= len)
@@ -535,6 +539,14 @@ static void udp_recved(char *buf, int len)
   struct pack *pack;
 
   pack = (struct pack *)buf;
+
+  /* don't do ntoh for this type */
+  if( pack->type == PACKET_UCMD )
+  {
+    handle_ucmd((struct pack_ucmd *)pack);
+    return;
+  }
+
   NTOH(pack);
 
   switch ( pack->type )
@@ -1157,6 +1169,16 @@ int sub(int tag)
 
   subscription[i] = tag;
 
+  /* check if we have any rep-ed tag */
+  {
+    int j = FIND_OK(c);
+    int rep = atoi(c.args[++j]);
+    if( rep>0 )
+    {
+      replicate[i] = rep;
+    }
+  }
+
   /* reset retransmit expect seq */
   expect_seq = 0;
 
@@ -1177,6 +1199,7 @@ int unsub(int tag)
   SEND_CMD();
 
   subscription[i] = 0;
+  replicate[i] = 0;
 
   return 0;
 }
@@ -2089,5 +2112,22 @@ static void handle_cmd(int sock, int type, char *buf, int l)
     allow = atoi(c.args[i++]);
 
     event_handler(EVENT_CHAIR_CTL, (void *)allow, NULL);
+  }
+}
+
+static void handle_ucmd(struct pack_ucmd *ucmd)
+{
+  switch( ucmd->cmd )
+  {
+    case UCMD_INTERP_REP_TAG :
+    {
+      int tag = ucmd->u.interp.tag;
+      int rep = ucmd->u.interp.rep;
+      if( subscription[0]==tag )
+        replicate[0] = rep;
+      else if( subscription[1]==tag )
+        replicate[1] = rep;
+    }
+    break;
   }
 }

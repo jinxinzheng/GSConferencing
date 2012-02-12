@@ -27,9 +27,9 @@ enum {
 
 /* interpreting mode */
 enum {
-  INTERP_NO,
-  INTERP_OR,
-  INTERP_RE,
+  INTERP_NO,  /* normal interpret */
+  INTERP_OR,  /* replicate original channel */
+  INTERP_RE,  /* replicate the interpreter's subscription */
 };
 
 /* vote types */

@@ -43,12 +43,6 @@ int dev_cast_packet(struct device *dev, struct packet *pack)
   if( MIX_PUT(t, dev, pack) )
     return 1;
 
-  /* dup packet for interpreting */
-  if( !list_empty(&t->interp.dup_head) )
-  {
-    interp_dup_pack(t, pack);
-  }
-
   return 0;
 }
 
@@ -350,10 +344,9 @@ int dev_subscribe(struct device *dev, struct tag *tag)
   }
 
   /* update the interp dup */
-  if( dev->tag->interp.mode == INTERP_RE &&
-      dev->tag->interp.curr_dev == dev )
+  if( dev->tag->interp.mode == INTERP_RE )
   {
-    interp_add_dup_tag(dev->tag, tag);
+    interp_set_rep_tag(dev->tag, tag);
   }
 
   return 0;

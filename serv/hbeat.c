@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "network.h"
+#include "discuss.h"
 #include "include/debug.h"
 #include <include/thread.h>
 #include <include/compiler.h>
@@ -59,7 +60,7 @@ static void *run_heartbeat_god(void *arg __unused)
     {
       if( ++ d->hbeat > 3 )
       {
-        /* 1 minute has been hit */
+        /* time-out has been hit */
         if( d->active )
         {
           struct db_device *dbd;
@@ -69,6 +70,9 @@ static void *run_heartbeat_god(void *arg __unused)
             device_save(d);
           }
           dev_deactivate(d);
+          /* force it release the resources */
+          if( d->discuss.open )
+            del_open(d->tag, d);
           trace_warn("dev %d is dead\n", (int)d->id);
 
           check_net(d);

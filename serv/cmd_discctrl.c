@@ -7,6 +7,7 @@
 #include "ptc.h"
 #include <include/types.h>
 #include <include/debug.h>
+#include <include/lock.h>
 
 static struct db_discuss *db[1024];
 static int dbl = 0;
@@ -45,6 +46,9 @@ void group_setup_discuss(struct group *g, struct db_discuss *s)
 
 void add_open(struct tag *t, struct device *d)
 {
+  /* locking is needed as we could be calling
+   * these in recover.c and hbeat.c, etc. */
+  LOCK(t->discuss.lk);
   list_add_tail(&d->discuss.l, &t->discuss.open_list);
   t->discuss.openuser ++;
 
@@ -54,10 +58,12 @@ void add_open(struct tag *t, struct device *d)
 
   d->db_data->discuss_open = 1;
   device_save(d);
+  UNLOCK(t->discuss.lk);
 }
 
 void del_open(struct tag *t, struct device *d)
 {
+  LOCK(t->discuss.lk);
   list_del(&d->discuss.l);
   t->discuss.openuser --;
 
@@ -67,6 +73,7 @@ void del_open(struct tag *t, struct device *d)
 
   d->db_data->discuss_open = 0;
   device_save(d);
+  UNLOCK(t->discuss.lk);
 }
 
 static void kick_user(struct device *d, struct device *kick)

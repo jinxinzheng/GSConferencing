@@ -64,6 +64,7 @@ struct tag *tag_create(int gid, int tid)
 
   INIT_LIST_HEAD(&t->discuss.open_list);
   t->discuss.openuser = 0;
+  pthread_mutex_init(&t->discuss.lk, NULL);
 
   if( tid == 1 )
   {

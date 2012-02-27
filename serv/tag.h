@@ -60,6 +60,7 @@ struct tag {
     struct list_head open_list;
     int maxuser;
     int openuser;
+    pthread_mutex_t lk;
   } discuss;
 
   struct {

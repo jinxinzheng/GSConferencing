@@ -1446,7 +1446,7 @@ int votectrl_select(int vote_num, int *idlist)
   return 0;
 }
 
-int votectrl_start(int vote_num, int *vote_type)
+int votectrl_start(int vote_num, struct vote_info *info)
 {
   BASICS;
 
@@ -1456,7 +1456,9 @@ int votectrl_start(int vote_num, int *vote_type)
 
   i = FIND_OK(c);
 
-  *vote_type = atoi(c.args[i+1]);
+  info->type = atoi(c.args[++i]);
+  strcpy(info->name, c.args[++i]);
+  strcpy(info->options, c.args[++i]);
 
   return 0;
 }
@@ -1911,11 +1913,13 @@ static void handle_cmd(int sock, int type, char *buf, int l)
     char *sub = c.args[i++];
     if (STREQU(sub, "start"))
     {
-      int type;
+      struct vote_info info;
       vn = atoi(c.args[i++]);
       CHECKOK(c.args[i++]);
-      type = atoi(c.args[i++]);
-      event_handler(EVENT_VOTE_START, (void*)vn, (void*)type);
+      info.type = atoi(c.args[i++]);
+      strcpy(info.name, c.args[i++]);
+      strcpy(info.options, c.args[i++]);
+      event_handler(EVENT_VOTE_START, (void*)vn, (void*)&info);
     }
     else if (STREQU(sub, "showresult"))
     {

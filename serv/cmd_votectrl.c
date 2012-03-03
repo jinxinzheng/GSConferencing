@@ -82,7 +82,7 @@ static int cmd_votectrl(struct cmd *cmd)
 {
   char *scmd, *p;
   char buf[1024];
-  int ai=0, i,j,l;
+  int ai=0, i,l;
 
   static struct db_vote *db[1024];
   static int dbl;
@@ -162,10 +162,9 @@ static int cmd_votectrl(struct cmd *cmd)
     dv = db[num];
 
     REP_ADD(cmd, "OK");
-
-    j = dv->type;
-    REP_ADD_NUM(cmd, j);
-
+    REP_ADD_NUM(cmd, dv->type);
+    REP_ADD(cmd, dv->name);
+    REP_ADD(cmd, dv->options);
     REP_END(cmd);
 
     group_setup_vote(g, dv);
@@ -173,6 +172,7 @@ static int cmd_votectrl(struct cmd *cmd)
 
     /* create new vote */
     v = vote_new(dv);
+    v->type = dv->type;
     v->cn_options = dv->options_count;
     v->n_members = 0;
 
@@ -227,14 +227,16 @@ static int cmd_votectrl(struct cmd *cmd)
 
     /* update results */
     d->vote.choice = i;
-    d->vote.v->results[i]++;
+    if( d->vote.v->type!=VOTE_SCORE )
+      d->vote.v->results[i]++;
 
     g->vote.nvoted ++;
 
     REP_OK(cmd);
 
     d->db_data->vote_choice = i;
-    vote_results_to_str( g->db_data->vote_results, d->vote.v );
+    if( d->vote.v->type!=VOTE_SCORE )
+      vote_results_to_str( g->db_data->vote_results, d->vote.v );
     device_save(d);
     group_save(g);
 
@@ -281,13 +283,32 @@ static int cmd_votectrl(struct cmd *cmd)
 
     REP_ADD_NUM(cmd, v->n_members);
 
-    l = 0;
-    for (i=0; i<v->cn_options; i++)
+    if( v->type==VOTE_SCORE )
     {
-      LIST_ADD_NUM(buf, l, v->results[i]);
+      int score=0;
+      int count=0;
+      list_for_each_entry(m, &v->device_head, vote.l)
+      {
+        if( d->vote.choice >= 0 )
+        {
+          score += d->vote.choice;
+          count ++;
+        }
+      }
+      if( count>0 )
+        score /= count; /* calc average score */
+      REP_ADD_NUM(cmd, score);
+    }
+    else
+    {
+      l = 0;
+      for (i=0; i<v->cn_options; i++)
+      {
+        LIST_ADD_NUM(buf, l, v->results[i]);
+      }
+      REP_ADD_STR(cmd, buf, l);
     }
 
-    REP_ADD_STR(cmd, buf, l);
     REP_END(cmd);
 
     /* send the result to all clients about the vote */

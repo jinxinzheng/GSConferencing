@@ -5,6 +5,8 @@ struct vote
 {
   struct list_head device_head;
 
+  int type;
+
   /* count of options */
   int cn_options;
 

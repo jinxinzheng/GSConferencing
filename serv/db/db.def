@@ -50,9 +50,10 @@ s extra 256
 
 table vote
 i id
-s name 32
+s name 256
 i type
 i options_count
+s options 1024
 s members 1024
 
 table discuss

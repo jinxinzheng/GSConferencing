@@ -34,9 +34,10 @@ enum {
 
 /* vote types */
 enum {
-  VOTE_COMMON,
-  VOTE_1IN5,
-  VOTE_SCORE
+  VOTE_DECIDE,
+  VOTE_SATISF,
+  VOTE_SCORE,
+  VOTE_CUSTOM,
 };
 
 /* service request types */

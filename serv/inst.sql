@@ -69,9 +69,10 @@ create table auth_card
 create table vote
 (
  id int primary key,  -- id
- name varchar(32),     -- 表决名称
+ name varchar(256),    -- 表决名称
  type int,             -- 表决类型
  options_count int,    -- 表决项数量
+ options varchar(1024),-- 表决项(custom)
  members varchar(1024) -- 表决代表
 );
 
@@ -134,10 +135,10 @@ insert into tag(name) values('French');
 insert into tag(name) values('Japanese');
 insert into tag(name) values('Spanish');
 
-insert into vote(id, name, type, options_count, members) values(1,'vote_1', 1, 2, '101,102,103');
-insert into vote(id, name, type, options_count, members) values(2,'vote_2', 2, 2, '101,102');
-insert into vote(id, name, type, options_count, members) values(3,'vote_3', 2, 2, '101');
-insert into vote(id, name, type, options_count, members) values(4,'vote_4', 3, 2, '104');
+insert into vote(id, name, type, options_count, options, members) values(1,'vote_1', 1, 2, 'n', '101,102,103');
+insert into vote(id, name, type, options_count, options, members) values(2,'vote_2', 2, 2, 'n', '101,102');
+insert into vote(id, name, type, options_count, options, members) values(3,'vote_3', 2, 2, 'n', '101');
+insert into vote(id, name, type, options_count, options, members) values(4,'vote_4', 3, 2, 'n', '104');
 
 insert into discuss(id, name, members) values(1,'test_discuss_1', '101,102,103,104');
 insert into discuss(id, name, members) values(2,'test_discuss_2', '101,102,103');

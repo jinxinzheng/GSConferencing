@@ -74,6 +74,13 @@ struct audio_data
   int len;
 };
 
+struct vote_info
+{
+  int type;           /* enum VOTE_* */
+  char name[256];     /* vote name */
+  char options[1024]; /* only valid if type==VOTE_CUSTOM */
+};
+
 /* event codes */
 
 enum {
@@ -131,7 +138,7 @@ enum {
   EVENT_INTERP_MODE,
 
   /* arg1: int, vote number
-   * arg2: int, vote type VOTE_* */
+   * arg2: struct vote_info * */
   EVENT_VOTE_START,
 
   /* arg1: int, number of members
@@ -278,8 +285,7 @@ int votectrl_query(__out char *votelist);
 
 int votectrl_select(int vote_num, __out int *idlist);
 
-/* vote_type: see enum VOTE_* */
-int votectrl_start(int vote_num, __out int *vote_type);
+int votectrl_start(int vote_num, __out struct vote_info *info);
 
 int votectrl_result(int vote_num, int result);
 

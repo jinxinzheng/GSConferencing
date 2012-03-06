@@ -56,7 +56,9 @@ struct dev_info
   int vote_idlist[1024]; /* member IDs */
   char vote_userlist[2048]; /* member names. comma separated. */
   int vote_master; /* 0/1. if this client is the master of the vote. */
+  char vote_name[256];  /* vote name. */
   int vote_type; /* vote type. (VOTE_) */
+  char vote_options[1024];  /* vote custom options. */
   int vote_total; /* total members count of vote. */
   int vote_results[40]; /* vote results */
   int vote_choice; /* choice of this client. -1 if not chosen. */

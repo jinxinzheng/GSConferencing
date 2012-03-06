@@ -1003,6 +1003,8 @@ static void parse_dev_info(char *str, struct dev_info *info)
       _str_to_ints(keyval[1], info->m); \
     } else
 
+#define info_end() {}
+
     info_str(user_id)
 
     info_str(user_name)
@@ -1031,11 +1033,14 @@ static void parse_dev_info(char *str, struct dev_info *info)
     info_int_list(vote_idlist)
     info_str(vote_userlist)
     info_int(vote_master)
+    info_str(vote_name)
     info_int(vote_type)
+    info_str(vote_options)
     info_int(vote_total)
     info_int_list(vote_results)
     info_int(vote_choice)
-    {}
+
+    info_end()
   }
 }
 

@@ -53,6 +53,7 @@ i id
 s name 256
 i type
 i options_count
+i max_select
 s options 1024
 s members 1024
 

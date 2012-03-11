@@ -80,6 +80,8 @@ struct vote_info
 {
   int type;           /* enum VOTE_* */
   char name[256];     /* vote name */
+  int opt_count;      /* options count */
+  int max_select;     /* how many options allowed to select. */
   char options[1024]; /* only valid if type==VOTE_CUSTOM */
 };
 
@@ -289,7 +291,8 @@ int votectrl_select(int vote_num, __out int *idlist);
 
 int votectrl_start(int vote_num, __out struct vote_info *info);
 
-int votectrl_result(int vote_num, int result);
+/* results: indices separated ',' e.g. "0,2,3" */
+int votectrl_result(int vote_num, const char *results);
 
 int votectrl_status(int vote_num, __out int *total, __out int *voted);
 

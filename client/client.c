@@ -1451,6 +1451,16 @@ int votectrl_select(int vote_num, int *idlist)
   return 0;
 }
 
+static inline void get_vote_info_from_cmd(struct cmd *c, int start, struct vote_info *info)
+{
+  int i = start;
+  info->type = atoi(c->args[i++]);
+  strcpy(info->name, c->args[i++]);
+  info->opt_count = atoi(c->args[i++]);
+  info->max_select = atoi(c->args[i++]);
+  strcpy(info->options, c->args[i++]);
+}
+
 int votectrl_start(int vote_num, struct vote_info *info)
 {
   BASICS;
@@ -1461,18 +1471,16 @@ int votectrl_start(int vote_num, struct vote_info *info)
 
   i = FIND_OK(c);
 
-  info->type = atoi(c.args[++i]);
-  strcpy(info->name, c.args[++i]);
-  strcpy(info->options, c.args[++i]);
+  get_vote_info_from_cmd(&c, i+1, info);
 
   return 0;
 }
 
-int votectrl_result(int vote_num, int result)
+int votectrl_result(int vote_num, const char *results)
 {
   BASICS;
 
-  l = sprintf(buf, "%d votectrl result %d %d\n", id, vote_num, result);
+  l = sprintf(buf, "%d votectrl result %d %s\n", id, vote_num, results);
 
   SEND_CMD();
 
@@ -1921,9 +1929,7 @@ static void handle_cmd(int sock, int type, char *buf, int l)
       struct vote_info info;
       vn = atoi(c.args[i++]);
       CHECKOK(c.args[i++]);
-      info.type = atoi(c.args[i++]);
-      strcpy(info.name, c.args[i++]);
-      strcpy(info.options, c.args[i++]);
+      get_vote_info_from_cmd(&c, i, &info);
       event_handler(EVENT_VOTE_START, (void*)vn, (void*)&info);
     }
     else if (STREQU(sub, "showresult"))

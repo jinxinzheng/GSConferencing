@@ -8,6 +8,7 @@
 #include "devctl.h"
 #include "sys.h"
 #include "db/md.h"
+#include <include/util.h>
 
 struct vote *vote_new()
 {
@@ -164,6 +165,8 @@ static int cmd_votectrl(struct cmd *cmd)
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, dv->type);
     REP_ADD(cmd, dv->name);
+    REP_ADD_NUM(cmd, dv->options_count);
+    REP_ADD_NUM(cmd, dv->max_select);
     REP_ADD(cmd, dv->options);
     REP_END(cmd);
 
@@ -210,6 +213,9 @@ static int cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "result") == 0)
   {
+    struct vote *v;
+    char *t;
+
     /* the vote number */
     p = cmd->args[ai++];
     if (!p)
@@ -225,18 +231,29 @@ static int cmd_votectrl(struct cmd *cmd)
       /* bug or corrupt of network packet */
       return 1;
 
+    v = d->vote.v;
+
     /* update results */
-    d->vote.choice = i;
-    if( d->vote.v->type!=VOTE_SCORE )
-      d->vote.v->results[i]++;
+    for( t=strtok(p, ","); t; t=strtok(NULL, ",") )
+    {
+      i = atoi(t);
+      /* TODO: we can't place all choices in a single field.
+       * consider using an array.. */
+      d->vote.choice = i;
+      if( v->type!=VOTE_SCORE )
+      {
+        if( i<array_size(v->results) )
+          v->results[i]++;
+      }
+    }
 
     g->vote.nvoted ++;
 
     REP_OK(cmd);
 
     d->db_data->vote_choice = i;
-    if( d->vote.v->type!=VOTE_SCORE )
-      vote_results_to_str( g->db_data->vote_results, d->vote.v );
+    if( v->type!=VOTE_SCORE )
+      vote_results_to_str( g->db_data->vote_results, v );
     device_save(d);
     group_save(g);
 

@@ -110,6 +110,10 @@ struct device
   struct {
     struct list_head l;
   } ptc;
+
+  struct {
+    struct list_head l;
+  } video;
 };
 
 #endif

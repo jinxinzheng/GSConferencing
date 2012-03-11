@@ -3,6 +3,7 @@
 #include  "network.h"
 #include  <include/debug.h>
 
+static LIST_HEAD(video_head);
 static struct device *bcast_dev;
 
 static int broadcast_video(const void *buf, int len)
@@ -55,24 +56,30 @@ static int cmd_video(struct cmd *cmd)
 
     if( tid == 0 )  /* broadcast */
     {
-      /* only one dev can 'grab' the video channel */
-      if( !bcast_dev )
-      {
-        bcast_dev = d;
-      }
-      else
-        return ERR_REJECTED;
+      /* 'stack' into the cast list.
+       * only the last one could cast. */
+      list_add(&d->video.l, &video_head);
+      bcast_dev = d;
     }
+    else
+      return ERR_INVL_ARG;
   }
 
   SUBCMD("stop")
   {
-    if( bcast_dev == d )
+    if( !bcast_dev )
+      return ERR_OTHER;
+
+    list_del(&d->video.l);
+
+    if( list_empty(&video_head) )
     {
       bcast_dev = NULL;
     }
-    else
-      return ERR_OTHER;
+    else if( bcast_dev == d )
+    {
+      bcast_dev = list_entry(video_head.next, struct device, video.l);
+    }
   }
 
   REP_OK(cmd);

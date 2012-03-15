@@ -162,6 +162,17 @@ static int cmd_votectrl(struct cmd *cmd)
 
     dv = db[num];
 
+    group_setup_vote(g, dv);
+    /* only devs within the member list can start a vote */
+    m = NULL;
+    for( i=0 ; i<g->vote.nmembers ; i++ )
+    {
+      if( (m=get_device(g->vote.memberids[i])) == d )
+        break;
+    }
+    if( m!=d )
+      return ERR_REJECTED;
+
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, dv->type);
     REP_ADD(cmd, dv->name);
@@ -170,7 +181,6 @@ static int cmd_votectrl(struct cmd *cmd)
     REP_ADD(cmd, dv->options);
     REP_END(cmd);
 
-    group_setup_vote(g, dv);
     g->vote.curr_num = num;
 
     /* create new vote */

@@ -44,7 +44,7 @@ void vote_results_to_str( char *str, const struct vote *v )
     LIST_ADD(g->vote.membernames, l, "?"); \
 }
 
-void group_setup_vote(struct group *g, struct db_vote *dv)
+static void prepare_vote(struct group *g, struct db_vote *dv)
 {
   char buf[1024];
   int l;
@@ -75,7 +75,11 @@ void group_setup_vote(struct group *g, struct db_vote *dv)
       add_vote_member(g, mid, l);
     }
   }
+}
 
+void group_setup_vote(struct group *g, struct db_vote *dv)
+{
+  prepare_vote(g, dv);
   g->vote.current = dv;
 }
 
@@ -162,7 +166,7 @@ static int cmd_votectrl(struct cmd *cmd)
 
     dv = db[num];
 
-    group_setup_vote(g, dv);
+    prepare_vote(g, dv);
     /* only devs within the member list can start a vote */
     m = NULL;
     for( i=0 ; i<g->vote.nmembers ; i++ )
@@ -172,6 +176,8 @@ static int cmd_votectrl(struct cmd *cmd)
     }
     if( m!=d )
       return ERR_REJECTED;
+
+    g->vote.current = dv;
 
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, dv->type);

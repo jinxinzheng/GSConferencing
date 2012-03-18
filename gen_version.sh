@@ -4,7 +4,7 @@ if git --version && test -d .git; then
   ver="`git describe --abbrev=4 HEAD`" \
   || ver=`git rev-parse --short HEAD`
 else
-  ver=unknown
+  ver="`sed -n '/VERSION/{s/.*"\(.*\)"/\1/;p;q}' config.h`-unknown"
 fi
 
 date="`date +'%F %T'`"

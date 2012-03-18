@@ -33,13 +33,16 @@ static struct {
   int audio_use_udp;
   int enable_retransmit;
   int zero_compression;
+  int audio_direct_mix;
 }
 opts = {
   .audio_use_udp = 1,
   .enable_retransmit = 0,
   .zero_compression = 0,
+  .audio_direct_mix = 0,
 };
 
+static int tag_id;
 static int subscription[2] = {0};
 static int replicate[2];
 
@@ -142,6 +145,10 @@ void set_option(int opt, int val)
     case OPT_ZERO_COMPRESSION:
     opts.zero_compression = val;
     break;
+
+    case OPT_AUDIO_DIRECT_MIX:
+    opts.audio_direct_mix = val;
+    break;
   }
 }
 
@@ -208,6 +215,7 @@ int send_audio_end(int len)
   audio_current->type = PACKET_AUDIO;
   audio_current->id = (uint32_t)id;
   audio_current->seq = ++qseq;
+  audio_current->tag = tag_id;
   audio_current->datalen = (uint16_t)len;
 
   trace_verb("%d.%d ", audio_current->id, audio_current->seq);
@@ -266,7 +274,11 @@ static void *run_send_udp(void *arg __unused)
 
     //send audio
     HTON(qitem);
-    if( opts.audio_use_udp )
+    if( opts.audio_direct_mix )
+    {
+      broadcast_udp(qitem, l);
+    }
+    else if( opts.audio_use_udp )
     {
       if( net_mixer_addr.sin_family )
         /* send to the net mixer if we have one */
@@ -1057,6 +1069,7 @@ int reg(const char *passwd, struct dev_info *info)
 #define _POST_REG() \
 { \
   /*synctime();*/ \
+  tag_id = info->tag; \
   subscription[0] = info->sub[0]; \
   if( subscription[0]==0 && subscription[1]==0 ) \
     subscription[0] = 1; \
@@ -1221,6 +1234,7 @@ int switch_tag(int tag)
 
   i = FIND_OK(c);
 
+  tag_id = tag;
   return 0;
 }
 

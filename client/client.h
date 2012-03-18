@@ -12,6 +12,8 @@ enum
   OPT_AUDIO_UDP,
   OPT_ENABLE_RETRANSMIT,
   OPT_ZERO_COMPRESSION,
+  OPT_AUDIO_DIRECT_MIX, /* when set to 1, audio is directly
+                         * broadcasted and not sent to the server. */
 };
 
 void set_option(int opt, int val);

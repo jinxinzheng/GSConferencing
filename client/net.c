@@ -49,6 +49,28 @@ void get_broadcast_addr(char *addr)
   freeifaddrs(ifa);
 }
 
+int broadcast_udp(void *buf, int len)
+{
+  static int sock = -1;
+  static struct sockaddr_in br_addr;
+  if (sock<0)
+  {
+    int val;
+    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+      die("socket()");
+    val = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &val, sizeof(val)) < 0)
+      die("setsockopt");
+    br_addr.sin_family = AF_INET;
+    br_addr.sin_port = htons(BRCAST_PORT);
+    br_addr.sin_addr.s_addr = inet_addr("255.255.255.255");
+  }
+
+  if( sendto(sock, buf, len, 0, (struct sockaddr *)&br_addr, sizeof(br_addr)) < 0 )
+    fail(__func__);
+  return 0;
+}
+
 int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)
 {
   /* one udp sock for each process.

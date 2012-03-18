@@ -22,6 +22,7 @@
 #include "../config.h"
 #include "hbeat.h"
 #include "block.h"
+#include "opts.h"
 #include <include/ping.h>
 #include <include/thread.h>
 #include <include/util.h>
@@ -466,7 +467,8 @@ static void *run_listen_audio(void *arg __unused)
 void start_listener_tcp()
 {
   start_thread(listener_tcp_proc, NULL);
-  start_thread(run_listen_audio, NULL);
+  if( opt_tcp_audio )
+    start_thread(run_listen_audio, NULL);
 }
 
 

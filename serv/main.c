@@ -48,7 +48,7 @@ int main(int argc, char *const argv[])
 
   printf("daya server %s\n", VERSION);
 
-  while ((opt = getopt(argc, argv, "hq:Bufp:sm:")) != -1) {
+  while ((opt = getopt(argc, argv, "hq:Butfp:sm:")) != -1) {
     switch (opt) {
       case 'h':
         help();
@@ -62,6 +62,9 @@ int main(int argc, char *const argv[])
         break;
       case 'u':
         opt_tcp_audio = 0;
+        break;
+      case 't':
+        opt_tcp_audio = 1;
         break;
       case 'f':
         opt_flush = 1;

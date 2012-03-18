@@ -1060,7 +1060,7 @@ int reg(const char *passwd, struct dev_info *info)
   subscription[0] = info->sub[0]; \
   if( subscription[0]==0 && subscription[1]==0 ) \
     subscription[0] = 1; \
-  /*if( !opts.audio_use_udp )*/  \
+  if( !opts.audio_use_udp )  \
   { \
     /* connect audio sock. this must be done after  \
      * the reg() is completed. */ \

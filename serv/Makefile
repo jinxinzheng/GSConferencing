@@ -23,7 +23,7 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	init.o \
 	enounce.o \
 	manage.o \
-	simple_mixer.o \
+	soft_mixer.o \
 	net_mixer.o \
 	sigsegv.o \
 	cmd_handler.o \

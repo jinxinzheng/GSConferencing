@@ -71,7 +71,7 @@ struct tag *tag_create(int gid, int tid)
     struct group *g;
 
     struct mixer *mixers[] = {
-      [MIXER_SIMPLE] = simple_mixer,
+      [MIXER_SOFT] = soft_mixer,
       [MIXER_NET] = net_mixer,
     };
 
@@ -86,7 +86,7 @@ struct tag *tag_create(int gid, int tid)
   }
   else
   {
-    set_mixer(t, simple_mixer);
+    set_mixer(t, soft_mixer);
 
     t->discuss.mode = DISCMODE_FIFO;
     t->discuss.maxuser = 1;

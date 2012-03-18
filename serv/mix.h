@@ -15,8 +15,8 @@ struct mixer
   struct packet * (*get)(struct tag *t);
 };
 
-/* in simple_mixer.c */
-extern struct mixer *simple_mixer;
+/* in soft_mixer.c */
+extern struct mixer *soft_mixer;
 /* in net_mixer.c */
 extern struct mixer *net_mixer;
 

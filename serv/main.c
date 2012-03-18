@@ -34,8 +34,8 @@ static void help()
       "-u:        always use udp to cast audio.\n"
       "-f:        enable packet flush dropping.\n"
       "-s:        enable packet silence dropping.\n"
-      "-m MIX:    set mix method: simple, net(default).\n"
-      "-p POLICY: (for only -m simple) set syncing policy: wait(default), fixed, ref.\n"
+      "-m MIX:    set mix method: soft, net(default).\n"
+      "-p POLICY: (for only -m soft) set syncing policy: wait(default), fixed, ref.\n"
   );
 }
 
@@ -86,8 +86,8 @@ int main(int argc, char *const argv[])
         opt_silence_drop = 1;
         break;
       case 'm':
-        if( strcmp("simple", optarg) == 0 )
-          opt_mixer = MIXER_SIMPLE;
+        if( strcmp("soft", optarg)==0 || strcmp("simple", optarg)==0 )
+          opt_mixer = MIXER_SOFT;
         else if( strcmp("net", optarg) == 0 )
           opt_mixer = MIXER_NET;
         else
@@ -109,9 +109,9 @@ int main(int argc, char *const argv[])
   printf("enable flushing: %s\n", opt_flush?"yes":"no");
   printf("drop silence: %s\n", opt_silence_drop?"yes":"no");
   printf("mixer: %s\n",
-      opt_mixer==MIXER_SIMPLE?"simple":
-      opt_mixer==MIXER_NET?"net":NULL);
-  if( opt_mixer==MIXER_SIMPLE )
+      opt_mixer==MIXER_SOFT?"soft":
+      opt_mixer==MIXER_NET? "net":NULL);
+  if( opt_mixer==MIXER_SOFT )
   {
     printf("sync policy: %s\n",
         opt_sync_policy==SYNC_WAIT? "wait":

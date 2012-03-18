@@ -246,7 +246,10 @@ int main(int argc, char *const argv[])
   //synctime();
 
   video_start();
-  send_video(buf, 9999);
+  {
+    static char vtmp[640*480*2];
+    send_video(vtmp, 320*240*2);
+  }
   sleep(2);
   video_stop();
 

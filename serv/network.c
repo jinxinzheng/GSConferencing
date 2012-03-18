@@ -552,6 +552,10 @@ void run_listener_udp(int port)
   if (setsockopt(udp_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int)) < 0)
     die("setsockopt");
 
+  optval = UDP_SOCK_BUFSIZE;
+  if (setsockopt(udp_sock, SOL_SOCKET, SO_RCVBUF, &optval, sizeof(optval)) < 0)
+    perror("udp sock setsockopt SO_RCVBUF");
+
   /* Construct local address structure */
   memset(&servAddr, 0, sizeof servAddr);   /* Zero out structure */
   servAddr.sin_family = AF_INET;                /* Internet address family */
@@ -776,6 +780,10 @@ int open_broadcast_sock()
     close(sock);
     return -1;
   }
+
+  val = UDP_SOCK_BUFSIZE;
+  if (setsockopt(sock, SOL_SOCKET, SO_SNDBUF, &val, sizeof(val)) < 0)
+    perror("setsockopt(SO_SNDBUF)");
 
   return sock;
 }

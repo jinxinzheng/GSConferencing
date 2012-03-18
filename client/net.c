@@ -432,6 +432,12 @@ static void *run_recv_udp(void *arg __unused)
     if (setsockopt(br_sock, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on)) < 0)
       die("setsockopt");
 
+    on = UDP_SOCK_BUFSIZE;
+    if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &on, sizeof(on)) < 0)
+    {
+      perror("setsockopt SO_RCVBUF on br_sock fail");
+    }
+
     /* Bind to the broadcast port */
     addr.sin_port = htons(BRCAST_PORT);
 

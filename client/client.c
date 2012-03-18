@@ -642,10 +642,16 @@ static int do_send_video(const void *buf, int len)
 
   if( sock < 0 )
   {
+    int val;
     if( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
     {
       perror("socket()");
       return -1;
+    }
+    val = UDP_SOCK_BUFSIZE;
+    if (setsockopt(sock, SOL_SOCKET, SO_SNDBUF, &val, sizeof(val)) < 0)
+    {
+      perror("setsockopt SO_SNDBUF fail");
     }
   }
 
@@ -665,7 +671,7 @@ int send_video(const char *buf, int len)
 
   static uint8_t fseq = 0;
 
-  if( len<0 || len>(1<<16) )
+  if( len<0 )
   {
     return -1;
   }
@@ -684,16 +690,16 @@ int send_video(const char *buf, int len)
   for( i=0 ; i<n ; i++ )
   {
     /* to fully utilize our small header,
-     * tag is used for sequence,
-     * high word of seq is frag offset,
-     * low word of seq is frag count and
-     * frag index.. */
+     * tag is used for frame seq id,
+     * seq is frame size.
+     * first 4 bytes of data is frag offset. */
     pack->tag = fseq;
-    pack->seq = htonl( (off<<16) | (frags<<8) | i);
-    pack->datalen = htons(FRAGSIZE);
-    memcpy(pack->data, buf+off, FRAGSIZE);
+    pack->seq = htonl(len);
+    pack->datalen = htons(sizeof(int)+FRAGSIZE);
+    *(uint32_t *)(&pack->data[0]) = htonl(off);
+    memcpy(pack->data+sizeof(int), buf+off, FRAGSIZE);
 
-    do_send_video(pack, headlen(pack)+FRAGSIZE);
+    do_send_video(pack, headlen(pack)+sizeof(int)+FRAGSIZE);
 
     off += FRAGSIZE;
   }
@@ -701,11 +707,12 @@ int send_video(const char *buf, int len)
   if( m!=0 )
   {
     pack->tag = fseq;
-    pack->seq = htonl( (off<<16) | (frags<<8) | n);
-    pack->datalen = htons(m);
-    memcpy(pack->data, buf+off, m);
+    pack->seq = htonl(len);
+    pack->datalen = htons(sizeof(int)+m);
+    *(uint32_t *)(&pack->data[0]) = htonl(off);
+    memcpy(pack->data+sizeof(int), buf+off, m);
 
-    do_send_video(pack, headlen(pack)+m);
+    do_send_video(pack, headlen(pack)+sizeof(int)+m);
   }
 
   return 0;
@@ -714,15 +721,13 @@ int send_video(const char *buf, int len)
 static void video_recved(struct pack *pack, int len)
 {
   /* defragment */
-  static char frame[1<<16];
+  static char *frame;
+  static int fsize;
   static int flen;
-  static int fseq;
-  static char frag_map[128];
-  static char frag_std[128] = {[0 ... 127] = 1};
+  static int fseq = -1;
 
+  int size;
   int off;
-  int count;
-  int index;
 
   /* sanity check */
   if( pack_size(pack) != len )
@@ -735,25 +740,22 @@ static void video_recved(struct pack *pack, int len)
   {
     /* start recv for a new frame */
     fseq = pack->tag;
-    memset(frag_map, 0, sizeof(frag_map));
     flen = 0;
   }
 
-  off = (pack->seq >>16) & 0xffff;
-  count = (pack->seq >>8) & 0xff;
-  index = (pack->seq) & 0xff;
+  size = pack->seq;
+  off = ntohl(*(uint32_t *)&pack->data[0]);
 
-  memcpy(frame+off, pack->data, pack->datalen);
-
-  if( index == count-1 )
+  if( fsize < size )
   {
-    /* the last frag */
-    flen = off + pack->datalen;
+    fsize = size;
+    frame = realloc(frame, fsize);
   }
 
-  frag_map[index] = 1;
+  memcpy(frame+off, pack->data+sizeof(int), pack->datalen-sizeof(int));
+  flen += pack->datalen-sizeof(int);
 
-  if( memcmp(frag_map, frag_std, count) == 0 )
+  if( flen==size )
   {
     /* all fragments complete */
     /* directly notify the playback side.. */
@@ -762,7 +764,7 @@ static void video_recved(struct pack *pack, int len)
         (void*)flen);
 
     /* reset */
-    memset(frag_map, 0, sizeof(frag_map));
+    fseq = -1;
     flen = 0;
   }
 }

@@ -104,6 +104,21 @@ int main(int argc, char *const argv[])
     }
   }
 
+  printf("use broadcast: %s\n", opt_broadcast?"yes":"no");
+  printf("audio on %s\n", opt_tcp_audio?"tcp":"udp");
+  printf("enable flushing: %s\n", opt_flush?"yes":"no");
+  printf("drop silence: %s\n", opt_silence_drop?"yes":"no");
+  printf("mixer: %s\n",
+      opt_mixer==MIXER_SIMPLE?"simple":
+      opt_mixer==MIXER_NET?"net":NULL);
+  if( opt_mixer==MIXER_SIMPLE )
+  {
+    printf("sync policy: %s\n",
+        opt_sync_policy==SYNC_WAIT? "wait":
+        opt_sync_policy==SYNC_FIXED?"fixed":
+        opt_sync_policy==SYNC_REF?  "ref": NULL);
+  }
+
   basic_setup();
 
   recover_server();

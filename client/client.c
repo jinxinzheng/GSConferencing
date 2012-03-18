@@ -14,7 +14,8 @@
 #include <include/thread.h>
 #include <include/util.h>
 #include <include/compiler.h>
-#include "../config.h"
+#include <config.h>
+#include <version.h>
 #include "cyctl.h"
 
 #define MINRECV 0
@@ -74,7 +75,7 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   int servPort = SERVER_PORT;
   int netplay;
 
-  printf("daya client %s\n", VERSION);
+  printf("daya client %s. build date %s\n", build_rev, build_date);
 
   id = dev_id;
 

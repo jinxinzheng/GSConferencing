@@ -10,7 +10,7 @@
 #include "opts.h"
 #include "recover.h"
 #include "async.h"
-#include <config.h>
+#include <version.h>
 
 static void basic_setup()
 {
@@ -46,7 +46,7 @@ int main(int argc, char *const argv[])
   if( init() != 0 )
     return 1;
 
-  printf("daya server %s\n", VERSION);
+  printf("daya server %s. build date %s\n", build_rev, build_date);
 
   while ((opt = getopt(argc, argv, "hq:Butfp:sm:")) != -1) {
     switch (opt) {

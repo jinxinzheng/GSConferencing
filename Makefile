@@ -18,10 +18,10 @@ SUBDIRS:=serv client
 all: $(SUBDIRS)
 
 clean:
-	rm -rf common/*.o sha/*.o threadpool/*.o
+	rm -rf *.o .*.o common/*.o sha/*.o threadpool/*.o
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
 
-COMMON_SRC = $(wildcard common/*.c) $(wildcard sha/*.c)
+COMMON_SRC = $(wildcard common/*.c) $(wildcard sha/*.c) .version.c
 COMMON_OBJ = $(COMMON_SRC:.c=.o)
 common: $(COMMON_OBJ)
 
@@ -34,4 +34,7 @@ client: common
 tar:
 	git archive -o daya.tar --prefix daya/ HEAD
 
-.PHONY: $(SUBDIRS)
+.version.c:
+	./gen_version.sh
+
+.PHONY: .version.c $(SUBDIRS)

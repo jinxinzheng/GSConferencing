@@ -48,6 +48,7 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	../sha/sha128.o \
 	../common/ping.o \
 	../common/thread.o \
+	../.version.o	\
 	db/md.o db/db.o
 
 SYS_LDS = sys.lds

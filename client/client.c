@@ -511,10 +511,15 @@ static void audio_recved(struct pack *buf, int len)
   //  return;
 
   /* broadcasted packet needs to be checked by tag */
+  if( replicate[0] || replicate[1] )
+  {
+    if( qitem->tag != replicate[0] &&
+        qitem->tag != replicate[1] )
+      return;
+  }
+  else
   if( qitem->tag != subscription[0] &&
-      qitem->tag != subscription[1] &&
-      qitem->tag != replicate[0] &&
-      qitem->tag != replicate[1] )
+      qitem->tag != subscription[1] )
     return;
 
   if (pack_size(qitem) <= len)

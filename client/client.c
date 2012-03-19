@@ -66,9 +66,9 @@ static struct cfifo udp_rcv_fifo;
 
 static void *run_heartbeat(void *arg);
 
-static void *run_send_udp(void *arg);
+static void *run_snd_audio(void *arg);
 
-static void *run_recv_udp(void *arg);
+static void *run_rcv_audio(void *arg);
 
 void client_init(int dev_id, int type, const char *servIP, int localPort)
 {
@@ -120,9 +120,9 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   if(!netplay)
   {
     start_thread(run_heartbeat, NULL);
-    start_thread(run_send_udp, NULL);
+    start_thread(run_snd_audio, NULL);
   }
-  start_thread(run_recv_udp, NULL);
+  start_thread(run_rcv_audio, NULL);
 
   if(netplay)
   {
@@ -244,7 +244,7 @@ static int is_silent(const char *buf, int len)
   return (top-bot<250);
 }
 
-static void *run_send_udp(void *arg __unused)
+static void *run_snd_audio(void *arg __unused)
 {
   struct pack *qitem;
   int l;
@@ -592,7 +592,7 @@ static inline void drop_rcv_queue(int count)
   }
 }
 
-static void *run_recv_udp(void *arg __unused)
+static void *run_rcv_audio(void *arg __unused)
 {
   struct pack *qitem;
   int qlen;

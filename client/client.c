@@ -17,6 +17,7 @@
 #include <config.h>
 #include <version.h>
 #include "cyctl.h"
+#include "mix.h"
 
 #define MINRECV 0
 #define MAXRECV 30
@@ -128,6 +129,11 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   {
     /* only listen to tag 1 */
     subscription[0] = 1;
+  }
+
+  if( opts.audio_direct_mix )
+  {
+    mix_audio_init();
   }
 }
 
@@ -396,7 +402,7 @@ static void enque_pack(const struct pack *pack)
 
 static uint32_t expect_seq = 0;
 
-static void queue_audio_pack(struct pack *pack, int len __unused)
+static void queue_audio_pack(struct pack *pack)
 {
   const struct pack *next;
   int tag = pack->tag;
@@ -491,7 +497,7 @@ static void outdate_seq(struct pack *pack)
   {
     /* tell the waiting packs to continue.
      * TODO: need refactor. */
-    queue_audio_pack(pack, 0);
+    queue_audio_pack(pack);
   }
 }
 
@@ -530,13 +536,34 @@ static void audio_recved(struct pack *buf, int len)
     return; /*mal pack, drop*/
   }
 
-  /* remove dup packs */
-  if( is_recved(qitem->seq) )
+  if( opts.audio_direct_mix )
   {
-    return;
+    int r = put_mix_audio(qitem);
+    if( r<0 )
+      return;/* some error occured */
+    else if( r==0 )
+    {
+      /* the pack does not need mix. */
+      queue_audio_pack(qitem);
+    }
+    else
+    {
+      struct pack *p;
+      while( (p=get_mix_audio()) )
+      {
+        queue_audio_pack(p);
+      }
+    }
   }
-
-  queue_audio_pack(qitem, len);
+  else
+  {
+    /* remove dup packs */
+    if( is_recved(qitem->seq) )
+    {
+      return;
+    }
+    queue_audio_pack(qitem);
+  }
 
 
   trace_dbg("%d packs in fifo\n", cfifo_len(&udp_rcv_fifo));
@@ -548,6 +575,33 @@ static void audio_recved(struct pack *buf, int len)
         (void*)qitem->data,
         (void*)qitem->datalen);
   }*/
+}
+
+static void audio_mic_op(struct pack *p)
+{
+  /* it is only valid for direct mix mode */
+  if( !opts.audio_direct_mix )
+    return;
+  /* it must be from an interested tag */
+  if( replicate[0] || replicate[1] )
+  {
+    if( p->tag != replicate[0] &&
+        p->tag != replicate[1] )
+      return;
+  }
+  else
+  if( p->tag != subscription[0] &&
+      p->tag != subscription[1] )
+    return;
+
+  if( p->seq )  //seq is the open state
+  {
+    mix_audio_open(p->id);
+  }
+  else
+  {
+    mix_audio_close(p->id);
+  }
 }
 
 static void video_recved(struct pack *pack, int len);
@@ -579,6 +633,10 @@ static void udp_recved(char *buf, int len)
 
     case PACKET_VIDEO:
     video_recved(pack, len);
+    break;
+
+    case PACKET_MIC_OP:
+    audio_mic_op(pack);
     break;
   }
 }
@@ -1367,6 +1425,18 @@ int discctrl_request(int open)
   else
   {
     memset(&net_mixer_addr, 0, sizeof(net_mixer_addr));
+  }
+
+  if( opts.audio_direct_mix )
+  {
+    struct pack pack;
+    pack.type = PACKET_MIC_OP;
+    pack.id = (uint32_t)id;
+    pack.seq = open;
+    pack.tag = tag_id;
+    pack.datalen = 0;
+    HTON(&pack);
+    broadcast_udp(&pack, pack_size(&pack));
   }
 
   return 0;

@@ -29,6 +29,7 @@ enum {
   PACKET_AUDIO_ZERO,  /* silence compressed */
   PACKET_VIDEO,
   PACKET_UCMD,
+  PACKET_MIC_OP, /* for direct audio mix notify mic open/close */
 };
 
 /* cmd sent in udp packet.
@@ -44,7 +45,7 @@ struct pack_ucmd
     } interp;
   } u;
   uint8_t type; /* type must be compatible with type of struct pack,
-                   and always set to PACKET_CMD. */
+                   and always set to PACKET_UCMD. */
 }
 __attribute__((packed));
 
@@ -65,6 +66,8 @@ do { \
   (p)->seq  = ntohl((p)->seq); \
   (p)->datalen = ntohs((p)->datalen); \
 }while (0)
+
+#define PACK_LEN(p)  (offsetof(struct pack, data) + (p)->datalen)
 
 
 #endif

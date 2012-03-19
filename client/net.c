@@ -53,6 +53,8 @@ int broadcast_udp(void *buf, int len)
 {
   static int sock = -1;
   static struct sockaddr_in br_addr;
+  static pthread_mutex_t lk;
+  int ret;
   if (sock<0)
   {
     int val;
@@ -64,11 +66,19 @@ int broadcast_udp(void *buf, int len)
     br_addr.sin_family = AF_INET;
     br_addr.sin_port = htons(BRCAST_PORT);
     br_addr.sin_addr.s_addr = inet_addr("255.255.255.255");
+    pthread_mutex_init(&lk, NULL);
   }
 
+  ret = 0;
+  /* need locking as we call it in multiple threads. */
+  pthread_mutex_lock(&lk);
   if( sendto(sock, buf, len, 0, (struct sockaddr *)&br_addr, sizeof(br_addr)) < 0 )
-    fail(__func__);
-  return 0;
+  {
+    perror("broadcast_udp");
+    ret = -1;
+  }
+  pthread_mutex_unlock(&lk);
+  return ret;
 }
 
 int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)

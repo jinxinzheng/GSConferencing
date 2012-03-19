@@ -16,6 +16,7 @@ enum
                          * broadcasted and not sent to the server. */
 };
 
+/* call this before client_init()! */
 void set_option(int opt, int val);
 
 /* event callback routine.

@@ -215,6 +215,6 @@ int main(int argc, char *const argv[])
   return 0;
 
 USE:
-  fprintf(stderr, "Usage: %s -a addr -i id [-s tag]\n", argv[0]);
+  fprintf(stderr, "Usage: %s -S addr -i id [-s tag]\n", argv[0]);
   return 1;
 }

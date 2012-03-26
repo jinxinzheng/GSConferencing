@@ -44,6 +44,12 @@ void async_sendto_dev(const void *buf, int len, struct device *d)
 {
   struct _send_args *args;
 
+  if( !d->active )
+  {
+    /* optimized for avoiding thread pool exhausting  */
+    return;
+  }
+
   if( len > BLKSZ-100 )
   {
     trace_err("can't dispatch the cmd is too long: %d\n", len);

@@ -659,19 +659,16 @@ int broadcast(struct tag *t, const void *buf, size_t len)
 
 
 #define _CONNECT_DEV(dev, sock) \
-do {  \
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) \
   { \
     perror("socket()"); \
     goto END; \
   } \
-  fcntl(sock, F_SETFL, O_NONBLOCK); \
   if (connect(sock, (struct sockaddr *) &dev->addr, sizeof dev->addr) < 0) \
   { \
     perror("connect()"); \
     goto END; \
-  } \
-} while(0)
+  }
 
 #define _SEND(sock, buf, len) \
   if (do_send(sock, buf, len) < 0) \

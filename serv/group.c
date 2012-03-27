@@ -60,6 +60,7 @@ struct group *group_create(int gid)
       group_setup_vote(g, dv);
 
       g->vote.v = vote_new();
+      g->vote.v->type = dv->type;
       g->vote.v->cn_options = dv->options_count;
     }
   }

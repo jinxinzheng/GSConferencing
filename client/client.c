@@ -2102,6 +2102,13 @@ static void handle_cmd(int sock, int type, char *buf, int l)
       if( id == kid )
         event_handler(EVENT_DISC_KICK, NULL, NULL);
     }
+    else if(STREQU(sub, "demand"))
+    {
+      int did = atoi(c.args[i++]);
+      int open = atoi(c.args[i++]);
+      if( id == did )
+        event_handler(EVENT_DISC_DEMAND, (void*)open, NULL);
+    }
   }
 
   else if (STREQU(c.cmd, "interp"))

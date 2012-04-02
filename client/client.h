@@ -139,6 +139,11 @@ enum {
    * arg1, arg2: unused */
   EVENT_DISC_KICK,
 
+  /* manager demands the client to open/close mic.
+   * arg1: 1=open, 0=close.
+   * arg2: unused */
+  EVENT_DISC_DEMAND,
+
   /* interpreting mode change.
    * arg1: int, mode (INTERP_*).
    * arg2: unused. */

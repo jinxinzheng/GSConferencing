@@ -402,6 +402,25 @@ openit:
     SEND_TO_GROUP_ALL(cmd);
   }
 
+  SUBCMD("demand")
+  {
+    int did;
+    NEXT_ARG(p);
+    did = atoi(p);
+
+    NEXT_ARG(p);
+
+    if( d->id != 0 )
+    {
+      /* only allow manager to demand open/close */
+      return ERR_OTHER;
+    }
+
+    REP_OK(cmd);
+
+    send_cmd_to_dev_id(cmd, did);
+  }
+
   else
     return 2; /*sub cmd not found*/
 

@@ -322,9 +322,9 @@ static int cmd_votectrl(struct cmd *cmd)
       int count=0;
       list_for_each_entry(m, &v->device_head, vote.l)
       {
-        if( d->vote.choice >= 0 )
+        if( m->vote.choice >= 0 )
         {
-          score += d->vote.choice;
+          score += m->vote.choice;
           count ++;
         }
       }

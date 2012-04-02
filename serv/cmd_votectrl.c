@@ -167,15 +167,23 @@ static int cmd_votectrl(struct cmd *cmd)
     dv = db[num];
 
     prepare_vote(g, dv);
-    /* only devs within the member list can start a vote */
-    m = NULL;
-    for( i=0 ; i<g->vote.nmembers ; i++ )
+
+    if( d->id == 0 )
     {
-      if( (m=get_device(g->vote.memberids[i])) == d )
-        break;
+      /* this is from the manager cmd.. */
     }
-    if( m!=d )
-      return ERR_REJECTED;
+    else
+    {
+      /* only devs within the member list can start a vote */
+      m = NULL;
+      for( i=0 ; i<g->vote.nmembers ; i++ )
+      {
+        if( (m=get_device(g->vote.memberids[i])) == d )
+          break;
+      }
+      if( m!=d )
+        return ERR_REJECTED;
+    }
 
     g->vote.current = dv;
 

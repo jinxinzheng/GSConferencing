@@ -210,6 +210,30 @@ static void *run_heartbeat(void *arg __unused)
   return NULL;
 }
 
+static int mic_open;
+
+static void do_open_mic()
+{
+  mic_open = 1;
+}
+
+static void do_close_mic()
+{
+  mic_open = 0;
+
+  if( opts.audio_direct_mix )
+  {
+    struct pack pack;
+    pack.type = PACKET_MIC_OP;
+    pack.id = (uint32_t)id;
+    pack.seq = 0; //1 for open, 0 for close
+    pack.tag = tag_id;
+    pack.datalen = 0;
+    HTON(&pack);
+    broadcast_udp(&pack, pack_size(&pack));
+  }
+}
+
 static void send_pack(struct pack *p);
 static void send_pack_len(struct pack *p, int len);
 
@@ -227,6 +251,9 @@ int send_audio_end(int len)
 
   if( len <= 0 )
     return -1;
+
+  if( !mic_open )
+    return -2;
 
   audio_current->type = PACKET_AUDIO;
   audio_current->id = (uint32_t)id;
@@ -621,7 +648,8 @@ static void audio_mic_op(struct pack *p)
 
   if( p->seq )  //seq is the open state
   {
-    mix_audio_open(p->id);
+    // not used
+    //mix_audio_open(p->id);
   }
   else
   {
@@ -1446,22 +1474,12 @@ int discctrl_request(int open)
       net_mixer_addr.sin_addr.s_addr = inet_addr(minfo);
       net_mixer_addr.sin_port        = htons(AUDIO_PORT);
     }
+    do_open_mic();
   }
   else
   {
     memset(&net_mixer_addr, 0, sizeof(net_mixer_addr));
-  }
-
-  if( opts.audio_direct_mix )
-  {
-    struct pack pack;
-    pack.type = PACKET_MIC_OP;
-    pack.id = (uint32_t)id;
-    pack.seq = open;
-    pack.tag = tag_id;
-    pack.datalen = 0;
-    HTON(&pack);
-    broadcast_udp(&pack, pack_size(&pack));
+    do_close_mic();
   }
 
   return 0;

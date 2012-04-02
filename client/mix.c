@@ -14,11 +14,9 @@ static struct pack_queue {
   int dev_id;
   uint32_t recent_seqs[RECENT_SIZE];
   int recent_pos;
-  int active;
   struct cfifo fifo;
 } queues[QUEUE_NUM];
 static int dev_count;
-static int act_count;
 
 void mix_audio_init()
 {
@@ -30,7 +28,6 @@ void mix_audio_init()
     cfifo_init(&q->fifo, 5, 10); /* 32 * 1K */
   }
   dev_count = 0;
-  act_count = 0;
 }
 
 static int get_queue_index(int dev_id, int new)
@@ -84,11 +81,6 @@ static void remove_queue(int index)
   cfifo_clear(&q->fifo);
   q->dev_id = 0;
   dev_count --;
-  if( q->active )
-  {
-    q->active = 0;
-    act_count --;
-  }
 }
 
 void mix_audio_open(int dev_id)
@@ -101,8 +93,6 @@ void mix_audio_open(int dev_id)
     //TODO: find an inactive queue to use
     return;
   }
-  /* the queue is inactive until first pack arrives */
-  queues[i].active = 0;
 }
 
 void mix_audio_close(int dev_id)
@@ -167,25 +157,19 @@ static int is_recved(int index, uint32_t seq)
 
 int put_mix_audio(struct pack *pack)
 {
-  int i = find_queue_index(pack->id);
+  int i = create_queue_index(pack->id);
   struct pack_queue *q;
   if( i<0 )
   {
     return -1;
   }
   q = &queues[i];
-  if( !q->active )
-  {
-    /* the first pack */
-    q->active = 1;
-    act_count ++;
-  }
   /* remove dup packs */
   if( is_recved(i, pack->seq) )
   {
     return -1;
   }
-  if( act_count <= 1 )
+  if( dev_count <= 1 )
   {
     /* optimized for only one queue.
      * mix is not needed. */
@@ -215,7 +199,7 @@ struct pack *get_mix_audio()
   int samples;
   struct pack *pack0;
   int c;
-  if( act_count<2 )
+  if( dev_count<2 )
   {
     return NULL;
   }
@@ -223,7 +207,7 @@ struct pack *get_mix_audio()
   for( i=0 ; i<QUEUE_NUM ; i++ )
   {
     struct pack_queue *q = &queues[i];
-    if( q->dev_id!=0 && q->active )
+    if( q->dev_id!=0 )
       if( cfifo_empty(&q->fifo) )
         return NULL;
   }
@@ -233,7 +217,7 @@ struct pack *get_mix_audio()
   {
     struct pack_queue *q = &queues[i];
     struct pack *out;
-    if( q->dev_id==0 || !q->active )
+    if( q->dev_id==0 )
     {
       continue;
     }

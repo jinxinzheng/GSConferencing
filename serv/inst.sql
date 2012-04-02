@@ -62,7 +62,8 @@ create table auth_card
  id         integer primary key,  -- id, auto increment
  card_id    varchar(256),         -- 卡号
  card_info  varchar(256),         -- 卡内信息
- extra      varchar(256)          -- 其他信息
+ extra      varchar(256),         -- 其他信息
+ dev_id     int                   -- 对号报到终端id
 );
 
 -- 投票表决

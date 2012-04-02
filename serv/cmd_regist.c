@@ -40,13 +40,16 @@ static int cmd_regist(struct cmd *cmd)
 
   SUBCMD("start")
   {
+    int mode;
     if( g->db_data->regist_start )
     {
       return ERR_OTHER;
     }
 
     NEXT_ARG(p);
+    mode = atoi(p);
 
+    g->regist.mode = mode;
     g->regist.expect =
       g->stats.dev_count[DEVTYPE_NORMAL] +
       g->stats.dev_count[DEVTYPE_CHAIR];
@@ -56,7 +59,7 @@ static int cmd_regist(struct cmd *cmd)
     g->db_data->regist_arrive = g->regist.arrive;
 
     g->db_data->regist_start = 1;
-    g->db_data->regist_mode = atoi(p);
+    g->db_data->regist_mode = mode;
     group_save(g);
 
     d->db_data->regist_master = 1;

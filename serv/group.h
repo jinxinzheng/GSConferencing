@@ -41,6 +41,7 @@ struct group {
   } discuss;
 
   struct {
+    int mode;
     int expect;
     int arrive;
   } regist;

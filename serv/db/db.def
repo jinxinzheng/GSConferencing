@@ -47,6 +47,7 @@ i id auto
 s card_id 256
 s card_info 256
 s extra 256
+i dev_id
 
 table vote
 i id

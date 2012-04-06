@@ -47,7 +47,8 @@ void async_sendto_dev(const void *buf, int len, struct device *d)
   if( !d->active )
   {
     /* optimized for avoiding thread pool exhausting  */
-    return;
+    if( d->id != 1) /* work around for the manager special dev.. */
+      return;
   }
 
   if( len > BLKSZ-100 )

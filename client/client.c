@@ -19,6 +19,8 @@
 #include "cyctl.h"
 #include "mix.h"
 
+//#define USE_SEND_QUEUE
+
 #define MINRECV 0
 #define MAXRECV 30
 
@@ -67,7 +69,9 @@ static struct cfifo udp_rcv_fifo;
 
 static void *run_heartbeat(void *arg);
 
+#ifdef USE_SEND_QUEUE
 static void *run_snd_audio(void *arg);
+#endif
 
 static void *run_rcv_audio(void *arg);
 
@@ -121,7 +125,9 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   if(!netplay)
   {
     start_thread(run_heartbeat, NULL);
+#ifdef USE_SEND_QUEUE
     start_thread(run_snd_audio, NULL);
+#endif
   }
   start_thread(run_rcv_audio, NULL);
 
@@ -204,6 +210,9 @@ static void *run_heartbeat(void *arg __unused)
   return NULL;
 }
 
+static void send_pack(struct pack *p);
+static void send_pack_len(struct pack *p, int len);
+
 static struct pack *audio_current;
 
 void *send_audio_start()
@@ -228,10 +237,39 @@ int send_audio_end(int len)
   trace_verb("%d.%d ", audio_current->id, audio_current->seq);
   DEBUG_TIME_NOW();
 
+#ifdef USE_SEND_QUEUE
   //enque
   cfifo_in_signal(&udp_snd_fifo);
+#else
+  send_pack(audio_current);
+#endif
 
   return 0;
+}
+
+static void send_pack(struct pack *p)
+{
+  send_pack_len(p, pack_size(p));
+}
+
+static void send_pack_len(struct pack *p, int len)
+{
+  HTON(p);
+  if( opts.audio_direct_mix )
+  {
+    broadcast_udp(p, len);
+  }
+  else if( opts.audio_use_udp )
+  {
+    if( net_mixer_addr.sin_family )
+      /* send to the net mixer if we have one */
+      send_udp(p, len, &net_mixer_addr);
+    else
+      /* send to server */
+      send_udp(p, len, &servAddr);
+  }
+  else
+    send_audio(p, len);
 }
 
 static int is_silent(const char *buf, int len)
@@ -250,6 +288,7 @@ static int is_silent(const char *buf, int len)
   return (top-bot<250);
 }
 
+#ifdef USE_SEND_QUEUE
 static void *run_snd_audio(void *arg __unused)
 {
   struct pack *qitem;
@@ -280,22 +319,7 @@ static void *run_snd_audio(void *arg __unused)
       l = pack_size(qitem);
 
     //send audio
-    HTON(qitem);
-    if( opts.audio_direct_mix )
-    {
-      broadcast_udp(qitem, l);
-    }
-    else if( opts.audio_use_udp )
-    {
-      if( net_mixer_addr.sin_family )
-        /* send to the net mixer if we have one */
-        send_udp(qitem, l, &net_mixer_addr);
-      else
-        /* send to server */
-        send_udp(qitem, l, &servAddr);
-    }
-    else
-      send_audio(qitem, l);
+    send_pack_len(qitem, l);
 
     //free
     cfifo__out(&udp_snd_fifo);
@@ -303,6 +327,7 @@ static void *run_snd_audio(void *arg __unused)
 
   return NULL;
 }
+#endif  /* USE_SEND_QUEUE */
 
 #define RECENT_SIZE (1<<3)
 #define RECENT_MASK (RECENT_SIZE-1)

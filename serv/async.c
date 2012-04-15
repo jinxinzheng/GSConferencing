@@ -12,7 +12,7 @@
 #include <include/debug.h>
 
 #define THREADS 64
-#define BLKSZ   2048
+#define BLKSZ   10240 /* conform to CMD_MAX */
 
 static threadpool tp;
 static struct block_pool *bp;

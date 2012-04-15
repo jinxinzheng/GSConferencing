@@ -16,7 +16,7 @@
 #include <include/compiler.h>
 #include "../config.h"
 
-#define BUFLEN 4096
+#define BUFLEN 10240
 
 static void (*udp_recved)(char *buf, int l);
 static void (*tcp_recved)(int sock, int isfile, char *buf, int l);

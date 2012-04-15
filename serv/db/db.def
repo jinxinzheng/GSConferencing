@@ -56,12 +56,12 @@ i type
 i options_count
 i max_select
 s options 1024
-s members 1024
+s members 8192
 
 table discuss
 i id
 s name 64
-s members 1024
+s members 8192
 
 table video
 i id auto

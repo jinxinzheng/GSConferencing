@@ -75,7 +75,7 @@ create table vote
  options_count int,    -- 表决项数量
  max_select int,       -- 最多选择数
  options varchar(1024),-- 表决项(custom)
- members varchar(1024) -- 表决代表
+ members varchar(8192) -- 表决代表
 );
 
 -- 讨论议题
@@ -83,7 +83,7 @@ create table discuss
 (
  id int primary key,  -- id
  name varchar(64),     -- 议题名称
- members varchar(1024) -- 讨论代表
+ members varchar(8192) -- 讨论代表
 );
 
 -- 视频文件

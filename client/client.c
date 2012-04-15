@@ -901,7 +901,7 @@ static void video_recved(struct pack *pack, int len)
 /* cmd delegates */
 
 #define BASICS \
-  char buf[2048]; \
+  char buf[CMD_MAX]; \
   int __attribute__((unused)) l,i; \
   struct cmd c;
 

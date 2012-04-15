@@ -25,7 +25,7 @@ struct cmd {
   int sock;
 };
 
-#define CMD_MAX     4096
+#define CMD_MAX     10240
 #define REPLY_MAX   CMD_MAX
 
 /* cmd error codes */

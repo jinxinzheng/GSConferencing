@@ -179,5 +179,15 @@ do { \
   } \
 } while(0)
 
+#define ARRAY_TO_NUMLIST(buf, arr, arrlen) \
+do { \
+  int _i, _l=0; \
+  strcpy(buf, "0"); \
+  for (_i=0; _i<(arrlen); _i++) \
+  { \
+    LIST_ADD_NUM(buf, _l, (arr)[_i]); \
+  } \
+} while(0)
+
 
 #endif

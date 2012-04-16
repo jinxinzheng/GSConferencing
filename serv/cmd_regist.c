@@ -72,14 +72,18 @@ static int cmd_regist(struct cmd *cmd)
 
   SUBCMD("stop")
   {
+    char arrive_list[4096];
     if( !g->db_data->regist_start )
     {
       return ERR_OTHER;
     }
 
+    ARRAY_TO_NUMLIST(arrive_list, g->regist.arrive_ids, g->regist.arrive);
+
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, g->regist.expect);
     REP_ADD_NUM(cmd, g->regist.arrive);
+    REP_ADD(cmd, arrive_list);
     REP_END(cmd);
 
     regist_notify_all(cmd, g);
@@ -151,10 +155,11 @@ static int cmd_regist(struct cmd *cmd)
     REP_ADD_NUM(cmd, dd->user_gender);
     REP_END(cmd);
 
-    g->regist.arrive ++;
+    g->regist.arrive_ids[g->regist.arrive ++] = d->id;
 
     g->db_data->regist_arrive = g->regist.arrive;
     group_save(g);
+    /* TODO: save arrive_ids. */
 
     d->regist.reg = 1;
 

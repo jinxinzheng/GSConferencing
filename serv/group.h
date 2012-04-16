@@ -44,6 +44,7 @@ struct group {
     int mode;
     int expect;
     int arrive;
+    int arrive_ids[1024];
   } regist;
 
   struct {

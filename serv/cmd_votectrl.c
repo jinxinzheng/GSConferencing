@@ -389,6 +389,13 @@ static int cmd_votectrl(struct cmd *cmd)
       send_cmd_to_dev(cmd, m);
     }
 
+    g->vote.current = NULL;
+    g->vote.nmembers = 0;
+    g->db_data->vote_id = 0;
+    g->db_data->vote_results[0] = '0';
+    g->db_data->vote_results[1] = 0;
+    group_save(g);
+
     /* clear database snapshot */
     memset(db, 0, sizeof db);
     dbl = 0;

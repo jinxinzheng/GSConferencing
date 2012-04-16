@@ -26,6 +26,6 @@ t&&/^$/{
   t=0
   write_format=substr(write_format, 0, length(write_format)-1) "\\n"
   write_args=substr(write_args, 0, length(write_args)-1)
-  printf "#define write_%s(d){ append(\"%s\", %s); }\n", table, write_format, write_args
-  printf "#define read_%s(d,c){ a=1; %s }\n\n", table, read_statements
+  printf "#define write_%s(d) do { append(\"%s\", %s); } while(0)\n", table, write_format, write_args
+  printf "#define read_%s(d,c) do { a=1; %s } while(0)\n\n", table, read_statements
 }

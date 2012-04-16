@@ -27,11 +27,7 @@ do {  \
 #define shift(c) \
 ({ \
   if( !(p = (c)->args[a++]) ) \
-  { \
-    trace_err("bad cmd arg\n"); \
-    response(c, "FAIL 2\n"); \
     break; \
-  } \
   p; \
 })
 #define argis(arg) \

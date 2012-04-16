@@ -21,16 +21,10 @@ struct vote *vote_new()
   return v;
 }
 
-void vote_results_to_str( char *str, const struct vote *v )
+static void vote_results_to_str( char *str, const struct vote *v )
 {
   /* results are separated by ',' */
-
-  int i, l=0;
-
-  for( i=0; i<v->cn_options; i++ )
-  {
-    LIST_ADD_NUM(str, l, v->results[i]);
-  }
+  ARRAY_TO_NUMLIST(str, v->results, v->cn_options);
 }
 
 #define add_vote_member(g, mid, l) \
@@ -342,11 +336,7 @@ static int cmd_votectrl(struct cmd *cmd)
     }
     else
     {
-      l = 0;
-      for (i=0; i<v->cn_options; i++)
-      {
-        LIST_ADD_NUM(buf, l, v->results[i]);
-      }
+      vote_results_to_str(buf, v);
       REP_ADD_STR(cmd, buf, l);
     }
 

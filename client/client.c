@@ -1984,6 +1984,8 @@ enum
   TCP_AUDIO = 2,
 };
 
+static void __handle_cmd(char *buf, int l);
+
 /* handle recved cmd and generate appropriate events to the client */
 static void handle_cmd(int sock, int type, char *buf, int l)
 {
@@ -1999,9 +2001,6 @@ static void handle_cmd(int sock, int type, char *buf, int l)
     int len;
   }
   contex = { 0, 0, NULL, 0 };
-
-  struct cmd c = {.cmd=0};
-  int i;
 
   int isfile;
 
@@ -2050,6 +2049,13 @@ static void handle_cmd(int sock, int type, char *buf, int l)
     }
   }
 
+  __handle_cmd(buf, l);
+}
+
+static void __handle_cmd(char *buf, int l)
+{
+  struct cmd c = {.cmd=0};
+  int i;
 
   parse_cmd(buf, &c);
 
@@ -2272,6 +2278,21 @@ static void handle_cmd(int sock, int type, char *buf, int l)
   }
 }
 
+static void handle_brcast_cmd(struct pack_ucmd *ucmd)
+{
+  /* TODO:filter the cmd by ucmd->brcast_cmd.seq */
+  if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_ALL )
+  {
+  }
+  else if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_TAG )
+  {
+    if( ucmd->u.brcast_cmd.tag != tag_id )
+      return;
+  }
+
+  __handle_cmd((char *)ucmd->data, ucmd->datalen);
+}
+
 static void handle_ucmd(struct pack_ucmd *ucmd)
 {
   switch( ucmd->cmd )
@@ -2286,5 +2307,11 @@ static void handle_ucmd(struct pack_ucmd *ucmd)
         replicate[1] = rep;
     }
     break;
+
+    case UCMD_BRCAST_CMD :
+    {
+      handle_brcast_cmd(ucmd);
+      break;
+    }
   }
 }

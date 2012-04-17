@@ -15,9 +15,9 @@ static inline void regist_notify_all(struct cmd *cmd, struct group *g)
 
     d->db_data->regist_reg = d->regist.reg;
     device_save(d);
-
-    send_cmd_to_dev(cmd, d);
   }
+
+  brcast_cmd_to_all(cmd);
 }
 
 static int cmd_regist(struct cmd *cmd)

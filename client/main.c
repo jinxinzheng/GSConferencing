@@ -60,17 +60,12 @@ static void start_auto_udp()
 
 static void udp_recved(char *buf, int l)
 {
-  uint32_t *phead, i,s;
-  phead = (uint32_t *)buf;
-  buf[l] = 0;
-  if (verbose)
+  struct pack *pack;
+  pack = (struct pack *)buf;
+  if( pack->type == PACKET_UCMD )
   {
-    i = ntohl(phead[0]);
-    s = ntohl(phead[1]);
-    if ((s % 100) == 0)
-    {
-      fprintf(stderr, "%d:%d:...\n", i, s);
-    }
+    struct pack_ucmd *ucmd = (struct pack_ucmd *) pack;
+    fprintf(stderr, "ucmd: %s\n", ucmd->data);
   }
 }
 

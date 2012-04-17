@@ -43,14 +43,33 @@ struct pack_ucmd
       uint8_t tag;
       uint8_t rep;
     } interp;
+    struct {
+      uint16_t seq;
+      uint8_t mode;
+      uint8_t tag;
+    } brcast_cmd;
   } u;
   uint8_t type; /* type must be compatible with type of struct pack,
                    and always set to PACKET_UCMD. */
+  uint8_t unuse;
+  uint16_t datalen;
+  uint8_t data[1];
 }
 __attribute__((packed));
 
 enum {
-  UCMD_INTERP_REP_TAG,   /* interpreter has set or reset replicate tag */
+  /* interpreter has set or reset replicate tag */
+  UCMD_INTERP_REP_TAG,
+
+  /* normal cmd that is suitable for broadcast.
+     the original cmd is stored in data[],
+     including the ending \n and \0. */
+  UCMD_BRCAST_CMD,
+};
+
+enum {
+  BRCMD_MODE_ALL,
+  BRCMD_MODE_TAG,
 };
 
 #define P_HTON(p) \

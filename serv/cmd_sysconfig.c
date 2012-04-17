@@ -24,7 +24,7 @@ static int cmd_sysconfig(struct cmd *cmd)
   }
   else
   {
-    send_to_group_all(cmd, d->group);
+    brcast_cmd_to_all(cmd);
   }
 
   return 0;

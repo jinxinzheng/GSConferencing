@@ -117,7 +117,7 @@ static int cmd_discctrl(struct cmd *cmd)
 
     REP_OK(cmd);
 
-    send_to_tag_all(cmd, d->tag);
+    brcast_cmd_to_tag_all(cmd, d->tag->id);
 
     g->db_data->discuss_mode = i;
     group_save(g);
@@ -177,13 +177,9 @@ static int cmd_discctrl(struct cmd *cmd)
     g->discuss.curr_num = num;
 
     REP_ADD(cmd, "OK");
-
     REP_ADD(cmd, s->name);
-
     REP_ADD(cmd, s->members);
-
     REP_ADD(cmd, g->discuss.membernames);
-
     REP_END(cmd);
 
 
@@ -196,9 +192,10 @@ static int cmd_discctrl(struct cmd *cmd)
       if( (m = get_device(g->discuss.memberids[i])) )
       {
         m->discuss.forbidden = 0;
-        send_cmd_to_dev(cmd, m);
       }
     }
+
+    brcast_cmd_to_multi(cmd);
 
     /* send to the special 'manager' virtual device */
     send_cmd_to_dev_id(cmd, 1);
@@ -353,7 +350,7 @@ openit:
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
 
-    SEND_TO_GROUP_ALL(cmd);
+    brcast_cmd_to_all(cmd);
 
     d->db_data->discuss_chair = 0;
     device_save(d);
@@ -382,7 +379,7 @@ openit:
   {
     REP_OK(cmd);
 
-    SEND_TO_GROUP_ALL(cmd);
+    brcast_cmd_to_all(cmd);
 
     memset(db, 0 ,sizeof db);
     dbl = 0;
@@ -399,7 +396,7 @@ openit:
 
     REP_OK(cmd);
 
-    SEND_TO_GROUP_ALL(cmd);
+    brcast_cmd_to_all(cmd);
   }
 
   SUBCMD("demand")

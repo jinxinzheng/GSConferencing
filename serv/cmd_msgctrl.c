@@ -40,7 +40,7 @@ static int cmd_msgctrl(struct cmd *cmd)
 
     if (strcmp(p, "all") == 0)
     {
-      SEND_TO_GROUP_ALL(cmd);
+      brcast_cmd_to_all(cmd);
     }
     else
     {

@@ -29,6 +29,13 @@ void brcast_cmd_to_all(struct cmd *cmd)
   broadcast_local(sock, ucmd, offsetof(struct pack_ucmd, data)+ucmd->datalen);
 }
 
+void brcast_cmd_to_multi(struct cmd *cmd)
+{
+  /* currently the info needed by multi-cast is inside the cmd,
+   * so we don't distinguish broad-cast and multi-cast. */
+  return brcast_cmd_to_all(cmd);
+}
+
 void brcast_cmd_to_tag_all(struct cmd *cmd, int tagid)
 {
   char buf[CMD_MAX+100];

@@ -8,6 +8,7 @@
 #include <include/types.h>
 #include <include/debug.h>
 #include <include/lock.h>
+#include "brcmd.h"
 
 static struct db_discuss *db[1024];
 static int dbl = 0;

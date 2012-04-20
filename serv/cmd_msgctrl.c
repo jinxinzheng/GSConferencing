@@ -1,4 +1,5 @@
 #include "cmd_handler.h"
+#include "brcmd.h"
 
 #define DEVLIST_TO_IDLIST(str, head, listmember) \
   list_TO_NUMLIST(str, head, struct device, listmember, id)

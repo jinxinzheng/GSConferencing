@@ -2,6 +2,7 @@
 #include "include/types.h"
 #include "db/md.h"
 #include "devctl.h"
+#include "brcmd.h"
 
 static inline void regist_notify_all(struct cmd *cmd, struct group *g)
 {

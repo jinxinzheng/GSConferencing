@@ -1,5 +1,6 @@
 #include "cmd_handler.h"
 #include "db/db.h"
+#include "brcmd.h"
 
 static int cmd_sysconfig(struct cmd *cmd)
 {

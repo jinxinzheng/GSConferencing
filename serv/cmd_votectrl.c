@@ -337,7 +337,7 @@ static int cmd_votectrl(struct cmd *cmd)
     else
     {
       vote_results_to_str(buf, v);
-      REP_ADD_STR(cmd, buf, l);
+      REP_ADD(cmd, buf);
     }
 
     REP_END(cmd);

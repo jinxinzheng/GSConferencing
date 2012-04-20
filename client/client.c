@@ -2305,16 +2305,31 @@ static void __handle_cmd(char *buf, int l)
 static void handle_brcast_cmd(struct pack_ucmd *ucmd)
 {
   /* TODO:filter the cmd by ucmd->brcast_cmd.seq */
+
   if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_ALL )
   {
+    __handle_cmd((char *)ucmd->data, ucmd->datalen);
   }
   else if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_TAG )
   {
-    if( ucmd->u.brcast_cmd.tag != tag_id )
-      return;
+    if( ucmd->u.brcast_cmd.tag == tag_id )
+      __handle_cmd((char *)ucmd->data, ucmd->datalen);
   }
-
-  __handle_cmd((char *)ucmd->data, ucmd->datalen);
+  else if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_MULTI )
+  {
+    int *p = (int *) &ucmd->data[0];
+    int n = p[0];
+    int i;
+    for( i=1 ; i<=n ; i++ )
+    {
+      if( p[i] == id )
+      {
+        int l = (1+n)*sizeof(p[0]);
+        __handle_cmd((char *)(&ucmd->data[l]), ucmd->datalen-l);
+        break;
+      }
+    }
+  }
 }
 
 static void handle_ucmd(struct pack_ucmd *ucmd)

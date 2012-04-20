@@ -196,7 +196,9 @@ static int cmd_discctrl(struct cmd *cmd)
       }
     }
 
-    brcast_cmd_to_multi(cmd);
+    /* the client will filter the cmd by the id list
+     * inside the cmd. */
+    brcast_cmd_to_all(cmd);
 
     /* send to the special 'manager' virtual device */
     send_cmd_to_dev_id(cmd, 1);

@@ -69,7 +69,16 @@ enum {
 
 enum {
   BRCMD_MODE_ALL,
+
+  /* tag id is pack_ucmd.u.brcast_cmd.tag */
   BRCMD_MODE_TAG,
+
+  /* multi cast. the dest IDs are stored in the
+   * leading space in pack_ucmd.data:
+   * [0..4] : number of IDs.
+   * [5...]: array of IDs, 4 bytes each.
+   * following the ID array is the payload cmd. */
+  BRCMD_MODE_MULTI,
 };
 
 #define P_HTON(p) \

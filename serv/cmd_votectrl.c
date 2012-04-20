@@ -9,6 +9,7 @@
 #include "sys.h"
 #include "db/md.h"
 #include <include/util.h>
+#include "brcmd.h"
 
 struct vote *vote_new()
 {
@@ -204,12 +205,11 @@ static int cmd_votectrl(struct cmd *cmd)
     /*send vote start cmd to the members*/
 
 #define device_vote_start() do { \
-      send_cmd_to_dev(cmd, m); \
       vote_add_device(v, m); \
       m->vote.v = v; \
       m->vote.choice = -1; \
       m->db_data->vote_choice = -1; \
-      } while (0)
+    } while (0)
 
     for( i=0 ; i<g->vote.nmembers ; i++ )
     {
@@ -219,6 +219,8 @@ static int cmd_votectrl(struct cmd *cmd)
       }
       ++ v->n_members;
     }
+
+    brcast_cmd_to_multi(cmd, g->vote.memberids, g->vote.nmembers);
 
     /* send to the special 'manager' virtual device */
     send_cmd_to_dev_id(cmd, 1);
@@ -343,14 +345,15 @@ static int cmd_votectrl(struct cmd *cmd)
     REP_END(cmd);
 
     /* send the result to all clients about the vote */
-    list_for_each_entry(m, &v->device_head, vote.l)
-    {
-      send_cmd_to_dev(cmd, m);
-      m->vote.v = NULL;
-    }
+    brcast_cmd_to_multi(cmd, g->vote.memberids, g->vote.nmembers);
 
     /* send to the special 'manager' virtual device */
     send_cmd_to_dev_id(cmd, 1);
+
+    list_for_each_entry(m, &v->device_head, vote.l)
+    {
+      m->vote.v = NULL;
+    }
 
     d->vote.v = NULL;
 
@@ -370,14 +373,9 @@ static int cmd_votectrl(struct cmd *cmd)
   }
   else if (strcmp(scmd, "stop") == 0)
   {
-    struct device *m;
-
     REP_OK(cmd);
 
-    list_for_each_entry(m, &g->device_head, list)
-    {
-      send_cmd_to_dev(cmd, m);
-    }
+    brcast_cmd_to_all(cmd);
 
     g->vote.current = NULL;
     g->vote.nmembers = 0;

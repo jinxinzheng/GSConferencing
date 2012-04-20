@@ -12,6 +12,9 @@ static int seq;
     sock = open_broadcast_sock(); \
 }
 
+#define UCMD_SIZE(ucmd) \
+  (offsetof(struct pack_ucmd, data) + (ucmd)->datalen)
+
 void brcast_cmd_to_all(struct cmd *cmd)
 {
   char buf[CMD_MAX+100];
@@ -26,14 +29,7 @@ void brcast_cmd_to_all(struct cmd *cmd)
   ucmd->datalen = cmd->rl+1;
   memcpy(ucmd->data, cmd->rep, cmd->rl+1);  /* include the ending \0 */
 
-  broadcast_local(sock, ucmd, offsetof(struct pack_ucmd, data)+ucmd->datalen);
-}
-
-void brcast_cmd_to_multi(struct cmd *cmd)
-{
-  /* currently the info needed by multi-cast is inside the cmd,
-   * so we don't distinguish broad-cast and multi-cast. */
-  return brcast_cmd_to_all(cmd);
+  broadcast_local(sock, ucmd, UCMD_SIZE(ucmd));
 }
 
 void brcast_cmd_to_tag_all(struct cmd *cmd, int tagid)
@@ -51,5 +47,35 @@ void brcast_cmd_to_tag_all(struct cmd *cmd, int tagid)
   ucmd->datalen = cmd->rl+1;
   memcpy(ucmd->data, cmd->rep, cmd->rl+1);  /* include the ending \0 */
 
-  broadcast_local(sock, ucmd, offsetof(struct pack_ucmd, data)+ucmd->datalen);
+  broadcast_local(sock, ucmd, UCMD_SIZE(ucmd));
+}
+
+void brcast_cmd_to_multi(struct cmd *cmd, int ids[], int n)
+{
+  char buf[CMD_MAX*2+100];
+  struct pack_ucmd *ucmd = (struct pack_ucmd *) buf;
+  unsigned char *p;
+  int l, off;
+
+  INIT_SOCK();
+
+  ucmd->type = PACKET_UCMD;
+  ucmd->cmd = UCMD_BRCAST_CMD;
+  ucmd->u.brcast_cmd.seq = ++ seq;
+  ucmd->u.brcast_cmd.mode = BRCMD_MODE_MULTI;
+
+  l = n*sizeof(ids[0]);
+
+  p = &ucmd->data[0];
+  off = 0;
+  *(int *)p = n;
+  off += sizeof(int);
+  memcpy(p+off, ids, l);
+  off += l;
+  memcpy(p+off, cmd->rep, cmd->rl+1);
+  off += cmd->rl+1;
+
+  ucmd->datalen = off;
+
+  broadcast_local(sock, ucmd, UCMD_SIZE(ucmd));
 }

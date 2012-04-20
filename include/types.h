@@ -8,6 +8,10 @@ enum {
   DEVTYPE_CHAIR,
   DEVTYPE_INTERP,
   DEVTYPE_OTHER,
+
+  /* special types */
+  DEVTYPE_NETPLAY = 222,
+  DEVTYPE_BCAST_AUDIO,
 };
 
 /* user register modes */

@@ -14,6 +14,7 @@
 #include <include/thread.h>
 #include <include/util.h>
 #include <include/compiler.h>
+#include <include/types.h>
 #include <config.h>
 #include <version.h>
 #include "cyctl.h"
@@ -54,6 +55,8 @@ static event_cb event_handler;
 
 static char br_addr[32];
 
+static int bcast_audio=0;
+
 #define STREQU(a, b) (strcmp((a), (b))==0)
 
 #define CHECKOK(s) if (!STREQU(s,"OK")) return;
@@ -78,7 +81,7 @@ static void *run_rcv_audio(void *arg);
 void client_init(int dev_id, int type, const char *servIP, int localPort)
 {
   int servPort = SERVER_PORT;
-  int netplay;
+  int netplay=0;
 
   printf("daya client %s. build date %s\n", build_rev, build_date);
 
@@ -102,16 +105,31 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
 
   /* the special netplay mode,
    * only a few functions are enabled. */
-  netplay = (type==222);
+  if( type==DEVTYPE_NETPLAY )
+  {
+    netplay = 1;
+    /* only listen to tag 1 */
+    subscription[0] = 1;
+  }
+
+  /* broadcast audio mode,
+   * use default tag id. */
+  if( type==DEVTYPE_BCAST_AUDIO )
+  {
+    bcast_audio = 1;
+    tag_id = 1;
+  }
 
   /* listen cmds */
-  if(!netplay)
+  if( !(netplay||bcast_audio) )
     start_recv_tcp(listenPort, handle_cmd);
 
   /* listen udp - audio, video and other */
-  start_recv_udp(listenPort, udp_recved, !netplay);
+  if( !bcast_audio )
+    start_recv_udp(listenPort, udp_recved, netplay?0:1);
 
   /* udp sending and recving queues */
+
   if(!netplay)
   {
     cfifo_init(&udp_snd_fifo, 8, 11); //256 of size and 2K of element size
@@ -124,17 +142,17 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   /* udp sender thread */
   if(!netplay)
   {
-    start_thread(run_heartbeat, NULL);
 #ifdef USE_SEND_QUEUE
     start_thread(run_snd_audio, NULL);
 #endif
   }
-  start_thread(run_rcv_audio, NULL);
 
-  if(netplay)
+  if( !bcast_audio )
+    start_thread(run_rcv_audio, NULL);
+
+  if( !(netplay||bcast_audio) )
   {
-    /* only listen to tag 1 */
-    subscription[0] = 1;
+    start_thread(run_heartbeat, NULL);
   }
 
   if( opts.audio_direct_mix )
@@ -252,7 +270,7 @@ int send_audio_end(int len)
   if( len <= 0 )
     return -1;
 
-  if( !mic_open )
+  if( !mic_open && !bcast_audio )
     return -2;
 
   audio_current->type = PACKET_AUDIO;
@@ -282,7 +300,7 @@ static void send_pack(struct pack *p)
 static void send_pack_len(struct pack *p, int len)
 {
   HTON(p);
-  if( opts.audio_direct_mix )
+  if( opts.audio_direct_mix || bcast_audio )
   {
     broadcast_udp(p, len);
   }

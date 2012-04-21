@@ -81,7 +81,7 @@ void group_setup_vote(struct group *g, struct db_vote *dv)
 static int cmd_votectrl(struct cmd *cmd)
 {
   char *scmd, *p;
-  char buf[1024];
+  char buf[CMD_MAX];
   int ai=0, i,l;
 
   static struct db_vote *db[1024];
@@ -202,8 +202,6 @@ static int cmd_votectrl(struct cmd *cmd)
      * but do not add it to the vote list */
     d->vote.v = v;
 
-    /*send vote start cmd to the members*/
-
 #define device_vote_start() do { \
       vote_add_device(v, m); \
       m->vote.v = v; \
@@ -220,6 +218,7 @@ static int cmd_votectrl(struct cmd *cmd)
       ++ v->n_members;
     }
 
+    /*send vote start cmd to the members*/
     brcast_cmd_to_multi(cmd, g->vote.memberids, g->vote.nmembers);
 
     /* send to the special 'manager' virtual device */
@@ -341,6 +340,14 @@ static int cmd_votectrl(struct cmd *cmd)
       vote_results_to_str(buf, v);
       REP_ADD(cmd, buf);
     }
+
+    l = 0;
+    strcpy(buf, "0");
+    list_for_each_entry(m, &v->device_head, vote.l)
+    {
+      LIST_ADD_FMT(buf, l, "%d=%d", m->id, m->vote.choice);
+    }
+    REP_ADD_STR(cmd, buf, l);
 
     REP_END(cmd);
 

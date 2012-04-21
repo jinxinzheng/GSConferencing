@@ -248,7 +248,7 @@ void tag_rm_outstanding(struct tag *t, struct device *d)
 
 #define MAX_DEV_PACKS 32
 
-int tag_in_dev_packet(struct tag *t __unused, struct device *d, struct packet *pack)
+int tag_in_dev_packet(struct tag *t, struct device *d, struct packet *pack)
 {
   /* don't en-queue if the dev is not outstanding.
    * in the small window when client is opening or
@@ -274,7 +274,7 @@ int tag_in_dev_packet(struct tag *t __unused, struct device *d, struct packet *p
 }
 
 /* this should only be called when dev's queue is not empty */
-struct packet *tag_out_dev_packet(struct tag *t __unused, struct device *d)
+struct packet *tag_out_dev_packet(struct tag *t, struct device *d)
 {
   struct packet *p;
 

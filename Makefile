@@ -10,7 +10,7 @@ export CC
 export AR
 endif
 
-CFLAGS = -pipe -Wall -Wextra -O
+CFLAGS = -pipe -Wall -Wextra -Wno-unused-parameter -O
 export CFLAGS
 
 SUBDIRS:=serv client

@@ -196,7 +196,7 @@ void set_event_callback(event_cb cb)
 #define headlen(p)    (offsetof(struct pack, data))
 #define pack_size(p)  (offsetof(struct pack, data) + (p)->datalen)
 
-static void *run_heartbeat(void *arg __unused)
+static void *run_heartbeat(void *arg)
 {
   struct pack hb;
   int sock;
@@ -334,7 +334,7 @@ static int is_silent(const char *buf, int len)
 }
 
 #ifdef USE_SEND_QUEUE
-static void *run_snd_audio(void *arg __unused)
+static void *run_snd_audio(void *arg)
 {
   struct pack *qitem;
   int l;
@@ -721,7 +721,7 @@ static inline void drop_rcv_queue(int count)
   }
 }
 
-static void *run_rcv_audio(void *arg __unused)
+static void *run_rcv_audio(void *arg)
 {
   struct pack *qitem;
   int qlen;

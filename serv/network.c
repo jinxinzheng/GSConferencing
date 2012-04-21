@@ -168,7 +168,7 @@ static int do_send(int sock, const void *buf, int len)
   return send(sock, tmp, l, 0);
 }
 
-void *run_proceed_connection(void *arg __unused)
+void *run_proceed_connection(void *arg)
 {
   struct connection *c;
   char buf[BUFLEN];
@@ -252,7 +252,7 @@ CMDERR:
   return NULL;
 }
 
-void *listener_tcp_proc(void *arg __unused)
+void *listener_tcp_proc(void *arg)
 {
   int port;
 
@@ -458,7 +458,7 @@ static int __run_listen_audio()
   return 0;
 }
 
-static void *run_listen_audio(void *arg __unused)
+static void *run_listen_audio(void *arg)
 {
   __run_listen_audio();
   return NULL;

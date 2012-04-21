@@ -46,7 +46,7 @@ int dev_cast_packet(struct device *dev, struct packet *pack)
   return 0;
 }
 
-static void __repeat_cast(struct tag *t, struct device *d __unused, uint32_t seq)
+static void __repeat_cast(struct tag *t, struct device *d, uint32_t seq)
 {
   struct packet *r;
   pack_data *p;

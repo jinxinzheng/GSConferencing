@@ -44,7 +44,7 @@ static void check_net(struct device *d)
   }
 }
 
-static void *run_heartbeat_god(void *arg __unused)
+static void *run_heartbeat_god(void *arg)
 {
   struct group *g;
   struct device *d;

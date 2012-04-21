@@ -52,14 +52,14 @@ static int netmx_close_dev(struct device *d)
   return 0;
 }
 
-static int netmx_put(struct device *d __unused, struct packet *pack __unused)
+static int netmx_put(struct device *d, struct packet *pack)
 {
   /* return 1 immediately to tell the caller
    * that the buffer is done to use. */
   return 1;
 }
 
-static struct packet *netmx_get(struct tag *t __unused)
+static struct packet *netmx_get(struct tag *t)
 {
   /* relax the casting thread. */
   while( 1 )

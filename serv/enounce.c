@@ -9,7 +9,7 @@
 #include "network.h"
 #include "../config.h"
 
-static void *run_enounce(void *arg __unused)
+static void *run_enounce(void *arg)
 {
   int sock;
   pack_data pack;

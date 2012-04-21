@@ -21,7 +21,7 @@ static int servPort = 7650;
 
 static struct sockaddr_in servAddr;
 
-static void *auto_send_udp(void *arg __unused)
+static void *auto_send_udp(void *arg)
 {
   char buf[512], *p;
   int len;

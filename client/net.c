@@ -356,7 +356,7 @@ static void __run_recv_audio()
   }
 }
 
-static void *run_recv_audio(void *arg __unused)
+static void *run_recv_audio(void *arg)
 {
   __run_recv_audio();
   return NULL;
@@ -413,7 +413,7 @@ static int udp_recv_br;
 
 static void _recv_udp(int s);
 
-static void *run_recv_udp(void *arg __unused)
+static void *run_recv_udp(void *arg)
 {
   int sock, br_sock;
   int on;
@@ -545,7 +545,7 @@ static void _recv_udp(int s)
 static int tcp_port;
 static int file_port;
 
-static void *run_recv_tcp(void *arg __unused)
+static void *run_recv_tcp(void *arg)
 {
   int port;
   int lisn_sock;

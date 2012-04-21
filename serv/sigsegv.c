@@ -7,7 +7,7 @@
 #define SIZE 1000
 static void *buffer[SIZE];
 
-static void fault_trap(int n __unused,struct siginfo *siginfo,void *myact __unused)
+static void fault_trap(int n,struct siginfo *siginfo,void *myact)
 {
   int num;
   fprintf(stderr, "Seg Fault address:%p\n",siginfo->si_addr);

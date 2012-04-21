@@ -10,6 +10,9 @@ enum {
   ERR_REJECTED,
   ERR_INVL_ARG,
   ERR_OTHER,
+
+  /* cmd specific errors */
+  ERR_REGIST_ALREADY = 0x101,
 };
 
 

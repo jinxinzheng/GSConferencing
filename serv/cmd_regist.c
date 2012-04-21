@@ -129,6 +129,11 @@ static int cmd_regist(struct cmd *cmd)
       return ERR_OTHER;
     }
 
+    if( d->regist.reg )
+    {
+      return ERR_REGIST_ALREADY;
+    }
+
     if( !(dd = d->db_data) )
     {
       return ERR_OTHER;

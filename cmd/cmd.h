@@ -28,15 +28,7 @@ struct cmd {
 #define CMD_MAX     10240
 #define REPLY_MAX   CMD_MAX
 
-/* cmd error codes */
-enum {
-  ERR_PARSE = 1,
-  ERR_BAD_CMD,
-  ERR_NOT_REG,
-  ERR_REJECTED,
-  ERR_INVL_ARG,
-  ERR_OTHER,
-};
+#include  "cmderr.h"
 
 /* line: command line, ended by '\n' or '\r\n'.
  * cmd: cmd struct.

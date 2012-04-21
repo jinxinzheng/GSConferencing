@@ -931,20 +931,16 @@ static void video_recved(struct pack *pack, int len)
   if (l>0) { \
     int _e;  \
     buf[l] = 0; \
-    if( (_e = parse_cmd(buf, &c)) ) \
-    { \
+    if( (_e = parse_cmd(buf, &c)) != 0 ) { \
       fprintf(stderr, "%s failed: %d\n", __func__, _e); \
       if (_e == ERR_NOT_REG) \
-      { \
         event_handler(EVENT_NEED_REG, NULL, NULL); \
-      } \
-      return -2; \
+      return _e; \
     } \
   } \
-  else if( l == -2) \
-  { \
+  else if( l == -2) { \
     event_handler(EVENT_NEED_REG, NULL, NULL); \
-    return l; \
+    return -2; \
   } \
   else return -1; \
 } while (0)

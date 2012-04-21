@@ -109,7 +109,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
   unsigned char tmp[BUFLEN];
   int l;
 
-  const int timeout = 3;
+  const int timeout = 6;
 
   struct timeval tv = {timeout, 0};
   fd_set fds;

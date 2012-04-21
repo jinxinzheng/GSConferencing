@@ -65,7 +65,27 @@ static void udp_recved(char *buf, int l)
   if( pack->type == PACKET_UCMD )
   {
     struct pack_ucmd *ucmd = (struct pack_ucmd *) pack;
-    fprintf(stderr, "ucmd: %s\n", ucmd->data);
+    if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_ALL )
+    {
+      fprintf(stderr, "ucmd: %s\n", ucmd->data);
+    }
+    else if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_TAG )
+    {
+      fprintf(stderr, "ucmd: (tag %d) %s\n", ucmd->u.brcast_cmd.tag, ucmd->data);
+    }
+    else if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_MULTI )
+    {
+      int *p = (int *) &ucmd->data[0];
+      int n = p[0];
+      int i,l;
+      fprintf(stderr, "ucmd: {");
+      for( i=1 ; i<=n ; i++ )
+      {
+        fprintf(stderr, "%d,", p[i]);
+      }
+      l = (1+n)*sizeof(p[0]);
+      fprintf(stderr, "} %s\n", (char *)(&ucmd->data[l]));
+    }
   }
 }
 

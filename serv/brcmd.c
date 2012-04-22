@@ -16,7 +16,7 @@ static int seq;
   (offsetof(struct pack_ucmd, data) + (ucmd)->datalen)
 
 #define BRCAST_UCMD(ucmd) \
-  async_brcast(sock, ucmd, UCMD_SIZE(ucmd), 3)
+  async_brcast(sock, ucmd, UCMD_SIZE(ucmd), 10)
 
 void brcast_cmd_to_all(struct cmd *cmd)
 {

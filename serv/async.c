@@ -12,7 +12,7 @@
 #include <include/debug.h>
 #include <include/util.h>
 
-#define THREADS 64
+#define THREADS 128
 #define BLKSZ   10240 /* conform to CMD_MAX */
 
 static threadpool tp;

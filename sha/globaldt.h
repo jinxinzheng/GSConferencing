@@ -18,7 +18,7 @@ Description:	Generic Data Type definitions
 #define SIZEOF_LONG_INT 4
 #define SIZEOF_LONG_LONG_INT 8
 
-typedef unsigned long       DWORD;
+typedef unsigned int        DWORD;
 typedef int                 BOOL;
 typedef unsigned char       BYTE;
 typedef unsigned short      WORD;

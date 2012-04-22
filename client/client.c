@@ -374,30 +374,46 @@ static void *run_snd_audio(void *arg)
 }
 #endif  /* USE_SEND_QUEUE */
 
+struct recent_info
+{
+  uint32_t *seqs;
+  int size;
+  int pos;
+};
+
+static int recent_test(struct recent_info *recent, uint32_t seq)
+{
+  int i;
+  int mask = recent->size-1;
+  int pos = recent->pos;
+  for( i=0 ; i<recent->size ; i++ )
+  {
+    if( seq == recent->seqs[(pos+recent->size-i) & mask] )
+    {
+      return 1;
+    }
+  }
+  /* add the seq to recent.
+   * the list is an 'fifo'. */
+  pos = (pos+1) & mask;
+  recent->pos = pos;
+  recent->seqs[pos] = seq;
+  return 0;
+}
+
 #define RECENT_SIZE (1<<3)
 #define RECENT_MASK (RECENT_SIZE-1)
 
 static int is_recved(uint32_t seq)
 {
   static uint32_t recent_seqs[RECENT_SIZE] = {0};
-  static int pos = 0;
+  static struct recent_info recent_recved = {
+    .seqs = recent_seqs,
+    .size = RECENT_SIZE,
+    .pos = 0,
+  };
 
-  int i;
-
-  for( i=0 ; i<RECENT_SIZE ; i++ )
-  {
-    if( seq == recent_seqs[(pos+RECENT_SIZE-i) & RECENT_MASK] )
-    {
-      return 1;
-    }
-  }
-
-  /* add the seq to recent.
-   * the list is an 'fifo'. */
-  pos = (pos+1) & RECENT_MASK;
-  recent_seqs[pos] = seq;
-
-  return 0;
+  return recent_test(&recent_recved, seq);
 }
 
 
@@ -2298,9 +2314,24 @@ static void __handle_cmd(char *buf, int l)
   }
 }
 
+static int is_ucmd_recved(uint32_t seq)
+{
+  static uint32_t ucmd_seqs[8] = {0};
+  static struct recent_info recent_ucmd = {
+    .seqs = ucmd_seqs,
+    .size = 8,
+    .pos = 0,
+  };
+
+  return recent_test(&recent_ucmd, seq);
+}
+
 static void handle_brcast_cmd(struct pack_ucmd *ucmd)
 {
-  /* TODO:filter the cmd by ucmd->brcast_cmd.seq */
+  if( is_ucmd_recved(ucmd->u.brcast_cmd.seq) )
+  {
+    return;
+  }
 
   if( ucmd->u.brcast_cmd.mode == BRCMD_MODE_ALL )
   {

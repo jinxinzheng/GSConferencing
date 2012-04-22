@@ -15,6 +15,9 @@ static int seq;
 #define UCMD_SIZE(ucmd) \
   (offsetof(struct pack_ucmd, data) + (ucmd)->datalen)
 
+#define BRCAST_UCMD(ucmd) \
+  async_brcast(sock, ucmd, UCMD_SIZE(ucmd), 3)
+
 void brcast_cmd_to_all(struct cmd *cmd)
 {
   char buf[CMD_MAX+100];
@@ -29,7 +32,7 @@ void brcast_cmd_to_all(struct cmd *cmd)
   ucmd->datalen = cmd->rl+1;
   memcpy(ucmd->data, cmd->rep, cmd->rl+1);  /* include the ending \0 */
 
-  broadcast_local(sock, ucmd, UCMD_SIZE(ucmd));
+  BRCAST_UCMD(ucmd);
 }
 
 void brcast_cmd_to_tag_all(struct cmd *cmd, int tagid)
@@ -47,7 +50,7 @@ void brcast_cmd_to_tag_all(struct cmd *cmd, int tagid)
   ucmd->datalen = cmd->rl+1;
   memcpy(ucmd->data, cmd->rep, cmd->rl+1);  /* include the ending \0 */
 
-  broadcast_local(sock, ucmd, UCMD_SIZE(ucmd));
+  BRCAST_UCMD(ucmd);
 }
 
 void brcast_cmd_to_multi(struct cmd *cmd, int ids[], int n)
@@ -77,5 +80,5 @@ void brcast_cmd_to_multi(struct cmd *cmd, int ids[], int n)
 
   ucmd->datalen = off;
 
-  broadcast_local(sock, ucmd, UCMD_SIZE(ucmd));
+  BRCAST_UCMD(ucmd);
 }

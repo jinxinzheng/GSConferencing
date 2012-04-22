@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <include/debug.h>
+#include <include/util.h>
 
 #define THREADS 64
 #define BLKSZ   10240 /* conform to CMD_MAX */
@@ -69,4 +70,46 @@ void async_sendto_dev(const void *buf, int len, struct device *d)
   memcpy(args->buf, buf, len);
 
   dispatch_threadpool(tp, _sendto_dev, args);
+}
+
+struct brcast_args
+{
+  int sock;
+  int repeat;
+  int len;
+  unsigned char data[1];
+};
+
+static void run_brcast(void *arg)
+{
+  struct brcast_args *args = (struct brcast_args *) arg;
+  int i;
+  for( i=0 ; i<args->repeat ; i++ )
+  {
+    broadcast_local(args->sock, args->data, args->len);
+    sleep(2);
+  }
+}
+
+void async_brcast(int sock, const void *buf, int len, int repeat)
+{
+  struct brcast_args *args;
+
+  if( len > BLKSZ-100 )
+  {
+    trace_err("broadcast data is too long: %d\n", len);
+    return;
+  }
+
+  while( !(args = (struct brcast_args *) alloc_block(bp)) )
+  {
+    msleep(100);
+  }
+
+  args->sock = sock;
+  args->repeat = repeat;
+  args->len = len;
+  memcpy(args->data, buf, len);
+
+  dispatch_threadpool(tp, run_brcast, args);
 }

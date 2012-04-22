@@ -15,7 +15,9 @@ static inline void regist_notify_all(struct cmd *cmd, struct group *g)
     d->regist.reg = 0;
 
     d->db_data->regist_reg = d->regist.reg;
-    device_save(d);
+    /* saving the state for each device is causing
+     * performance problem.. */
+    //device_save(d);
   }
 
   brcast_cmd_to_all(cmd);

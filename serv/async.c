@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <include/debug.h>
 #include <include/util.h>
+#include <include/lock.h>
 
 #define THREADS 128
 #define BLKSZ   10240 /* conform to CMD_MAX */
@@ -80,15 +81,21 @@ struct brcast_args
   unsigned char data[1];
 };
 
+static pthread_mutex_t brcast_lk = PTHREAD_MUTEX_INITIALIZER;
+
 static void run_brcast(void *arg)
 {
   struct brcast_args *args = (struct brcast_args *) arg;
   int i;
   for( i=0 ; i<args->repeat ; i++ )
   {
+    /* the socket can be used in multiple threads. */
+    LOCK(brcast_lk);
     broadcast_local(args->sock, args->data, args->len);
+    UNLOCK(brcast_lk);
     sleep(2);
   }
+  free_block(bp, arg);
 }
 
 void async_brcast(int sock, const void *buf, int len, int repeat)

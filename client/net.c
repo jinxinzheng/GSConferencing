@@ -178,16 +178,28 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
     return -2;
   }
 
-  l=recv(sock, tmp, sizeof tmp, 0);
-  if (l > 0)
+  while(1)
   {
-    /* decode the reply and store in origin buf */
-    l = decode(buf, tmp, l);
+    l=recv(sock, tmp, sizeof tmp, 0);
+    if (l > 0)
+    {
+      /* decode the reply and store in origin buf */
+      l = decode(buf, tmp, l);
+    }
+    else if(l==0)
+      fprintf(stderr, "(no repsponse)\n");
+    else
+    {
+      if( errno==EAGAIN )
+      {
+        msleep(10);
+        continue;
+      }
+      else
+        perror("recv()");
+    }
+    break;
   }
-  else if(l==0)
-    fprintf(stderr, "(no repsponse)\n");
-  else
-    perror("recv()");
 
   close(sock);
   return l;

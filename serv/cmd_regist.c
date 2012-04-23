@@ -113,7 +113,7 @@ static int cmd_regist(struct cmd *cmd)
   }
 
   SUBCMD("reg")
-  {
+  do {
     int mode;
     int cid;
     struct db_device *dd;
@@ -129,11 +129,6 @@ static int cmd_regist(struct cmd *cmd)
          g->db_data->regist_mode != mode )
     {
       return ERR_OTHER;
-    }
-
-    if( d->regist.reg )
-    {
-      return ERR_REGIST_ALREADY;
     }
 
     if( !(dd = d->db_data) )
@@ -163,6 +158,14 @@ static int cmd_regist(struct cmd *cmd)
     REP_ADD_NUM(cmd, dd->user_gender);
     REP_END(cmd);
 
+    if( d->regist.reg )
+    {
+      /* duplicate regist. can be due to issue from client side.
+       * we do not accumulate it, but still need to reply info
+       * to the client. */
+      break;
+    }
+
     g->regist.arrive_ids[g->regist.arrive ++] = d->id;
 
     g->db_data->regist_arrive = g->regist.arrive;
@@ -173,7 +176,7 @@ static int cmd_regist(struct cmd *cmd)
 
     d->db_data->regist_reg = 1;
     device_save(d);
-  }
+  } while(0);
 
   else return 2; /*sub cmd not found*/
 

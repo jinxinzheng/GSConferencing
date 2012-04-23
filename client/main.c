@@ -91,7 +91,7 @@ static void udp_recved(char *buf, int l)
 
 void read_cmds()
 {
-  char buf[2048], *cmd, *p;
+  char buf[10240], *cmd, *p;
   int l;
 
   cmd = buf+16;

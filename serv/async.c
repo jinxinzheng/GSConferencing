@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <include/debug.h>
 #include <include/util.h>
-#include <include/lock.h>
 
 #define THREADS 128
 #define BLKSZ   10240 /* conform to CMD_MAX */
@@ -73,50 +72,7 @@ void async_sendto_dev(const void *buf, int len, struct device *d)
   dispatch_threadpool(tp, _sendto_dev, args);
 }
 
-struct brcast_args
+void async_run(void (*fn)(void *), void *arg)
 {
-  int sock;
-  int repeat;
-  int len;
-  unsigned char data[1];
-};
-
-static pthread_mutex_t brcast_lk = PTHREAD_MUTEX_INITIALIZER;
-
-static void run_brcast(void *arg)
-{
-  struct brcast_args *args = (struct brcast_args *) arg;
-  int i;
-  for( i=0 ; i<args->repeat ; i++ )
-  {
-    /* the socket can be used in multiple threads. */
-    LOCK(brcast_lk);
-    broadcast_local(args->sock, args->data, args->len);
-    UNLOCK(brcast_lk);
-    sleep(2);
-  }
-  free_block(bp, arg);
-}
-
-void async_brcast(int sock, const void *buf, int len, int repeat)
-{
-  struct brcast_args *args;
-
-  if( len > BLKSZ-100 )
-  {
-    trace_err("broadcast data is too long: %d\n", len);
-    return;
-  }
-
-  while( !(args = (struct brcast_args *) alloc_block(bp)) )
-  {
-    msleep(100);
-  }
-
-  args->sock = sock;
-  args->repeat = repeat;
-  args->len = len;
-  memcpy(args->data, buf, len);
-
-  dispatch_threadpool(tp, run_brcast, args);
+  dispatch_threadpool(tp, fn, arg);
 }

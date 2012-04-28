@@ -30,6 +30,7 @@
 
 static int id;
 static int devtype;
+static int reged;
 static struct sockaddr_in servAddr;
 static int listenPort;
 static struct sockaddr_in net_mixer_addr;
@@ -942,7 +943,7 @@ static void video_recved(struct pack *pack, int len)
 #define PRINTC(fmt, args...) \
   l = sprintf(buf, "%d " fmt "\n", id, ##args);
 
-#define SEND_CMD() do {\
+#define __SEND_CMD() do {\
   l = send_tcp(buf, l, &servAddr); \
   if (l>0) { \
     int _e;  \
@@ -960,6 +961,12 @@ static void video_recved(struct pack *pack, int len)
   } \
   else return -1; \
 } while (0)
+
+#define SEND_CMD() do { \
+  if( !reged )  \
+    return -1;  \
+  __SEND_CMD(); \
+} while(0)
 
 #define FIND_OK(cmd) ({ \
   int _i; \
@@ -1215,6 +1222,7 @@ int reg(const char *passwd, struct dev_info *info)
 
 #define _POST_REG() \
 { \
+  reged = 1;  \
   /*synctime();*/ \
   tag_id = info->tag; \
   subscription[0] = info->sub[0]; \
@@ -1233,7 +1241,7 @@ int reg(const char *passwd, struct dev_info *info)
 
   _MAKE_REG();
 
-  SEND_CMD();
+  __SEND_CMD();
 
   i = FIND_OK(c);
 
@@ -2086,6 +2094,11 @@ static void __handle_cmd(char *buf, int l)
 {
   struct cmd c = {.cmd=0};
   int i;
+
+  if( !reged )
+  {
+    return;
+  }
 
   parse_cmd(buf, &c);
 

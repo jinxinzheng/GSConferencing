@@ -126,6 +126,9 @@ static void recover_devs()
 
   while( (dd = md_iterate_device_next(&it)) )
   {
+    if( !dd->enabled )
+      continue;
+
     d = dev_create(dd->id);
 
     set_dev_from_data(d, dd);

@@ -79,6 +79,7 @@ void dev_update_data(struct device *dev)
         1, /* tagid */
         "", /* user_id */
         0,"?",1, /* user */
+        1, /* enabled */
         1, /* online */
         0,0, /* sub */
         0, /* discuss_chair */

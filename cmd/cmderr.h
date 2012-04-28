@@ -13,6 +13,8 @@ enum {
 
   /* cmd specific errors */
   ERR_REGIST_ALREADY = 0x101,
+
+  ERR_DEV_DISABLED = 0x201,
 };
 
 

@@ -43,6 +43,7 @@ create table device
  user_card int,         -- 用户卡号
  user_name varchar(64), -- 用户名字
  user_gender int,       -- 用户性别
+ enabled int,           -- 是否启用
  online int,            -- 是否在线
  sub1 int,              -- 收听通道1
  sub2 int,              -- 收听通道2

@@ -63,6 +63,7 @@ static int cmd_reg(struct cmd *cmd)
 
   char *p;
   struct device *d;
+  struct db_device *dd;
   char sum[64];
   unsigned int n;
   int type;
@@ -97,6 +98,15 @@ static int cmd_reg(struct cmd *cmd)
 
   if (port <= 0)
     return 1;
+
+  dd = md_find_device(did);
+  if( dd )
+  {
+    if( !dd->enabled )
+    {
+      return ERR_DEV_DISABLED;
+    }
+  }
 
   d = get_device(did);
 

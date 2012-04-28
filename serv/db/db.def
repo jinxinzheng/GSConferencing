@@ -26,6 +26,7 @@ s user_id 64
 i user_card
 s user_name 64
 i user_gender
+i enabled
 i online
 i sub1
 i sub2

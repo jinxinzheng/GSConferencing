@@ -1,6 +1,9 @@
 #ifndef __INIT_H__
 #define __INIT_H__
 
+
+#include  <include/compiler.h>
+
 /* init call approach copied from linux
  * which heavily rely on the gcc compiler. */
 
@@ -8,8 +11,6 @@
  * Used for initialization calls..
  */
 typedef int (*initcall_t)(void);
-
-#define __used          __attribute__ ((used))
 
 #define __init_call     __attribute__ ((section (".initcall.init")))
 

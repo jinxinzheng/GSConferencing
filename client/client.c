@@ -21,6 +21,7 @@
 #include "mix.h"
 
 //#define USE_SEND_QUEUE
+//#define USE_RECV_QUEUE
 
 #define MINRECV 0
 #define MAXRECV 30
@@ -77,7 +78,9 @@ static void *run_heartbeat(void *arg);
 static void *run_snd_audio(void *arg);
 #endif
 
+#ifdef USE_RECV_QUEUE
 static void *run_rcv_audio(void *arg);
+#endif
 
 void client_init(int dev_id, int type, const char *servIP, int localPort)
 {
@@ -149,7 +152,11 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   }
 
   if( !bcast_audio )
+  {
+#ifdef USE_RECV_QUEUE
     start_thread(run_rcv_audio, NULL);
+#endif
+  }
 
   if( !(netplay||bcast_audio) )
   {
@@ -318,7 +325,7 @@ static void send_pack_len(struct pack *p, int len)
     send_audio(p, len);
 }
 
-static int is_silent(const char *buf, int len)
+static int __used is_silent(const char *buf, int len)
 {
   const short *pcm = (const short *)buf;
   int pcmlen = len>>1;
@@ -588,6 +595,14 @@ static void outdate_seq(struct pack *pack)
   }
 }
 
+static void write_audio(struct pack *p);
+
+#ifdef  USE_RECV_QUEUE
+#define RECV_AUDIO_PACK   queue_audio_pack
+#else
+#define RECV_AUDIO_PACK   write_audio
+#endif
+
 static void audio_recved(struct pack *buf, int len)
 {
   struct pack *qitem = buf;
@@ -631,14 +646,14 @@ static void audio_recved(struct pack *buf, int len)
     else if( r==0 )
     {
       /* the pack does not need mix. */
-      queue_audio_pack(qitem);
+      RECV_AUDIO_PACK(qitem);
     }
     else
     {
       struct pack *p;
       while( (p=get_mix_audio()) )
       {
-        queue_audio_pack(p);
+        RECV_AUDIO_PACK(p);
       }
     }
   }
@@ -649,7 +664,7 @@ static void audio_recved(struct pack *buf, int len)
     {
       return;
     }
-    queue_audio_pack(qitem);
+    RECV_AUDIO_PACK(qitem);
   }
 
 
@@ -738,6 +753,28 @@ static inline void drop_rcv_queue(int count)
   }
 }
 
+static void write_audio(struct pack *p)
+{
+  static unsigned int prev=0;
+
+  if( p->seq != prev+1 )
+  {
+    trace_warn("lost seq %d (%d)\n", prev, p->seq);
+  }
+  prev = p->seq;
+
+  /* generate event */
+  if (p->type == PACKET_AUDIO)
+  {
+    struct audio_data ad = { p->data, p->datalen };
+
+    event_handler(EVENT_AUDIO,
+        (void*)(int)p->tag,
+        &ad);
+  }
+}
+
+#ifdef USE_RECV_QUEUE
 static void *run_rcv_audio(void *arg)
 {
   struct pack *qitem;
@@ -780,15 +817,7 @@ take1:
       }
     }
 
-    /* generate event */
-    if (qitem->type == PACKET_AUDIO)
-    {
-      struct audio_data ad = { qitem->data, qitem->datalen };
-
-      event_handler(EVENT_AUDIO,
-        (void*)(int)qitem->tag,
-        &ad);
-    }
+    write_audio(qitem);
 
     //fprintf(stderr, "recv pack %d\n", qitem->seq);
 
@@ -797,6 +826,7 @@ take1:
 
   return NULL;
 }
+#endif
 
 #define FRAGSIZE  1400
 

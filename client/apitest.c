@@ -39,6 +39,8 @@ int on_event(int event, void *arg1, void *arg2)
         struct audio_data *audio = (struct audio_data *)arg2;
         int l;
         l = write(fdw, audio->data, audio->len);
+        if( l<0 )
+          perror("write");
       }
       else if( latency_test )
       {
@@ -134,7 +136,7 @@ static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsig
 static void open_audio_out()
 {
   int fd;
-  fd = open("/dev/dsp", O_WRONLY, 0777);
+  fd = open("/dev/dsp", O_WRONLY|O_NONBLOCK, 0777);
   if( fd > 0 )
   {
     int setting, result;

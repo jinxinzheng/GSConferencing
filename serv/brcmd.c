@@ -1,10 +1,12 @@
 /* broadcast cmd routines */
+#include  <unistd.h>
 #include  <include/util.h>
 #include  <include/pack.h>
 #include  <cmd/cmd.h>
 #include  "network.h"
 #include  <include/lock.h>
 #include  <include/debug.h>
+#include  "async.h"
 
 static int sock = 0;
 static int seq;
@@ -130,7 +132,7 @@ static void async_brcast(const void *buf, int len)
   args = (struct brcast_args *) malloc(sizeof(struct brcast_args)+len);
   if( !args )
   {
-    trace_err("broadcast out of mem\n", len);
+    trace_err("broadcast out of mem\n");
     return;
   }
 

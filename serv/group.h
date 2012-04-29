@@ -36,7 +36,8 @@ struct group {
     int curr_num;
     int nmembers;
     int memberids[1024];
-    char membernames[2048];
+    char *membernames;
+    int membernames_size;
     int disabled;
   } discuss;
 
@@ -53,12 +54,14 @@ struct group {
     int nmembers;
     int nvoted;
     int memberids[1024];
-    char membernames[2048];
+    char *membernames;
+    int membernames_size;
     struct vote *v; /* for recover use */
   } vote;
 
   struct {
-    char dev_ents[4096];
+    char *dev_ents;
+    int dev_ents_size;
     int dev_ents_len;
     int dev_ents_dirty;
   } caches;

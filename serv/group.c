@@ -7,6 +7,7 @@
 #include "vote.h"
 #include "strutil.h"
 #include "include/debug.h"
+#include "incbuf.h"
 
 struct group *group_create(int gid)
 {
@@ -76,6 +77,8 @@ void group_save(struct group *g)
 
 void append_dev_ents_cache(struct group *g, struct device *d)
 {
+  INC_BUF(g->caches.dev_ents, g->caches.dev_ents_size, g->caches.dev_ents_len);
+
   LIST_ADD_FMT(g->caches.dev_ents, g->caches.dev_ents_len,
       "%d:%d:%s:%d",
       d->id,

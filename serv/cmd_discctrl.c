@@ -9,6 +9,7 @@
 #include <include/debug.h>
 #include <include/lock.h>
 #include "brcmd.h"
+#include "incbuf.h"
 
 static struct db_discuss *db[1024];
 static int dbl = 0;
@@ -32,6 +33,7 @@ void group_setup_discuss(struct group *g, struct db_discuss *s)
     mid = atoi(p);
     g->discuss.memberids[g->discuss.nmembers ++] = mid;
 
+    INC_BUF(g->discuss.membernames, g->discuss.membernames_size, l);
     if( (dbd = md_find_device(mid)) )
     {
       LIST_ADD(g->discuss.membernames, l, dbd->user_name);

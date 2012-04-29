@@ -10,6 +10,7 @@
 #include "db/md.h"
 #include <include/util.h>
 #include "brcmd.h"
+#include "incbuf.h"
 
 struct vote *vote_new()
 {
@@ -32,7 +33,7 @@ static void vote_results_to_str( char *str, const struct vote *v )
 { \
   struct db_device *dd; \
   g->vote.memberids[g->vote.nmembers ++] = mid; \
-\
+  INC_BUF(g->vote.membernames, g->vote.membernames_size, l); \
   if( (dd = md_find_device(mid)) ) \
     LIST_ADD(g->vote.membernames, l, dd->user_name); \
   else \

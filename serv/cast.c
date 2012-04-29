@@ -340,7 +340,8 @@ int dev_subscribe(struct device *dev, struct tag *tag)
   {
     int *states[] = { &dev->db_data->sub1, &dev->db_data->sub2 };
     *(states[i]) = tag->id;
-    device_save(dev);
+    /* save.. no! this impacts performance at startup. */
+    //device_save(dev);
   }
 
   /* update the interp dup */

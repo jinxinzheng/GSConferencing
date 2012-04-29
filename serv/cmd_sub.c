@@ -52,6 +52,8 @@ static int cmd_sub(struct cmd *cmd)
       }
     }
 
+    device_save(d);
+
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, repid);
     REP_END(cmd);

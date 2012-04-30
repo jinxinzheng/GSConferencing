@@ -20,8 +20,10 @@ static inline void regist_notify_all(struct cmd *cmd, struct group *g)
     //device_save(d);
   }
 
-  brcast_cmd_to_all(cmd);
+  //brcast_cmd_to_all(cmd);
 }
+
+static void *reg_start_brcmd;
 
 static int cmd_regist(struct cmd *cmd)
 {
@@ -71,6 +73,7 @@ static int cmd_regist(struct cmd *cmd)
     REP_OK(cmd);
 
     regist_notify_all(cmd, g);
+    reg_start_brcmd = brcast_cmd_to_all_loop(cmd);
   }
 
   SUBCMD("stop")
@@ -92,7 +95,14 @@ static int cmd_regist(struct cmd *cmd)
 
     free(arrive_list);
 
+    if( reg_start_brcmd )
+    {
+      brcast_cmd_stop(reg_start_brcmd);
+      reg_start_brcmd = NULL;
+    }
+
     regist_notify_all(cmd, g);
+    brcast_cmd_to_all(cmd);
 
     g->regist.expect = 0;
     g->regist.arrive = 0;

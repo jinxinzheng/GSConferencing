@@ -8,6 +8,7 @@
 #include "include/debug.h"
 #include <include/thread.h>
 #include <include/compiler.h>
+#include <arpa/inet.h>
 
 void dev_heartbeat(struct device *d)
 {
@@ -73,7 +74,7 @@ static void *run_heartbeat_god(void *arg)
           /* force it release the resources */
           if( d->discuss.open )
             del_open(d->tag, d);
-          trace_warn("dev %d is dead\n", (int)d->id);
+          trace_warn("dev %d (%s) is dead\n", d->id, inet_ntoa(d->addr.sin_addr));
 
           check_net(d);
         }

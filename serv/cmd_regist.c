@@ -172,13 +172,13 @@ static int cmd_regist(struct cmd *cmd)
     g->regist.arrive_ids[g->regist.arrive ++] = d->id;
 
     g->db_data->regist_arrive = g->regist.arrive;
-    group_save(g);
+    //group_save(g);
     /* TODO: save arrive_ids. */
 
     d->regist.reg = 1;
 
     d->db_data->regist_reg = 1;
-    device_save(d);
+    //device_save(d);
   } while(0);
 
   else return 2; /*sub cmd not found*/

@@ -993,8 +993,8 @@ static void video_recved(struct pack *pack, int len)
 } while (0)
 
 #define SEND_CMD() do { \
-  if( !reged )  \
-    return -1;  \
+  /*if( !reged )  \
+    return -1;*/  \
   __SEND_CMD(); \
 } while(0)
 

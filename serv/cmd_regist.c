@@ -75,12 +75,13 @@ static int cmd_regist(struct cmd *cmd)
 
   SUBCMD("stop")
   {
-    char arrive_list[4096];
+    char *arrive_list;
     if( !g->db_data->regist_start )
     {
       return ERR_OTHER;
     }
 
+    arrive_list = malloc(16*g->regist.arrive);
     ARRAY_TO_NUMLIST(arrive_list, g->regist.arrive_ids, g->regist.arrive);
 
     REP_ADD(cmd, "OK");
@@ -88,6 +89,8 @@ static int cmd_regist(struct cmd *cmd)
     REP_ADD_NUM(cmd, g->regist.arrive);
     REP_ADD(cmd, arrive_list);
     REP_END(cmd);
+
+    free(arrive_list);
 
     regist_notify_all(cmd, g);
 

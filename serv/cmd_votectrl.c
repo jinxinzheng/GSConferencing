@@ -236,6 +236,11 @@ static int cmd_votectrl(struct cmd *cmd)
     struct vote *v;
     char *t;
 
+    if( !g->vote.current )
+    {
+      return ERR_OTHER;
+    }
+
     /* the vote number */
     p = cmd->args[ai++];
     if (!p)

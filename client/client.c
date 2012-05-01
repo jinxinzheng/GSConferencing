@@ -2193,16 +2193,10 @@ static void __handle_cmd(char *buf, int l)
     else if( STREQU(sub, "select") )
     {
       char *name;
-      char *mems;
       int dn = atoi(c.args[i++]);
       CHECKOK(c.args[i++]);
       name = c.args[i++];
-      mems = c.args[i++];
-      /* check whether we are interested in this cmd */
-      if( int_in_str(id, mems) )
-      {
-        event_handler(EVENT_DISC_OPEN, (void*)dn, name);
-      }
+      event_handler(EVENT_DISC_OPEN, (void*)dn, name);
     }
     else if (STREQU(sub, "close"))
     {

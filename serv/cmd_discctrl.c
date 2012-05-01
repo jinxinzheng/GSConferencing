@@ -181,10 +181,16 @@ static int cmd_discctrl(struct cmd *cmd)
 
     REP_ADD(cmd, "OK");
     REP_ADD(cmd, s->name);
+    REP_END(cmd);
+
+    /* notify multi members, short version. */
+    brcast_cmd_to_multi(cmd, g->discuss.memberids, g->discuss.nmembers);
+
+    /* reply to the sender and manager, long version. */
+    cmd->rl --; //cancel REP_END
     REP_ADD(cmd, s->members);
     REP_ADD(cmd, g->discuss.membernames);
     REP_END(cmd);
-
 
     INIT_LIST_HEAD(&tag->discuss.open_list);
     tag->discuss.openuser = 0;
@@ -197,10 +203,6 @@ static int cmd_discctrl(struct cmd *cmd)
         m->discuss.forbidden = 0;
       }
     }
-
-    /* the client will filter the cmd by the id list
-     * inside the cmd. */
-    brcast_cmd_to_all(cmd);
 
     /* send to the special 'manager' virtual device */
     send_cmd_to_dev_id(cmd, 1);

@@ -342,18 +342,23 @@ static int cmd_votectrl(struct cmd *cmd)
       REP_ADD(cmd, buf);
     }
 
+    REP_END(cmd);
+
+    /* send the result to all clients about the vote.
+     * this is a short version of the cmd reply which
+     * is suitable for broadcast. */
+    brcast_cmd_to_multi(cmd, g->vote.memberids, g->vote.nmembers);
+
     l = 0;
     strcpy(buf, "0");
     list_for_each_entry(m, &v->device_head, vote.l)
     {
       LIST_ADD_FMT(buf, l, "%d=%d", m->id, m->vote.choice);
     }
+
+    cmd->rl --; //cancel REP_END
     REP_ADD_STR(cmd, buf, l);
-
     REP_END(cmd);
-
-    /* send the result to all clients about the vote */
-    brcast_cmd_to_multi(cmd, g->vote.memberids, g->vote.nmembers);
 
     /* send to the special 'manager' virtual device */
     send_cmd_to_dev_id(cmd, 1);

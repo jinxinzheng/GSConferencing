@@ -1186,7 +1186,9 @@ static void parse_dev_info(char *str, struct dev_info *info)
 #define info_str(m) \
     if( STREQU(keyval[0], #m) ) \
     { \
-      strcpy(info->m, keyval[1]); \
+      strncpy(info->m, keyval[1], sizeof(info->m)); \
+      /* ensure the string is null-terminated */  \
+      info->m[sizeof(info->m)-1] = 0; \
     } else
 
 #define info_int(m) \

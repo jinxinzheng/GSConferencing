@@ -45,7 +45,7 @@ struct dev_info
   char discuss_name[64];  /* current discuss name */
   int discuss_nmembers; /* number of members */
   int discuss_idlist[1024]; /* member IDs */
-  char discuss_userlist[2048]; /* member names. comma separated. */
+  char discuss_userlist[10240]; /* member names. comma separated. */
   int discuss_chair; /* 0/1. if this client is the chair man. */
   int discuss_open; /* 0/1, whether this client has opened mic. */
 
@@ -57,7 +57,7 @@ struct dev_info
   int vote_num; /* current vote number. -1 if no vote. */
   int vote_nmembers; /* number of members */
   int vote_idlist[1024]; /* member IDs */
-  char vote_userlist[2048]; /* member names. comma separated. */
+  char vote_userlist[10240]; /* member names. comma separated. */
   int vote_master; /* 0/1. if this client is the master of the vote. */
   char vote_name[256];  /* vote name. */
   int vote_type; /* vote type. (VOTE_) */

@@ -73,7 +73,7 @@ static int cmd_reg(struct cmd *cmd)
 
   int did = cmd->device_id;
 
-  char buf[1024];
+  char buf[CMD_MAX];
 
   NEXT_ARG(p);
   type = atoi(p);

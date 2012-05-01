@@ -42,7 +42,7 @@ static void vote_results_to_str( char *str, const struct vote *v )
 
 static void prepare_vote(struct group *g, struct db_vote *dv)
 {
-  char buf[1024];
+  char buf[CMD_MAX];
   int l;
   char *p;
 

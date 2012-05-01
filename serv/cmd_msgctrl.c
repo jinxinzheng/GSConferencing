@@ -9,7 +9,7 @@ static int cmd_msgctrl(struct cmd *cmd)
   char *subcmd;
   int a=0;
 
-  char buf[1024];
+  char buf[10240];
   struct device *d;
   char *p;
 

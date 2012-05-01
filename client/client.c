@@ -2404,6 +2404,7 @@ static void handle_ucmd(struct pack_ucmd *ucmd)
   {
     case UCMD_INTERP_REP_TAG :
     {
+      /* note: the server may send this multiple times. */
       int tag = ucmd->u.interp.tag;
       int rep = ucmd->u.interp.rep;
       if( subscription[0]==tag )

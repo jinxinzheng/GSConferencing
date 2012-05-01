@@ -79,14 +79,10 @@ void brcast_cmd_to_tag_all(struct cmd *cmd, int tagid)
   BRCAST_UCMD(ucmd);
 }
 
-void brcast_cmd_to_multi(struct cmd *cmd, int ids[], int n)
+static void make_brcmd_multi(struct pack_ucmd *ucmd, struct cmd *cmd, int ids[], int n)
 {
-  char buf[CMD_MAX*2+100];
-  struct pack_ucmd *ucmd = (struct pack_ucmd *) buf;
   unsigned char *p;
   int l, off;
-
-  INIT_SOCK();
 
   ucmd->type = PACKET_UCMD;
   ucmd->cmd = UCMD_BRCAST_CMD;
@@ -105,8 +101,41 @@ void brcast_cmd_to_multi(struct cmd *cmd, int ids[], int n)
   off += cmd->rl+1;
 
   ucmd->datalen = off;
+}
 
-  BRCAST_UCMD(ucmd);
+#define N 256
+void brcast_cmd_to_multi(struct cmd *cmd, int ids[], int n)
+{
+  char buf[CMD_MAX*2+100];
+  struct pack_ucmd *ucmd = (struct pack_ucmd *) buf;
+
+  INIT_SOCK();
+
+  int m,i;
+  m = n/N;
+  for( i=0 ; i<m ; i++ )
+  {
+    make_brcmd_multi(ucmd, cmd, &ids[i*N], N);
+    BRCAST_UCMD(ucmd);
+  }
+  m = n%N;
+  if( m!=0 )
+  {
+    make_brcmd_multi(ucmd, cmd, &ids[i*N], m);
+    BRCAST_UCMD(ucmd);
+  }
+}
+
+void *brcast_cmd_to_multi_loop(struct cmd *cmd, int ids[], int n)
+{
+  char buf[CMD_MAX*2+100];
+  struct pack_ucmd *ucmd = (struct pack_ucmd *) buf;
+
+  INIT_SOCK();
+
+  make_brcmd_multi(ucmd, cmd, ids, n);
+
+  return async_brcast_loop(ucmd, UCMD_SIZE(ucmd));
 }
 
 struct brcast_args

@@ -55,11 +55,11 @@ static inline void blocking_enque(struct blocking_queue *q, struct list_head *p)
   enque(&q->head, p);
   q->len++;
 
-  pthread_mutex_unlock(&q->mutex);
-
   /* unblock all threads that are waiting to
    * deque or get_front */
   pthread_cond_broadcast(&q->cond);
+
+  pthread_mutex_unlock(&q->mutex);
 }
 
 /* this always keeps at least min items in queue */

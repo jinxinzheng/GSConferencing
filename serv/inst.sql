@@ -129,7 +129,7 @@ values (
   0,
   '0');
 
-insert into [user] (name,password) values('admin','admin');
+insert into [user] (name,password) values('Admin','123456');
 
 insert into tag(name) values('Original');
 insert into tag(name) values('Chinese');

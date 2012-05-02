@@ -485,7 +485,15 @@ static int pack_recv(struct packet *pack)
   did = ntohl(p->id);
   d = get_device(did);
   if (!d)
+  {
+    /* dev is not reg-ed, maybe because it's disabled.
+     * but we are still interested about it's online state. */
+    if( p->type == PACKET_HBEAT )
+    {
+      heartbeat_id(did);
+    }
     return 1;
+  }
 
   i = p->type;
   switch ( i )

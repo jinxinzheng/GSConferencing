@@ -102,6 +102,10 @@ static int cmd_reg(struct cmd *cmd)
   dd = md_find_device(did);
   if( dd )
   {
+    /* mark it online even if it's disabled.
+     * needed for the manager to identify online devs. */
+    dd->online = 1;
+
     if( !dd->enabled )
     {
       return ERR_DEV_DISABLED;

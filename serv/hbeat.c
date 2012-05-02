@@ -10,6 +10,16 @@
 #include <include/compiler.h>
 #include <arpa/inet.h>
 
+void heartbeat_id(int did)
+{
+  struct db_device *dd;
+  dd = md_find_device(did);
+  if( dd )
+  {
+    dd->online = 1;
+  }
+}
+
 void dev_heartbeat(struct device *d)
 {
   d->hbeat = 0;

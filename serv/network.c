@@ -65,7 +65,7 @@ static struct connection *deque_connection()
  * it should only be used within one thread. */
 static int udp_sock;
 
-#define MAXPENDING 50    /* Maximum outstanding connection requests */
+#define MAXPENDING 500    /* Maximum outstanding connection requests */
 #define BUFLEN CMD_MAX
 
 void *run_proceed_connection(void *arg);

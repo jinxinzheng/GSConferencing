@@ -6,7 +6,7 @@
 #include <include/thread.h>
 #include "manage.h"
 
-#define BUFLEN 20480
+#define BUFLEN  (CMD_MAX+100)
 
 #define _response(buf, len) \
   send(s, buf, len, 0)
@@ -14,7 +14,7 @@
 /* response a single short formatted string to the cmd */
 #define response(cmd, fmt, args...) \
 do {  \
-  char _buf[1024];  \
+  char _buf[BUFLEN];  \
   int _l = sprintf(_buf, "%d " fmt, (cmd)->cmd_seq, ##args);  \
   _response(_buf, _l);  \
 } while(0)
@@ -127,7 +127,7 @@ static void *serv_manage(void *arg)
 {
   int s = (int) arg;
 
-  char buf[BUFLEN+200];
+  char buf[BUFLEN];
   int l;
 
   struct cmd c;
@@ -142,9 +142,9 @@ static void *serv_manage(void *arg)
   const char *target;
 
   /* loop until the client closes */
-  while( (l=recv(s, buf, 2048, 0)) > 0 )
+  while( (l=recv(s, buf, BUFLEN, 0)) > 0 )
   {
-    char rep[2048];
+    char rep[BUFLEN];
     int rl;
 
     buf[l]=0;

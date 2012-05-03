@@ -1,6 +1,7 @@
 #include "include/pack.h"
 #include "tag.h"
 #include "network.h"
+#include <unistd.h>
 #include <include/lock.h>
 #include "async.h"
 

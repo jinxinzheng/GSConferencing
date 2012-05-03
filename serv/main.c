@@ -11,6 +11,7 @@
 #include "recover.h"
 #include "async.h"
 #include <version.h>
+#include "upgrade.h"
 
 static void basic_setup()
 {
@@ -23,6 +24,8 @@ static void basic_setup()
   async_init();
 
   md_load_all();
+
+  load_client_version();
 }
 
 static void help()

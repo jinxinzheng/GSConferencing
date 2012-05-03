@@ -1205,6 +1205,8 @@ static void parse_dev_info(char *str, struct dev_info *info)
 
 #define info_end() {}
 
+    info_str(client_version)
+
     info_str(user_id)
 
     info_str(user_name)
@@ -2350,6 +2352,13 @@ static void __handle_cmd(char *buf, int l)
     allow = atoi(c.args[i++]);
 
     event_handler(EVENT_CHAIR_CTL, (void *)allow, NULL);
+  }
+
+  else if (STREQU(c.cmd, "upgrade"))
+  {
+    char *version;
+    version = c.args[i++];
+    event_handler(EVENT_UPGRADE, version, NULL);
   }
 }
 

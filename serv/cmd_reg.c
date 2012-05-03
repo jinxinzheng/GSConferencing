@@ -10,6 +10,7 @@
 #include "ptc.h"
 #include <include/types.h>
 #include "manage.h"
+#include "upgrade.h"
 
 static void get_client_info(char *info, const struct device *d)
 {
@@ -22,7 +23,11 @@ static void get_client_info(char *info, const struct device *d)
 
   struct db_vote *dvt = d->vote.v ? g->vote.current : NULL;
 
+  const char *ver = get_client_version();
+
 #define ADD_ARG(fmt, a...) SEP_ADD(info, l, ":", fmt, ##a)
+
+  ADD_ARG("client_version=%s", ver[0]? ver:"0");
 
   ADD_ARG("user_id=%s", dd->user_id);
   ADD_ARG("user_name=%s", dd->user_name);

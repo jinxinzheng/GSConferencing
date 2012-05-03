@@ -27,6 +27,7 @@ SYS_OBJS=main.o opts.o recover.o cast.o packet.o devctl.o group.o tag.o network.
 	soft_mixer.o \
 	net_mixer.o \
 	sigsegv.o \
+	upgrade.o \
 	cmd_handler.o \
 	cmd_debug.o \
 	cmd_tag.o \

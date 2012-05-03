@@ -32,6 +32,10 @@ struct dev_info
 {
   int id;
 
+  /* newest client software version.
+   * "0" is that no version is available. */
+  char client_version[64];
+
   char user_id[64]; /* user id of this client. */
 
   char user_name[64]; /* user name of this client. */
@@ -199,6 +203,8 @@ enum {
    * arg2: int, video frame length . */
   EVENT_VIDEO,
 
+  /* arg1: char *, new client version. */
+  EVENT_UPGRADE,
 };
 
 

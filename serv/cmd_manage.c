@@ -5,6 +5,7 @@
 #include "include/debug.h"
 #include <include/thread.h>
 #include "manage.h"
+#include "upgrade.h"
 
 #define BUFLEN  (CMD_MAX+100)
 
@@ -190,6 +191,13 @@ static void *serv_manage(void *arg)
         manage_set_allow_chair(allow);
         manage_notify_all_chairs();
         sprintf(rep, "OK\n");
+      }
+      else if( strcmp(cmd, "upgrade")==0 )
+      {
+        if( upgrade() )
+          sprintf(rep, "OK\n");
+        else
+          sprintf(rep, "FAIL 1\n");
       }
       else
       if( strcmp(cmd,"discctrl")==0 ||

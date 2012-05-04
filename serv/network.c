@@ -132,6 +132,7 @@ void run_listener_tcp(int port)
     /* get connection object */
     while( !(c = (struct connection *)alloc_block(conn_pool)) )
     {
+      trace_warn("can't alloc for new connection\n");
       sleep(1);
     }
 

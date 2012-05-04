@@ -2,6 +2,8 @@
 #include  <stdlib.h>
 #include  <string.h>
 #include  <unistd.h>
+#include  <dirent.h>
+#include  <sys/stat.h>
 #include  <version.h>
 #include  <cmd/cmd.h>
 #include  "brcmd.h"
@@ -34,35 +36,47 @@ static int read_file_line(const char *path, char *buf)
 
 void load_client_version()
 {
-  if( !read_file_line(UPGRADE_DIR "/client.version", curr_client_ver) )
+  DIR *d;
+  struct dirent *e;
+  char path[260];
+  char *p, buf[1024];
+  struct stat st;
+  int len;
+
+  /* the current version defaults to nothing if
+   * we can't find any. */
+  curr_client_ver[0] = 0;
+  len = 0;
+
+  if( !(d = opendir(UPGRADE_DIR)) )
+    return;
+
+  while( (e = readdir(d)) )
   {
-    /* can't find current client version. */
-    curr_client_ver[0] = 0;
+    if( strcmp(e->d_name, ".")==0 ||
+        strcmp(e->d_name, "..")==0 )
+      continue;
+    sprintf(path, UPGRADE_DIR "/%s", e->d_name);
+    if( stat(path, &st) < 0 )
+      continue;
+    if( ! S_ISREG(st.st_mode) )
+      continue;
+    p = strrchr(e->d_name, '.');
+    if( p && strcmp(p, ".version")==0
+          && strcmp(e->d_name, "server.version")!=0 )
+    {
+      p[0] = 0;
+      p = e->d_name;
+      read_file_line(path, buf);
+      len += sprintf(curr_client_ver+len, "%s@%s;", p, buf);
+    }
   }
+  closedir(d);
 }
 
 const char *get_client_version()
 {
   return curr_client_ver;
-}
-
-/* returns true if client needs upgrade. */
-static int check_client_version()
-{
-  const char *cur_ver = curr_client_ver;
-  char new_ver[1024];
-  if( cur_ver[0]==0 )
-  {
-    /* can't find current client version.
-     * should notify upgrade. */
-    return 1;
-  }
-  if( !read_file_line(UPGRADE_DIR "/temp/client.version", new_ver) )
-    return 0;
-  if( strcmp(cur_ver, new_ver)==0 )
-    return 0;
-  else
-    return 1;
 }
 
 static int check_server_version()
@@ -88,7 +102,6 @@ static void notify_client_upgrade()
 int upgrade()
 {
   int r;
-  int new_client;
   int new_server;
   char cmd[1024];
 
@@ -99,8 +112,6 @@ int upgrade()
   if( r!=0 )
     return 0;
 
-  new_client = check_client_version();
-
   new_server = check_server_version();
 
   /* commit the files. */
@@ -109,7 +120,9 @@ int upgrade()
   if( r!=0 )
     return 0;
 
-  if( new_client )
+  /* always notify client upgrade. it's the client's
+   * duty to check the versions. */
+  if(1)
   {
     load_client_version();
     notify_client_upgrade();

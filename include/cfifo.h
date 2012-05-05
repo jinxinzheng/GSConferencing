@@ -21,9 +21,9 @@ struct cfifo
   pthread_cond_t empty_cnd;
 };
 
-#define CFIFO(name, _sord, _eord) \
-  char __##name##_data[(1<<(_sord)) * (1<<(_eord))]; \
-  struct cfifo name = \
+#define STATIC_CFIFO(name, _sord, _eord) \
+  static char __##name##_data[(1<<(_sord)) * (1<<(_eord))]; \
+  static struct cfifo name = \
   { \
     .in   = 0, \
     .out  = 0, \

@@ -71,7 +71,7 @@ static void open_audio_in()
     {
       perror("ioctl(SNDCTL_DSP_SETFRAGMENT)");
     }
-    set_format(fd, 0x10, 2, 11025);
+    set_format(fd, 0x10, 2, 8000);
 
     fdr = fd;
   }
@@ -116,6 +116,7 @@ int main(int argc, char *const argv[])
 
   open_audio_in();
 
+  set_option(OPT_AUDIO_RBUDP, 1);
   client_init(id, DEVTYPE_BCAST_AUDIO, srvaddr, id&0x7fff);
 
   run_record();

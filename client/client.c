@@ -19,6 +19,7 @@
 #include <version.h>
 #include "cyctl.h"
 #include "mix.h"
+#include "rbudp.h"
 
 //#define USE_SEND_QUEUE
 //#define USE_RECV_QUEUE
@@ -41,12 +42,14 @@ static struct {
   int enable_retransmit;
   int zero_compression;
   int audio_direct_mix;
+  int audio_rbudp;
 }
 opts = {
   .audio_use_udp = 1,
   .enable_retransmit = 0,
   .zero_compression = 0,
   .audio_direct_mix = 0,
+  .audio_rbudp = 0,
 };
 
 static int tag_id;
@@ -73,6 +76,9 @@ static struct cfifo udp_snd_fifo;
 static struct cfifo udp_rcv_fifo;
 
 static void *run_heartbeat(void *arg);
+
+static void start_recv_audio_rbudp();
+static void audio_rbudp_recved(int tag, void *buf, int len);
 
 #ifdef USE_SEND_QUEUE
 static void *run_snd_audio(void *arg);
@@ -132,6 +138,18 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   if( !bcast_audio )
     start_recv_udp(listenPort, udp_recved, netplay?0:1);
 
+  if( opts.audio_rbudp )
+  {
+    rbudp_init_send(AUDIO_RBUDP_PORT);
+    if( !bcast_audio )
+    {
+      rbudp_init_recv(AUDIO_RBUDP_PORT);
+      rbudp_set_recv_tag(0);
+      rbudp_set_recv_cb(audio_rbudp_recved);
+      start_recv_audio_rbudp();
+    }
+  }
+
   /* udp sending and recving queues */
 
   if(!netplay)
@@ -188,6 +206,10 @@ void set_option(int opt, int val)
     case OPT_AUDIO_DIRECT_MIX:
     opts.audio_direct_mix = val;
     break;
+
+    case OPT_AUDIO_RBUDP:
+    opts.audio_rbudp = val;
+    break;
   }
 }
 
@@ -236,6 +258,25 @@ static void *run_heartbeat(void *arg)
   return NULL;
 }
 
+static void audio_rbudp_recved(int tag, void *buf, int len)
+{
+  struct audio_data ad = { buf, len };
+  event_handler(EVENT_AUDIO,
+      (void*)tag,
+      &ad);
+}
+
+static void *run_recv_audio_rbudp(void *arg)
+{
+  rbudp_run_recv();
+  return NULL;
+}
+
+static void start_recv_audio_rbudp()
+{
+  start_thread(run_recv_audio_rbudp, NULL);
+}
+
 static int mic_open;
 
 static void do_open_mic()
@@ -280,6 +321,12 @@ int send_audio_end(int len)
 
   if( !mic_open && !bcast_audio )
     return -2;
+
+  if( opts.audio_rbudp )
+  {
+    rbudp_broadcast(tag_id, audio_current->data, len);
+    return 0;
+  }
 
   audio_current->type = PACKET_AUDIO;
   audio_current->id = (uint32_t)id;
@@ -425,7 +472,7 @@ static int is_recved(uint32_t seq)
 }
 
 
-static CFIFO(wait_packs, 2, 11);
+STATIC_CFIFO(wait_packs, 2, 11);
 
 static int is_wait_full()
 {
@@ -1386,10 +1433,20 @@ int sub(int tag)
     {
       replicate[i] = rep;
     }
+    else
+      replicate[i] = 0;
   }
 
   /* reset retransmit expect seq */
   expect_seq = 0;
+
+  if( opts.audio_rbudp )
+  {
+    if( replicate[i] )
+      rbudp_set_recv_tag(replicate[i]);
+    else
+      rbudp_set_recv_tag(subscription[i]);
+  }
 
   return 0;
 }
@@ -1409,6 +1466,11 @@ int unsub(int tag)
 
   subscription[i] = 0;
   replicate[i] = 0;
+
+  if( opts.audio_rbudp )
+  {
+    rbudp_set_recv_tag(0);
+  }
 
   return 0;
 }
@@ -2420,6 +2482,16 @@ static void handle_ucmd(struct pack_ucmd *ucmd)
         replicate[0] = rep;
       else if( subscription[1]==tag )
         replicate[1] = rep;
+      else
+        break;
+
+      if( opts.audio_rbudp )
+      {
+        if( rep )
+          rbudp_set_recv_tag(rep);
+        else
+          rbudp_set_recv_tag(tag);
+      }
     }
     break;
 

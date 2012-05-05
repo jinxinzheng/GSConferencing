@@ -142,13 +142,13 @@ static void open_audio_out()
     int setting, result;
 
     ioctl(fd, SNDCTL_DSP_RESET);
-    setting = 0x00040009;
+    setting = 0x80009;
     result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
     if( result )
     {
       perror("ioctl(SNDCTL_DSP_SETFRAGMENT)");
     }
-    set_format(fd, 0x10, 2, 11025);
+    set_format(fd, 0x10, 2, 8000);
 
     fdw = fd;
   }
@@ -198,6 +198,7 @@ int main(int argc, char *const argv[])
   if( id==0 )
     id = 3;
 
+  set_option(OPT_AUDIO_RBUDP, 1);
   client_init(id,id, srvaddr, 20000+id);
 
   set_event_callback(on_event);
@@ -207,6 +208,8 @@ int main(int argc, char *const argv[])
 
   if( audiotest )
   {
+    unsub(1);
+    sub(1);
     open_audio_out();
     while(1) sleep(10000);
     return 0;
@@ -243,7 +246,7 @@ int main(int argc, char *const argv[])
   filectrl_query(buf);
   filectrl_select(0, buf);
 
-  interp_set_mode(0);
+  //interp_set_mode(0);
 
   //synctime();
 
@@ -258,9 +261,9 @@ int main(int argc, char *const argv[])
   if (r)
   {
     unsub(1);
-    unsub(2);
+    //unsub(2);
     sub(1);
-    sub(2);
+    //sub(2);
   }
 
   if (s)

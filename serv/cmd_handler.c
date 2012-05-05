@@ -33,7 +33,7 @@ int handle_cmd(struct cmd *cmd)
     return -1;
 
   LOCK(cmdhandler_lk);
-  he->handler(cmd);
+  r = he->handler(cmd);
   UNLOCK(cmdhandler_lk);
   return r;
 }

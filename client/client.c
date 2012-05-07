@@ -123,11 +123,13 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   }
 
   /* broadcast audio mode,
-   * use default tag id. */
+   * tag id is wrapped into the lowest byte of dev_id. */
   if( type==DEVTYPE_BCAST_AUDIO )
   {
     bcast_audio = 1;
-    tag_id = 1;
+    tag_id = dev_id & 0xff;
+    if( tag_id==0 )
+      tag_id = 1;
   }
 
   /* listen cmds */

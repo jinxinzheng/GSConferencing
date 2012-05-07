@@ -98,12 +98,13 @@ int main(int argc, char *const argv[])
 {
   int opt;
   char *srvaddr = "127.0.0.1";
-  int id = 0xbca37;
+  int id = 0xbca00;
+  int tag = 1;
 
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:t:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -111,13 +112,17 @@ int main(int argc, char *const argv[])
       case 'S':
         srvaddr = optarg;
         break;
+      case 't':
+        tag = atoi(optarg);
+        break;
     }
   }
 
   open_audio_in();
 
   set_option(OPT_AUDIO_RBUDP, 1);
-  client_init(id, DEVTYPE_BCAST_AUDIO, srvaddr, id&0x7fff);
+  /* wrap id and tag */
+  client_init(id|tag, DEVTYPE_BCAST_AUDIO, srvaddr, id&0x7fff);
 
   run_record();
 

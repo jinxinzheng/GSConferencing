@@ -4,7 +4,7 @@
 #include "devctl.h"
 #include "brcmd.h"
 
-static inline void regist_notify_all(struct cmd *cmd, struct group *g)
+static void regist_reset_all(struct cmd *cmd, struct group *g)
 {
   struct device *d;
 
@@ -19,8 +19,6 @@ static inline void regist_notify_all(struct cmd *cmd, struct group *g)
      * performance problem.. */
     //device_save(d);
   }
-
-  //brcast_cmd_to_all(cmd);
 }
 
 static void *reg_start_brcmd;
@@ -72,7 +70,7 @@ static int cmd_regist(struct cmd *cmd)
 
     REP_OK(cmd);
 
-    regist_notify_all(cmd, g);
+    regist_reset_all(cmd, g);
     reg_start_brcmd = brcast_cmd_to_all_loop(cmd);
   }
 
@@ -101,7 +99,7 @@ static int cmd_regist(struct cmd *cmd)
       reg_start_brcmd = NULL;
     }
 
-    regist_notify_all(cmd, g);
+    regist_reset_all(cmd, g);
     brcast_cmd_to_all(cmd);
 
     g->regist.expect = 0;

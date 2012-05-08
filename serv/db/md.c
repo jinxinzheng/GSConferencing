@@ -166,6 +166,7 @@ SETUP(user);
 SETUP(device);
 SETUP(tag);
 SETUP(auth_card);
+SETUP(regist);
 SETUP(vote);
 SETUP(discuss);
 SETUP(video);
@@ -197,6 +198,7 @@ void md_load_all()
   LOAD(device);
   LOAD(tag);
   LOAD(auth_card);
+  LOAD(regist);
   LOAD(vote);
   LOAD(discuss);
   LOAD(video);

@@ -67,6 +67,13 @@ create table auth_card
  dev_id     int                   -- 对号报到终端id
 );
 
+-- 报到
+create table regist
+(
+ id int primary key,    -- id
+ members varchar(8192)  -- 报到列表
+);
+
 -- 投票表决
 create table vote
 (

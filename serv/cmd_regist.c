@@ -4,16 +4,31 @@
 #include "devctl.h"
 #include "brcmd.h"
 
+static void regist_setup(struct group *g, struct db_regist *dr)
+{
+  char *buf, *p;
+  int l;
+  g->regist.nmembers = 0;
+  buf = strdup(dr->members);
+  IDLIST_FOREACH(p, buf)
+  {
+    int mid = atoi(p);
+    g->regist.memberids[g->regist.nmembers ++] = mid;
+  }
+  free(buf);
+}
+
 static void regist_reset_all(struct cmd *cmd, struct group *g)
 {
   struct device *d;
-
-  list_for_each_entry(d, &g->device_head, list)
+  int i;
+  for( i=0; i<g->regist.nmembers; i++ )
   {
+    if( !(d=get_device(g->regist.memberids[i])) )
+      continue;
     /* clear regist state each time
      * regist is started/stopped */
     d->regist.reg = 0;
-
     d->db_data->regist_reg = d->regist.reg;
     /* saving the state for each device is causing
      * performance problem.. */
@@ -44,10 +59,20 @@ static int cmd_regist(struct cmd *cmd)
   SUBCMD("start")
   {
     int mode;
+    iter it;
+    struct db_regist *dr;
+
     if( g->db_data->regist_start )
     {
       return ERR_OTHER;
     }
+
+    it = NULL;
+    if( !(dr = md_iterate_regist_next(&it)) )
+      return ERR_OTHER;
+
+    regist_setup(g, dr);
+    regist_reset_all(cmd, g);
 
     NEXT_ARG(p);
     mode = atoi(p);
@@ -70,8 +95,7 @@ static int cmd_regist(struct cmd *cmd)
 
     REP_OK(cmd);
 
-    regist_reset_all(cmd, g);
-    reg_start_brcmd = brcast_cmd_to_all_loop(cmd);
+    brcast_cmd_to_multi(cmd, g->regist.memberids, g->regist.nmembers);
   }
 
   SUBCMD("stop")
@@ -82,26 +106,26 @@ static int cmd_regist(struct cmd *cmd)
       return ERR_OTHER;
     }
 
-    arrive_list = malloc(16*g->regist.arrive);
-    ARRAY_TO_NUMLIST(arrive_list, g->regist.arrive_ids, g->regist.arrive);
-
+    /* broadcast short version. */
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, g->regist.expect);
     REP_ADD_NUM(cmd, g->regist.arrive);
+    REP_END(cmd);
+    brcast_cmd_to_all(cmd);
+
+    arrive_list = malloc(16*g->regist.arrive);
+    ARRAY_TO_NUMLIST(arrive_list, g->regist.arrive_ids, g->regist.arrive);
+
+    /* reply long version. */
+    cmd->rl --; //cancel REP_END
     REP_ADD(cmd, arrive_list);
     REP_END(cmd);
 
     free(arrive_list);
 
-    if( reg_start_brcmd )
-    {
-      brcast_cmd_stop(reg_start_brcmd);
-      reg_start_brcmd = NULL;
-    }
-
     regist_reset_all(cmd, g);
-    brcast_cmd_to_all(cmd);
 
+    g->regist.nmembers = 0;
     g->regist.expect = 0;
     g->regist.arrive = 0;
 

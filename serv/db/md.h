@@ -24,6 +24,7 @@ DECLARE(user);
 DECLARE(device);
 DECLARE(tag);
 DECLARE(auth_card);
+DECLARE(regist);
 DECLARE(vote);
 DECLARE(discuss);
 DECLARE(video);

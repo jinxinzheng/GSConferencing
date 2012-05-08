@@ -43,6 +43,8 @@ struct group {
 
   struct {
     int mode;
+    int memberids[1024];
+    int nmembers;
     int expect;
     int arrive;
     int arrive_ids[1024];

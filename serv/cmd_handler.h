@@ -134,14 +134,17 @@ static inline void send_to_tag_all(struct cmd *cmd, struct tag *t)
   }
 }
 
+#define IDLIST_FOREACH(p, idlist) \
+  for ( \
+    (p) = strtok((idlist), ","); \
+    (p); \
+    (p) = strtok(NULL, ","))
+
 /* char *p must be defined before using this.
  * idlist is modified during iteration.
  * it is safe if idlist is p. */
 #define IDLIST_FOREACH_p(idlist) \
-  for ( \
-    p = strtok(idlist, ","); \
-    p; \
-    p = strtok(NULL, ","))
+  IDLIST_FOREACH(p, idlist)
 
 static inline void send_to_idlist(struct cmd *cmd, char *idlist)
 {

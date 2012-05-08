@@ -50,6 +50,10 @@ s card_info 256
 s extra 256
 i dev_id
 
+table regist
+i id
+s members 8192
+
 table vote
 i id
 s name 256

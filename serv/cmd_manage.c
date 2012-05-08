@@ -120,6 +120,7 @@ do \
 { \
   m_get(device, c); \
   m_get(tag, c); \
+  m_get(regist, c);\
   m_get(discuss, c); \
   m_get(vote, c); \
 }while(0)
@@ -295,6 +296,7 @@ end_cmd:
     GEN_OP(device)
     GEN_OP(tag)
     GEN_OP(auth_card)
+    GEN_OP(regist)
     GEN_OP(discuss)
     GEN_OP(vote)
     GEN_OP(video)

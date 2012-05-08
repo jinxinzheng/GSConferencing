@@ -42,14 +42,14 @@ static struct {
   int enable_retransmit;
   int zero_compression;
   int audio_direct_mix;
-  int audio_rbudp;
+  int audio_rbudp_send;
+  int audio_rbudp_recv;
 }
 opts = {
   .audio_use_udp = 1,
   .enable_retransmit = 0,
   .zero_compression = 0,
   .audio_direct_mix = 0,
-  .audio_rbudp = 0,
 };
 
 static int tag_id;
@@ -140,9 +140,12 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   if( !bcast_audio )
     start_recv_udp(listenPort, udp_recved, netplay?0:1);
 
-  if( opts.audio_rbudp )
+  if( opts.audio_rbudp_send )
   {
     rbudp_init_send(AUDIO_RBUDP_PORT);
+  }
+  if( opts.audio_rbudp_recv )
+  {
     if( !bcast_audio )
     {
       rbudp_init_recv(AUDIO_RBUDP_PORT);
@@ -209,8 +212,12 @@ void set_option(int opt, int val)
     opts.audio_direct_mix = val;
     break;
 
-    case OPT_AUDIO_RBUDP:
-    opts.audio_rbudp = val;
+    case OPT_AUDIO_RBUDP_SEND:
+    opts.audio_rbudp_send = val;
+    break;
+
+    case OPT_AUDIO_RBUDP_RECV:
+    opts.audio_rbudp_recv = val;
     break;
   }
 }
@@ -324,7 +331,7 @@ int send_audio_end(int len)
   if( !mic_open && !bcast_audio )
     return -2;
 
-  if( opts.audio_rbudp )
+  if( opts.audio_rbudp_send )
   {
     rbudp_broadcast(tag_id, audio_current->data, len);
     return 0;
@@ -1311,6 +1318,8 @@ int reg(const char *passwd, struct dev_info *info)
   subscription[0] = info->sub[0]; \
   if( subscription[0]==0 && subscription[1]==0 ) \
     subscription[0] = 1; \
+  if( opts.audio_rbudp_recv ) \
+    rbudp_set_recv_tag(subscription[0]);  \
   if( !opts.audio_use_udp )  \
   { \
     /* connect audio sock. this must be done after  \
@@ -1442,7 +1451,7 @@ int sub(int tag)
   /* reset retransmit expect seq */
   expect_seq = 0;
 
-  if( opts.audio_rbudp )
+  if( opts.audio_rbudp_recv )
   {
     if( replicate[i] )
       rbudp_set_recv_tag(replicate[i]);
@@ -1469,7 +1478,7 @@ int unsub(int tag)
   subscription[i] = 0;
   replicate[i] = 0;
 
-  if( opts.audio_rbudp )
+  if( opts.audio_rbudp_recv )
   {
     rbudp_set_recv_tag(0);
   }
@@ -2487,7 +2496,7 @@ static void handle_ucmd(struct pack_ucmd *ucmd)
       else
         break;
 
-      if( opts.audio_rbudp )
+      if( opts.audio_rbudp_recv )
       {
         if( rep )
           rbudp_set_recv_tag(rep);

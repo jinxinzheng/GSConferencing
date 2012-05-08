@@ -14,7 +14,8 @@ enum
   OPT_ZERO_COMPRESSION,
   OPT_AUDIO_DIRECT_MIX, /* when set to 1, audio is directly
                          * broadcasted and not sent to the server. */
-  OPT_AUDIO_RBUDP,      /* retransmittive-broadcast audio mode. */
+  OPT_AUDIO_RBUDP_SEND,      /* retransmittive-broadcast audio mode for send */
+  OPT_AUDIO_RBUDP_RECV,      /* and receive. */
 };
 
 /* call this before client_init()! */

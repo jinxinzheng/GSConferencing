@@ -11,7 +11,7 @@ static int sock;
 
 static void login()
 {
-  char buf[BUFLEN] = {"0 manage login admin admin\n"};
+  char buf[BUFLEN] = {"0 manage login Admin 123456\n"};
   int len = strlen(buf);
 
   unsigned char tmp[BUFLEN];

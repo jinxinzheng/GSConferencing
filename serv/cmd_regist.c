@@ -78,9 +78,7 @@ static int cmd_regist(struct cmd *cmd)
     mode = atoi(p);
 
     g->regist.mode = mode;
-    g->regist.expect =
-      g->stats.dev_count[DEVTYPE_NORMAL] +
-      g->stats.dev_count[DEVTYPE_CHAIR];
+    g->regist.expect = g->regist.nmembers;
     g->regist.arrive = 0;
 
     g->db_data->regist_expect = g->regist.expect;

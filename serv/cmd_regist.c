@@ -119,6 +119,8 @@ static int cmd_regist(struct cmd *cmd)
     REP_ADD(cmd, arrive_list);
     REP_END(cmd);
 
+    send_cmd_to_dev_id(cmd, 1);
+
     free(arrive_list);
 
     regist_reset_all(cmd, g);

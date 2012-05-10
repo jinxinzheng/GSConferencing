@@ -53,9 +53,10 @@ struct group {
   struct {
     struct db_vote *current;
     int curr_num;
-    int nmembers;
+    int expect;
     int nvoted;
     int memberids[1024];
+    int nmembers;
     char *membernames;
     int membernames_size;
     struct vote *v; /* for recover use */

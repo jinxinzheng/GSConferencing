@@ -182,6 +182,8 @@ static int cmd_votectrl(struct cmd *cmd)
     }
 
     g->vote.current = dv;
+    g->vote.curr_num = num;
+    g->vote.expect = dv->expect;
 
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, dv->type);
@@ -191,10 +193,8 @@ static int cmd_votectrl(struct cmd *cmd)
     REP_ADD(cmd, dv->options);
     REP_END(cmd);
 
-    g->vote.curr_num = num;
-
     /* create new vote */
-    v = vote_new(dv);
+    v = vote_new();
     v->type = dv->type;
     v->cn_options = dv->options_count;
     v->n_members = 0;
@@ -296,7 +296,7 @@ static int cmd_votectrl(struct cmd *cmd)
       return 1;
 
     REP_ADD(cmd, "OK");
-    REP_ADD_NUM(cmd, g->vote.nmembers);
+    REP_ADD_NUM(cmd, g->vote.expect);
     REP_ADD_NUM(cmd, g->vote.nvoted);
     REP_END(cmd);
   }
@@ -323,7 +323,7 @@ static int cmd_votectrl(struct cmd *cmd)
     /* make reply string */
     REP_ADD(cmd, "OK");
 
-    REP_ADD_NUM(cmd, v->n_members);
+    REP_ADD_NUM(cmd, g->vote.expect);
 
     if( v->type==VOTE_SCORE )
     {

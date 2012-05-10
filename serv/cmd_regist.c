@@ -78,7 +78,7 @@ static int cmd_regist(struct cmd *cmd)
     mode = atoi(p);
 
     g->regist.mode = mode;
-    g->regist.expect = g->regist.nmembers;
+    g->regist.expect = dr->expect;
     g->regist.arrive = 0;
 
     g->db_data->regist_expect = g->regist.expect;

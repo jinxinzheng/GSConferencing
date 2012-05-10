@@ -53,6 +53,7 @@ i dev_id
 table regist
 i id
 s members 8192
+i expect
 
 table vote
 i id
@@ -62,6 +63,7 @@ i options_count
 i max_select
 s options 1024
 s members 8192
+i expect
 
 table discuss
 i id

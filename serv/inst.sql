@@ -71,7 +71,8 @@ create table auth_card
 create table regist
 (
  id int primary key,    -- id
- members varchar(8192)  -- 报到列表
+ members varchar(8192), -- 报到列表
+ expect int             -- 应到人数设置
 );
 
 -- 投票表决
@@ -83,7 +84,8 @@ create table vote
  options_count int,    -- 表决项数量
  max_select int,       -- 最多选择数
  options varchar(1024),-- 表决项(custom)
- members varchar(8192) -- 表决代表
+ members varchar(8192),-- 表决代表
+ expect int            -- 应到人数设置
 );
 
 -- 讨论议题
@@ -145,10 +147,12 @@ insert into tag(name) values('French');
 insert into tag(name) values('Japanese');
 insert into tag(name) values('Spanish');
 
-insert into vote(id, name, type, options_count, max_select, options, members) values(1,'vote_1', 1, 2, 1, 'n', '101,102,103');
-insert into vote(id, name, type, options_count, max_select, options, members) values(2,'vote_2', 2, 2, 1, 'n', '101,102');
-insert into vote(id, name, type, options_count, max_select, options, members) values(3,'vote_3', 2, 2, 1, 'n', '101');
-insert into vote(id, name, type, options_count, max_select, options, members) values(4,'vote_4', 3, 2, 1, 'n', '104');
+insert into regist(id, members, expect) values(1, '101', 1);
+
+insert into vote(id, name, type, options_count, max_select, options, members, expect) values(1,'vote_1', 1, 2, 1, 'n', '101,102,103', 3);
+insert into vote(id, name, type, options_count, max_select, options, members, expect) values(2,'vote_2', 2, 2, 1, 'n', '101,102', 2);
+insert into vote(id, name, type, options_count, max_select, options, members, expect) values(3,'vote_3', 2, 2, 1, 'n', '101', 1);
+insert into vote(id, name, type, options_count, max_select, options, members, expect) values(4,'vote_4', 3, 2, 1, 'n', '104', 1);
 
 insert into discuss(id, name, members) values(1,'test_discuss_1', '101,102,103,104');
 insert into discuss(id, name, members) values(2,'test_discuss_2', '101,102,103');

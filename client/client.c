@@ -1033,6 +1033,11 @@ static void video_recved(struct pack *pack, int len)
   l = send_tcp(buf, l, &servAddr); \
   if (l>0) { \
     int _e;  \
+    if( buf[0] == 2 ) { \
+      /* 'type 2' cmd */  \
+      event_handler(0x20000, buf, (void *)l); \
+      return 0; \
+    } \
     buf[l] = 0; \
     if( (_e = parse_cmd(buf, &c)) != 0 ) { \
       fprintf(stderr, "%s failed: %d\n", __func__, _e); \
@@ -2212,6 +2217,12 @@ static void __handle_cmd(char *buf, int l)
 
   if( !reged )
   {
+    return;
+  }
+
+  if( buf[0] == 2 ) /* 'type 2' cmd */
+  {
+    event_handler(0x20000, buf, (void *)l);
     return;
   }
 

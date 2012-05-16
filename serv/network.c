@@ -195,6 +195,8 @@ void *run_proceed_connection(void *arg)
       struct cmd cmd;
       char rep[BUFLEN];
 
+      /* normally the cmd is a text string. */
+
       buf[cmdl]=0;
       trace_info("recved cmd: %s\n", buf);
 

@@ -101,6 +101,36 @@ int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)
   return 0;
 }
 
+static int recv_all(int sock, void *buf, int size)
+{
+  int l, len = 0;
+  while(1)
+  {
+    l = recv(sock, buf+len, size-len, 0);
+    if (l > 0)
+    {
+      len += l;
+      if( len >= size )
+        return len;
+    }
+    else if(l==0)
+      return len;
+    else
+    {
+      if( errno==EAGAIN )
+      {
+        msleep(10);
+        continue;
+      }
+      else
+      {
+        perror("recv()");
+        return -1;
+      }
+    }
+  }
+}
+
 /* connect to and send to the server.
  * the response is stored in buf. */
 int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
@@ -180,7 +210,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
 
   while(1)
   {
-    l=recv(sock, tmp, sizeof tmp, 0);
+    l=recv_all(sock, tmp, sizeof tmp);
     if (l > 0)
     {
       /* decode the reply and store in origin buf */
@@ -659,7 +689,7 @@ static void *run_recv_tcp(void *arg)
     else
       fprintf(stderr, "recved file\n");
 
-    while ((l = recv(conn_sock, buf, sizeof buf, 0)) > 0)
+    if( (l = recv_all(conn_sock, buf, sizeof buf)) > 0 )
     {
       if( !isfile )
       {

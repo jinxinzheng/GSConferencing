@@ -163,12 +163,15 @@ int dev_register(struct device *dev)
 
   trace_info("device %d registered\n", dev->id);
 
-  if( dev->db_data->sub1 == 0 &&
-      dev->db_data->sub2 == 0 )
+  if( dev->type>DEVTYPE_NONE && dev->type<DEVTYPE_OTHER )
   {
-    /* any client default subscribes to tag 1 */
-    t = request_tag(gid, 1);
-    dev_subscribe(dev, t);
+    if( dev->db_data->sub1 == 0 &&
+        dev->db_data->sub2 == 0 )
+    {
+      /* any client default subscribes to tag 1 */
+      t = request_tag(gid, 1);
+      dev_subscribe(dev, t);
+    }
   }
 
   /* update group stats and caches */

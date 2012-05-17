@@ -590,6 +590,7 @@ static void _recv_udp(int s)
 
 static int tcp_port;
 static int file_port;
+static int tcp_recv_file;
 
 static void *run_recv_tcp(void *arg)
 {
@@ -611,17 +612,19 @@ static void *run_recv_tcp(void *arg)
   if ((lisn_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     die("socket()");
 
-  if ((file_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    die("socket()");
+  if( tcp_recv_file )
+  {
+    if ((file_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+      die("socket()");
+  }
+  else
+    file_sock = -1;
 
   n = (lisn_sock>file_sock? lisn_sock:file_sock) +1;
 
   /* Eliminates "Address already in use" error from bind. */
   on = 1;
   if (setsockopt(lisn_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(on)) < 0)
-    die("setsockopt");
-
-  if (setsockopt(file_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(on)) < 0)
     die("setsockopt");
 
   /* Construct local address structure */
@@ -634,17 +637,24 @@ static void *run_recv_tcp(void *arg)
   if (bind(lisn_sock, (struct sockaddr *) &loclAddr, sizeof loclAddr) < 0)
     die("bind()");
 
-  /* cmd and file go separate ports */
-  loclAddr.sin_port = htons(file_port);
-  if (bind(file_sock, (struct sockaddr *) &loclAddr, sizeof loclAddr) < 0)
-    die("bind()");
-
   /* Mark the socket so it will listen for incoming connections */
   if (listen(lisn_sock, 50) < 0)
     die("listen()");
 
-  if (listen(file_sock, 50) < 0)
-    die("listen()");
+  if( file_sock > 0 )
+  {
+    on = 1;
+    if (setsockopt(file_sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(on)) < 0)
+      die("setsockopt");
+
+    /* cmd and file go separate ports */
+    loclAddr.sin_port = htons(file_port);
+    if (bind(file_sock, (struct sockaddr *) &loclAddr, sizeof loclAddr) < 0)
+      die("bind()");
+
+    if (listen(file_sock, 50) < 0)
+      die("listen()");
+  }
 
   for (;;) /* Run forever */
   {
@@ -655,7 +665,8 @@ static void *run_recv_tcp(void *arg)
 
     FD_ZERO(&sks);
     FD_SET(lisn_sock, &sks);
-    FD_SET(file_sock, &sks);
+    if( file_sock > 0 )
+      FD_SET(file_sock, &sks);
 
     if (select(n, &sks, NULL, NULL, NULL) > 0)
     {
@@ -665,7 +676,7 @@ static void *run_recv_tcp(void *arg)
         sel = lisn_sock;
         isfile = 0;
       }
-      if (FD_ISSET(file_sock, &sks))
+      if (file_sock>0 && FD_ISSET(file_sock, &sks))
       {
         FD_CLR(file_sock, &sks);
         sel = file_sock;
@@ -732,10 +743,11 @@ void start_recv_udp(int listenPort, void (*recved)(char *buf, int l), int recv_b
   start_thread(run_recv_udp, NULL);
 }
 
-void start_recv_tcp(int listenPort, void (*recved)(int sock, int isfile, char *buf, int l))
+void start_recv_tcp(int listenPort, void (*recved)(int sock, int isfile, char *buf, int l), int recv_file)
 {
   tcp_port = listenPort;
   file_port = listenPort+1;
   tcp_recved = recved;
+  tcp_recv_file = recv_file;
   start_thread(run_recv_tcp, NULL);
 }

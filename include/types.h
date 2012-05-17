@@ -12,6 +12,7 @@ enum {
   /* special types */
   DEVTYPE_NETPLAY = 222,
   DEVTYPE_BCAST_AUDIO,
+  DEVTYPE_UCAST_AUDIO,
 };
 
 /* user register modes */

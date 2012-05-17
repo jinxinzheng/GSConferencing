@@ -1,6 +1,9 @@
 #include "cmd_handler.h"
 #include "db/md.h"
 #include "devctl.h"
+#include  <include/types.h>
+#include  <include/util.h>
+#include  <cmd/t2cmd.h>
 
 static int cmd_get_tags(struct cmd *cmd)
 {
@@ -72,5 +75,58 @@ static int cmd_switch_tag(struct cmd *cmd)
   return 0;
 }
 
+static int cmd_get_subs(struct cmd *cmd)
+{
+  int a=0;
+
+  struct device *d, *e;
+  char *p;
+  int tid;
+  struct list_head *h;
+
+  struct type2_cmd *rep;
+  struct t2cmd_subs_list *hdr;
+  int count;
+
+  THIS_DEVICE(cmd, d);
+
+  NEXT_ARG(p);
+  tid = atoi(p);
+  if( tid <= 0 )
+    return ERR_OTHER;
+
+  if( d->type != DEVTYPE_UCAST_AUDIO )
+    return ERR_OTHER;
+
+  if( d->tag->id != tid )
+    return ERR_OTHER;
+
+  /* reply with 'type 2' cmd */
+  rep = (struct type2_cmd *) cmd->rep;
+  rep->type = 2;
+  rep->cmd = T2CMD_SUBS_LIST;
+  hdr = (struct t2cmd_subs_list *) rep->data;
+  hdr->tag = tid;
+
+  count = 0;
+  h = &d->tag->subscribe_head[0];
+  list_for_each_entry(e, h, subscribe[0])
+  {
+    hdr->subs[count].id = e->id;
+    hdr->subs[count].addr = e->addr.sin_addr.s_addr;
+    hdr->subs[count].port = e->addr.sin_port;
+    count ++;
+  }
+
+  hdr->count = count;
+
+  rep->len = offsetof(struct t2cmd_subs_list, subs) + count * sizeof(hdr->subs[0]);
+
+  cmd->rl = T2CMD_SIZE(rep);
+
+  return 0;
+}
+
 CMD_HANDLER_SETUP(get_tags);
 CMD_HANDLER_SETUP(switch_tag);
+CMD_HANDLER_SETUP(get_subs);

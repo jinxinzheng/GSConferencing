@@ -193,7 +193,7 @@ int main(int argc, char *const argv[])
   start_recv_udp(listenPort, udp_recved, 1);
 
   /* listen cmds */
-  start_recv_tcp(listenPort, NULL);
+  start_recv_tcp(listenPort, NULL, 1);
 
   /* Construct the server address structure */
   memset(&servAddr, 0, sizeof(servAddr));     /* Zero out structure */

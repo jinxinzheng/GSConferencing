@@ -16,7 +16,7 @@ test_client := test-client
 libclient := libclient.a
 endif
 
-all: $(test_client) $(libclient) apitest cyctld netplay bcast
+all: $(test_client) $(libclient) apitest cyctld netplay bcast ucast
 
 $(test_client): test_client.o net.o ../common/thread.o
 	$(CC) $(LDFLAGS) -o $@ $^
@@ -40,6 +40,8 @@ cyctld: cyctld.o ../common/ping.o inifile.o
 netplay: netplay.o $(libclient)
 
 bcast: bcast.o $(libclient)
+
+ucast: ucast.o $(libclient) ../sha/sha128.o
 
 clean:
 	rm -rf *.o .depend $(test_client) apitest $(libclient) libclient.so cyctld

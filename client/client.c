@@ -36,6 +36,7 @@ static int reged;
 static struct sockaddr_in servAddr;
 static int listenPort;
 static struct sockaddr_in net_mixer_addr;
+static struct sockaddr_in ucast_addr;
 
 static struct {
   int audio_use_udp;
@@ -44,6 +45,7 @@ static struct {
   int audio_direct_mix;
   int audio_rbudp_send;
   int audio_rbudp_recv;
+  int audio_send_ucast;
 }
 opts = {
   .audio_use_udp = 1,
@@ -61,6 +63,7 @@ static event_cb event_handler;
 static char br_addr[32];
 
 static int bcast_audio=0;
+static int ucast_audio=0;
 
 #define STREQU(a, b) (strcmp((a), (b))==0)
 
@@ -92,6 +95,8 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
 {
   int servPort = SERVER_PORT;
   int netplay=0;
+  int recv_br;
+  int recv_file;
 
   printf("daya client %s. build date %s\n", build_rev, build_date);
 
@@ -112,6 +117,7 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   listenPort = localPort;
 
   memset(&net_mixer_addr, 0, sizeof(net_mixer_addr));
+  memset(&ucast_addr, 0, sizeof(ucast_addr));
 
   /* the special netplay mode,
    * only a few functions are enabled. */
@@ -131,14 +137,36 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
     if( tag_id==0 )
       tag_id = 1;
   }
+  else if( type==DEVTYPE_UCAST_AUDIO )
+  {
+    ucast_audio = 1;
+  }
+
+  if( netplay || ucast_audio )
+    recv_br = 0;
+  else
+    recv_br = 1;
+
+  if( ucast_audio )
+    recv_file = 0;
+  else
+    recv_file = 1;
 
   /* listen cmds */
   if( !(netplay||bcast_audio) )
-    start_recv_tcp(listenPort, handle_cmd);
+    start_recv_tcp(listenPort, handle_cmd, recv_file);
 
   /* listen udp - audio, video and other */
   if( !bcast_audio )
-    start_recv_udp(listenPort, udp_recved, netplay?0:1);
+    start_recv_udp(listenPort, udp_recved, recv_br);
+
+  if( opts.audio_send_ucast )
+  {
+    /* setup fixed ucast address. */
+    ucast_addr.sin_family      = AF_INET;
+    ucast_addr.sin_addr.s_addr = inet_addr("192.168.1.82");
+    ucast_addr.sin_port        = htons(0x8200|tag_id);
+  }
 
   if( opts.audio_rbudp_send )
   {
@@ -218,6 +246,10 @@ void set_option(int opt, int val)
 
     case OPT_AUDIO_RBUDP_RECV:
     opts.audio_rbudp_recv = val;
+    break;
+
+    case OPT_AUDIO_SEND_UCAST:
+    opts.audio_send_ucast = val;
     break;
   }
 }
@@ -364,7 +396,11 @@ static void send_pack(struct pack *p)
 static void send_pack_len(struct pack *p, int len)
 {
   HTON(p);
-  if( opts.audio_direct_mix || bcast_audio )
+  if( opts.audio_send_ucast )
+  {
+    send_udp(p, len, &ucast_addr);
+  }
+  else if( opts.audio_direct_mix || bcast_audio )
   {
     broadcast_udp(p, len);
   }
@@ -662,6 +698,17 @@ static void write_audio(struct pack *p);
 static void audio_recved(struct pack *buf, int len)
 {
   struct pack *qitem = buf;
+
+  if( ucast_audio )
+  {
+    /* for the ucast, the tag is not my sub but my tag. */
+    if( qitem->tag == tag_id )
+    {
+      /* let me access the whole pack. */
+      event_handler(0x20001, buf, (void *)pack_size(buf));
+    }
+    return;
+  }
 
   /* return immediately when we are not subscribed to any */
   if (subscription[0] == 0 && subscription[1] == 0)
@@ -2107,6 +2154,14 @@ int test()
 {
   BASICS;
   PRINTC("test");
+  SEND_CMD();
+  return 0;
+}
+
+int get_subs(int tag)
+{
+  BASICS;
+  PRINTC("get_subs %d", tag);
   SEND_CMD();
   return 0;
 }

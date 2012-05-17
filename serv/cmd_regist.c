@@ -7,7 +7,6 @@
 static void regist_setup(struct group *g, struct db_regist *dr)
 {
   char *buf, *p;
-  int l;
   g->regist.nmembers = 0;
   buf = strdup(dr->members);
   IDLIST_FOREACH(p, buf)
@@ -36,7 +35,7 @@ static void regist_reset_all(struct cmd *cmd, struct group *g)
   }
 }
 
-static void *reg_start_brcmd;
+//static void *reg_start_brcmd;
 
 static int cmd_regist(struct cmd *cmd)
 {

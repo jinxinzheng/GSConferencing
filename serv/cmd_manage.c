@@ -125,6 +125,45 @@ do \
   m_get(vote, c); \
 }while(0)
 
+static int recv_line(int sock, char *buf, int size)
+{
+  static char recvbuf[BUFLEN];
+  static int start, len;
+  char *p;
+  int l;
+  while(1)
+  {
+    /* find \n in the buffer */
+    if( len>0 )
+    {
+      if( (p=(char *)memchr(&recvbuf[start], '\n', len)) )
+      {
+        l = p - &recvbuf[start] + 1;
+        memcpy(buf, &recvbuf[start], l);
+        start += l;
+        len -= l;
+        if( len == 0 )
+        {
+          /* there's no remaining bytes, restart recv. */
+          start = 0;
+        }
+        return l;
+      }
+      else
+      {
+        /* need to recv more */
+      }
+    }
+
+    if( (l=recv(sock, &recvbuf[start+len], sizeof(recvbuf)-(start+len)-100, 0)) > 0 )
+    {
+      len += l;
+    }
+    else
+      return 0;
+  }
+}
+
 static void *serv_manage(void *arg)
 {
   int s = (int) arg;
@@ -144,7 +183,7 @@ static void *serv_manage(void *arg)
   const char *target;
 
   /* loop until the client closes */
-  while( (l=recv(s, buf, BUFLEN, 0)) > 0 )
+  while( (l=recv_line(s, buf, sizeof buf)) > 0 )
   {
     char rep[BUFLEN];
     int rl;

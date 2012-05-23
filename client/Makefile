@@ -18,7 +18,7 @@ endif
 
 all: $(test_client) $(libclient) apitest cyctld netplay bcast
 
-$(test_client): main.o net.o ../common/thread.o
+$(test_client): test_client.o net.o ../common/thread.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 $(libclient): client.o net.o mix.o pcm.o rbudp.o ../common/thread.o ../.version.o

@@ -83,6 +83,7 @@ void run_listener_tcp(int port)
   socklen_t clntLen;
   int optval;
   struct connection *c;
+  struct timeval tv = {6,0};
 
   if( sizeof(struct connection) > 64 )
   {
@@ -128,6 +129,9 @@ void run_listener_tcp(int port)
       perror("accept()");
 
     /* clntSock is connected to a client! */
+    /* setup timeouts for the connection. */
+    setsockopt(clntSock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+    setsockopt(clntSock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
     /* get connection object */
     while( !(c = (struct connection *)alloc_block(conn_pool)) )

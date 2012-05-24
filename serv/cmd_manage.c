@@ -4,6 +4,7 @@
 #include "db/md.h"
 #include "include/debug.h"
 #include <include/thread.h>
+#include <errno.h>
 #include "manage.h"
 #include "upgrade.h"
 
@@ -48,7 +49,7 @@ do \
   while( (_d = md_iterate_##type##_next(&_it)) ) \
   { \
     write_##type(_d); \
-    if( l>=BUFLEN ) \
+    if( l>=BUFLEN-1024 ) \
     { \
       flush(); \
       l = 0; \
@@ -155,12 +156,27 @@ static int recv_line(int sock, char *buf, int size)
       }
     }
 
-    if( (l=recv(sock, &recvbuf[start+len], sizeof(recvbuf)-(start+len)-100, 0)) > 0 )
+recving:
+    l=recv(sock, &recvbuf[start+len], sizeof(recvbuf)-(start+len)-100, 0);
+    if( l>0 )
     {
       len += l;
     }
+    else if( l<0 )
+    {
+      if( errno==EAGAIN ) /* the sock has set timeout opt */
+        goto recving;
+      else
+      {
+        perror("recv");
+        return 0;
+      }
+    }
     else
+    {
+      /* the client has shutdown */
       return 0;
+    }
   }
 }
 

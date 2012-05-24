@@ -156,7 +156,7 @@ int main(int argc, char *const argv[])
 {
   int opt;
 
-  char buf[2048];
+  char buf[10240];
   int len;
 
   int listenPort;

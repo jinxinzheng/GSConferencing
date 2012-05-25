@@ -220,6 +220,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
     {
       /* decode the reply and store in origin buf */
       l = decode(buf, tmp, l);
+      ((char *)buf)[l]=0;
       trace_dbg("recved reply: %.80s\n", (char *)buf);
     }
     else if(l==0)

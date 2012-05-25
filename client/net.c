@@ -106,6 +106,7 @@ int send_udp(void *buf, size_t len, const struct sockaddr_in *addr)
 static int recv_all(int sock, void *buf, int size)
 {
   int l, len = 0;
+  int again = 0;
   while(1)
   {
     l = recv(sock, buf+len, size-len, 0);
@@ -121,7 +122,9 @@ static int recv_all(int sock, void *buf, int size)
     {
       if( errno==EAGAIN )
       {
-        msleep(10);
+        if( ++again > 6 )
+          return -1;
+        sleep(1);
         continue;
       }
       else
@@ -172,7 +175,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
   FD_SET(sock, &fds);
 
   /* select() writefds returns when connected. */
-  if( select(sock+1, NULL, &fds, NULL, &tv) < 0 )
+  if( select(sock+1, NULL, &fds, NULL, &tv) <= 0 )
   {
     perror("failed to connect with select()");
     close(sock);
@@ -206,7 +209,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
   tv.tv_sec = timeout;
   tv.tv_usec = 0;
 
-  if( select(sock+1, &fds, NULL, NULL, &tv) < 0 )
+  if( select(sock+1, &fds, NULL, NULL, &tv) <= 0 )
   {
     perror("select() for recv()");
     close(sock);
@@ -227,13 +230,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
       fprintf(stderr, "(no repsponse)\n");
     else
     {
-      if( errno==EAGAIN )
-      {
-        msleep(10);
-        continue;
-      }
-      else
-        perror("recv()");
+      perror("recv_all");
     }
     break;
   }

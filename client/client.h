@@ -388,6 +388,11 @@ int video_stop();
 
 int send_video(const char *buf, int len);
 
+/* tests if the server is responsive.
+ * it should return 0 quickly if the server is alive,
+ * otherwise the server may be died. */
+int test();
+
 #ifdef __cplusplus
 }
 #endif

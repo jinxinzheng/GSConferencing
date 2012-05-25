@@ -2098,6 +2098,14 @@ int synctime()
   return 0;
 }
 
+int test()
+{
+  BASICS;
+  PRINTC("test");
+  SEND_CMD();
+  return 0;
+}
+
 
 static struct
 {

@@ -151,3 +151,10 @@ CMD_HANDLER_SETUP(set_ptc);
 CMD_HANDLER_SETUP(sys_stats);
 CMD_HANDLER_SETUP(set_user_id);
 CMD_HANDLER_SETUP(get_all_devs);
+
+static int cmd_test(struct cmd *cmd)
+{
+  REP_OK(cmd);
+  return 0;
+}
+CMD_HANDLER_SETUP(test);

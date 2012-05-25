@@ -126,7 +126,11 @@ void run_listener_tcp(int port)
 
     /* Wait for a client to connect */
     if ((clntSock = accept(tcp_sock, (struct sockaddr *) &clntAddr, &clntLen)) < 0)
+    {
       perror("accept()");
+      continue;
+    }
+    trace_dbg("accepted from %s:%d\n", inet_ntoa(clntAddr.sin_addr), ntohs(clntAddr.sin_port));
 
     /* clntSock is connected to a client! */
     /* setup timeouts for the connection. */

@@ -16,6 +16,8 @@
 #include <include/compiler.h>
 #include "../config.h"
 
+#include <include/debug.h>
+
 #define BUFLEN 10240
 
 static void (*udp_recved)(char *buf, int l);
@@ -164,6 +166,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
       return -2;
     }
   }
+  trace_dbg("socket connected\n");
 
   FD_ZERO(&fds);
   FD_SET(sock, &fds);
@@ -175,6 +178,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
     close(sock);
     return -2;
   }
+  trace_dbg("ready to send\n");
 
   if( getsockopt(sock, SOL_SOCKET, SO_ERROR, &so_err, &err_len) < 0 || so_err != 0 )
   {
@@ -192,6 +196,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
     close(sock);
     return -2;
   }
+  trace_dbg("sent cmd: %.80s\n", (char *)buf);
 
   /* recv any reply here */
 
@@ -215,6 +220,7 @@ int send_tcp(void *buf, size_t len, const struct sockaddr_in *addr)
     {
       /* decode the reply and store in origin buf */
       l = decode(buf, tmp, l);
+      trace_dbg("recved reply: %.80s\n", (char *)buf);
     }
     else if(l==0)
       fprintf(stderr, "(no repsponse)\n");

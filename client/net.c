@@ -122,9 +122,9 @@ static int recv_all(int sock, void *buf, int size)
     {
       if( errno==EAGAIN )
       {
-        if( ++again > 6 )
+        if( ++again > 600 )
           return -1;
-        sleep(1);
+        msleep(10);
         continue;
       }
       else

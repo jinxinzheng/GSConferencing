@@ -27,6 +27,7 @@ struct t2cmd_subs_list
     uint32_t id;
     uint32_t addr;
     uint16_t port;
+    uint16_t flag;
   } subs[1];
 };
 

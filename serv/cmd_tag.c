@@ -115,6 +115,8 @@ static int cmd_get_subs(struct cmd *cmd)
     hdr->subs[count].id = e->id;
     hdr->subs[count].addr = e->addr.sin_addr.s_addr;
     hdr->subs[count].port = e->addr.sin_port;
+    hdr->subs[count].flag = 0;
+    hdr->subs[count].flag |= e->active? 1:0;
     count ++;
   }
 

@@ -1,6 +1,6 @@
 #include "sys.h"
-#include "hash.h"
 #include <string.h>
+#include <include/hash.h>
 
 static struct group *group_hash[HASH_SZ];
 static struct tag *tag_hash[HASH_SZ];

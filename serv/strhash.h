@@ -1,7 +1,7 @@
 #ifndef _STRHASH_H_
 #define _STRHASH_H_
 
-#include "hash.h"
+#include  <include/hash.h>
 
 static inline unsigned int djbhash(const char *str)
 {

@@ -9,6 +9,7 @@
 #include  <include/util.h>
 #include  <cmd/t2cmd.h>
 #include  <include/pack.h>
+#include  <include/hash.h>
 
 #if 0
 #define UCAST_LOG   printf
@@ -20,12 +21,18 @@ static int tag = 1;
 
 struct dev_ent
 {
+  struct dev_ent *hash_next;
+  struct dev_ent **hash_pprev;
+
   int id;
   struct sockaddr_in addr;
   int active;
+  int sub;  /* set to 0 if unsubbed */
 };
 static struct dev_ent subs[4096];
 static int subs_count = 0;
+
+static HASH(subs_hash, struct dev_ent);
 
 static void add_sub(int id, uint32_t addr, uint16_t port, uint16_t flag)
 {
@@ -36,8 +43,11 @@ static void add_sub(int id, uint32_t addr, uint16_t port, uint16_t flag)
   e->addr.sin_addr.s_addr = addr;
   e->addr.sin_port = port;
   e->active = flag&1;
+  e->sub = 1;
   UCAST_LOG("add %d %s:%d %s\n", id, inet_ntoa(e->addr.sin_addr), ntohs(port), e->active?"(a)":"");
   subs_count ++;
+
+  hash_id(subs_hash, e);
 }
 
 static int handle_type2_cmd(struct type2_cmd *cmd)
@@ -57,6 +67,28 @@ static int handle_type2_cmd(struct type2_cmd *cmd)
       {
         e = &hd->subs[i];
         add_sub(e->id, e->addr, e->port, e->flag);
+      }
+      break;
+    }
+
+    case T2CMD_SUB :
+    {
+      struct t2cmd_sub *args = (struct t2cmd_sub *) cmd->data;
+      struct dev_ent *e;
+      UCAST_LOG("%d %s %d\n", args->id, args->sub?"sub to":"unsub", args->tag);
+      if( args->sub )
+      {
+        e = find_by_id(subs_hash, args->id);
+        if( e )
+          e->sub = 1;
+        else
+          add_sub(args->id, args->addr, args->port, args->flag);
+      }
+      else
+      {
+        e = find_by_id(subs_hash, args->id);
+        if( e )
+          e->sub = 0;
       }
       break;
     }
@@ -88,7 +120,7 @@ static int handle_audio_pack(struct pack *p, int len)
 
   for( i=0 ; i<subs_count ; i++ )
   {
-    if( subs[i].active )
+    if( subs[i].active && subs[i].sub )
     {
       sendto(audio_sock, p, len, 0,
         (struct sockaddr *)&subs[i].addr, sizeof(subs[0].addr));

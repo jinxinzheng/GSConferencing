@@ -3,6 +3,8 @@
 #include "sys.h"
 #include "devctl.h"
 #include "cast.h"
+#include <include/util.h>
+#include <cmd/t2cmd.h>
 
 static int cmd_sub(struct cmd *cmd)
 {
@@ -36,20 +38,38 @@ static int cmd_sub(struct cmd *cmd)
       unsub = 1;
     }
 
+    t = request_tag(gid, tid);
+
     if( unsub )
     {
-      t = get_tag(TAGUID(gid, tid));
-      if( t )
-        dev_unsubscribe(d, t);
+      dev_unsubscribe(d, t);
     }
     else
     {
-      t = request_tag(gid, tid);
       dev_subscribe(d, t);
       if( t->interp.rep )
       {
         repid = t->interp.rep->id;
       }
+    }
+
+    /* send cmd to the ucast-dev. */
+    if( t->ucast )
+    {
+      char buf[1024];
+      struct type2_cmd *c = (struct type2_cmd *) buf;
+      struct t2cmd_sub *args = (struct t2cmd_sub *) c->data;
+      c->type = 2;
+      c->cmd = T2CMD_SUB;
+      c->len = sizeof(*args);
+      args->id = d->id;
+      args->addr = d->addr.sin_addr.s_addr;
+      args->port = d->addr.sin_port;
+      args->flag = 0;
+      args->flag |= d->active? 1:0;
+      args->sub = !unsub;
+      args->tag = tid;
+      device_cmd(t->ucast, (char *)c, T2CMD_SIZE(c));
     }
 
     device_save(d);

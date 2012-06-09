@@ -150,6 +150,8 @@ int dev_register(struct device *dev)
   dev->group = g;
   dev->tag = t;
 
+  tag_check_ucast(t, dev);
+
   for( i=0 ; i<MAX_SUB ; i++ )
   {
     dev->subscription[i] = NULL;

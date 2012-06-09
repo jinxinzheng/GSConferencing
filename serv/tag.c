@@ -105,6 +105,22 @@ struct tag *tag_create(int gid, int tid)
   return t;
 }
 
+int tag_check_ucast(struct tag *t, struct device *d)
+{
+  if( d->type != DEVTYPE_UCAST_AUDIO )
+    return 0;
+  if( d->tag != t )
+    return 0;
+  if( t->ucast != NULL )
+  {
+    /* do not overwrite the ucast dev. */
+    return 0;
+  }
+  t->ucast = d;
+  return 1;
+}
+
+
 static int sincmp(const void *s1, const void *s2)
 {
   struct sockaddr_in **ps1 = (struct sockaddr_in **) s1;

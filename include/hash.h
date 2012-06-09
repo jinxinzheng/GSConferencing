@@ -6,6 +6,8 @@
 #define HASH_SZ (4096 >> 2)
 //extern struct task_struct *pidhash[PIDHASH_SZ];
 
+#define HASH(name, type)  type *name[HASH_SZ]
+
 #define hash_memb(hash, memb, p)              \
 do                                            \
 {                                             \

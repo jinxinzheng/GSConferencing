@@ -17,6 +17,7 @@ __attribute__((packed));
 enum {
   T2CMD_NONE,
   T2CMD_SUBS_LIST,
+  T2CMD_SUB,
 };
 
 struct t2cmd_subs_list
@@ -29,6 +30,16 @@ struct t2cmd_subs_list
     uint16_t port;
     uint16_t flag;
   } subs[1];
+};
+
+struct t2cmd_sub
+{
+  uint32_t id;
+  uint32_t addr;
+  uint16_t port;
+  uint16_t flag;
+  uint8_t sub;
+  uint8_t tag;
 };
 
 

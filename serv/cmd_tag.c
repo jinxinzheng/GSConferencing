@@ -62,6 +62,8 @@ static int cmd_switch_tag(struct cmd *cmd)
 
   d->tag = t;
 
+  tag_check_ucast(t, d);
+
   /* update db */
   {
     struct db_device *dbd;

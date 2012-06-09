@@ -73,6 +73,8 @@ struct tag {
    * support up to 64 */
   struct sockaddr_in *bcasts[64];
   int bcast_size;
+
+  struct device *ucast;
 };
 
 #define TAGUID(gid,tid) ((gid<<16) ^ tid)
@@ -82,6 +84,8 @@ struct tag {
 struct tag *request_tag(int gid, int tid);
 
 struct tag *tag_create(int gid, int tid);
+
+int tag_check_ucast(struct tag *t, struct device *d);
 
 void tag_add_bcast(struct tag *t, struct sockaddr_in *bcast);
 

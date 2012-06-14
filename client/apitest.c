@@ -211,6 +211,7 @@ int main(int argc, char *const argv[])
     id = 3;
 
   //set_option(OPT_AUDIO_RBUDP_RECV, 1);
+  set_option(OPT_AUDIO_MCAST_RECV, 1);
   client_init(id,id, srvaddr, 20000+id);
 
   set_event_callback(on_event);

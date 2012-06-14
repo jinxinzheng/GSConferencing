@@ -15,6 +15,7 @@
 #include "include/encode.h"
 #include <include/compiler.h>
 #include "../config.h"
+#include "net.h"
 
 #include <include/debug.h>
 
@@ -455,13 +456,15 @@ int send_audio(void *buf, size_t len)
 
 
 static int udp_port;
-static int udp_recv_br;
+static int udp_recv_flag;
+/* the sock to recv multicast */
+static int mc_sock = 0;
 
 static void _recv_udp(int s);
 
 static void *run_recv_udp(void *arg)
 {
-  int sock, br_sock;
+  int sock, br_sock=0;
   int on;
   int port;
   struct sockaddr_in addr; /* Local address */
@@ -492,11 +495,7 @@ static void *run_recv_udp(void *arg)
   printf("listen on %d\n", port);
 
 
-  if( !udp_recv_br )
-  {
-    br_sock = 0;
-  }
-  else
+  if( udp_recv_flag & F_UDP_RECV_BROADCAST )
   {
     /* Create socket for receving broadcasted packets */
     if ((br_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -511,7 +510,7 @@ static void *run_recv_udp(void *arg)
       die("setsockopt");
 
     on = UDP_SOCK_BUFSIZE;
-    if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &on, sizeof(on)) < 0)
+    if (setsockopt(br_sock, SOL_SOCKET, SO_RCVBUF, &on, sizeof(on)) < 0)
     {
       perror("setsockopt SO_RCVBUF on br_sock fail");
     }
@@ -527,37 +526,66 @@ static void *run_recv_udp(void *arg)
     }
   }
 
-  n = (sock>br_sock? sock:br_sock) +1;
+  if( udp_recv_flag & F_UDP_RECV_MULTICAST )
+  {
+    if ((mc_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+      die("socket()");
+
+    on = 1;
+    if (setsockopt(mc_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+      die("setsockopt");
+
+    on = UDP_SOCK_BUFSIZE;
+    if (setsockopt(mc_sock, SOL_SOCKET, SO_RCVBUF, &on, sizeof(on)) < 0)
+      perror("setsockopt SO_RCVBUF on br_sock fail");
+
+    addr.sin_port = htons(MCAST_PORT);
+    if (bind(mc_sock, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+    {
+      close(mc_sock);
+      mc_sock = 0;
+      perror("bind to multicast port");
+    }
+  }
+
+  /* n = max(sock, br_sock, mc_sock) + 1 */
+  n = sock;
+  if( n < br_sock )
+    n = br_sock;
+  if( n < mc_sock )
+    n = mc_sock;
+  n ++;
+
+#define SET_SOCK(s)   \
+  if (s>0)  \
+    FD_SET(s, &sks)
+
+#define CHECK_SOCK(s)  \
+  if (s > 0 && FD_ISSET(s, &sks)) { \
+    FD_CLR(s, &sks);  \
+    _recv_udp(s); \
+  }
 
   for (;;) /* Run forever */
   {
     FD_ZERO(&sks);
-    FD_SET(sock, &sks);
-    if (br_sock)
-      FD_SET(br_sock, &sks);
+    SET_SOCK(sock);
+    SET_SOCK(br_sock);
+    SET_SOCK(mc_sock);
 
     if (select(n, &sks, NULL, NULL, NULL) > 0)
     {
-      if (FD_ISSET(sock, &sks))
-      {
-        FD_CLR(sock, &sks);
-        _recv_udp(sock);
-      }
-      if (br_sock > 0 && FD_ISSET(br_sock, &sks))
-      {
-        FD_CLR(br_sock, &sks);
-        _recv_udp(br_sock);
-      }
+      CHECK_SOCK(sock);
+      CHECK_SOCK(br_sock);
+      CHECK_SOCK(mc_sock);
     }
     else
     {
       perror("select");
       continue;
     }
-
   }
   /* NOT REACHED */
-
 }
 
 static void _recv_udp(int s)
@@ -586,6 +614,37 @@ static void _recv_udp(int s)
     udp_recved(buf, len);
 }
 
+int join_mcast_group(in_addr_t maddr)
+{
+  struct ip_mreq mreq;
+  int r;
+  if( mc_sock <= 0 )
+    return -1;
+  mreq.imr_multiaddr.s_addr = maddr;
+  mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+  r = setsockopt(mc_sock,IPPROTO_IP,IP_ADD_MEMBERSHIP,&mreq,sizeof(mreq));
+  if( r<0 )
+  {
+    perror("setsockopt(IP_ADD_MEMBERSHIP)");
+  }
+  return r;
+}
+
+int quit_mcast_group(in_addr_t maddr)
+{
+  struct ip_mreq mreq;
+  int r;
+  if( mc_sock <= 0 )
+    return -1;
+  mreq.imr_multiaddr.s_addr = maddr;
+  mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+  r = setsockopt(mc_sock,IPPROTO_IP,IP_DROP_MEMBERSHIP,&mreq,sizeof(mreq));
+  if( r<0 )
+  {
+    perror("setsockopt(IP_DROP_MEMBERSHIP)");
+  }
+  return r;
+}
 
 
 static int tcp_port;
@@ -735,11 +794,11 @@ static void *run_recv_tcp(void *arg)
   /* NOT REACHED */
 }
 
-void start_recv_udp(int listenPort, void (*recved)(char *buf, int l), int recv_br)
+void start_recv_udp(int listenPort, void (*recved)(char *buf, int l), int flag)
 {
   udp_port = listenPort;
   udp_recved = recved;
-  udp_recv_br = recv_br;
+  udp_recv_flag = flag;
   start_thread(run_recv_udp, NULL);
 }
 

@@ -7,6 +7,7 @@
 #define BRCAST_PORT 7660
 #define AUDIO_PORT  7670
 #define AUDIO_RBUDP_PORT  7680
+#define MCAST_PORT        7690
 
 #define UDP_SOCK_BUFSIZE  (320*240*3)
 

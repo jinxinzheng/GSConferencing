@@ -30,6 +30,25 @@
 //#define DEBUG_REPEAT(a...)  fprintf(stderr, "repeat: " a)
 #define DEBUG_REPEAT(a...)
 
+#define MCAST_ADDR_PREF "225.1.1."
+
+static inline in_addr_t get_mcast_addr(int tag)
+{
+  char maddr[100];
+  sprintf(maddr, MCAST_ADDR_PREF "%d", tag);
+  return inet_addr(maddr);
+}
+
+static inline int mcast_join_tag(int tag)
+{
+  return join_mcast_group(get_mcast_addr(tag));
+}
+
+static inline int mcast_quit_tag(int tag)
+{
+  return quit_mcast_group(get_mcast_addr(tag));
+}
+
 static int id;
 static int devtype;
 static int reged;
@@ -37,6 +56,7 @@ static struct sockaddr_in servAddr;
 static int listenPort;
 static struct sockaddr_in net_mixer_addr;
 static struct sockaddr_in ucast_addr;
+static struct sockaddr_in mcast_addr;
 
 static struct {
   int audio_use_udp;
@@ -46,6 +66,8 @@ static struct {
   int audio_rbudp_send;
   int audio_rbudp_recv;
   int audio_send_ucast;
+  int audio_mcast_send;
+  int audio_mcast_recv;
 }
 opts = {
   .audio_use_udp = 1,
@@ -158,7 +180,16 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
 
   /* listen udp - audio, video and other */
   if( !bcast_audio )
-    start_recv_udp(listenPort, udp_recved, recv_br);
+  {
+    int flag = 0;
+    if( netplay )
+      flag = 0;
+    else
+      flag |= F_UDP_RECV_BROADCAST;
+    if( opts.audio_mcast_recv )
+      flag |= F_UDP_RECV_MULTICAST;
+    start_recv_udp(listenPort, udp_recved, flag);
+  }
 
   if( opts.audio_send_ucast )
   {
@@ -181,6 +212,14 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
       rbudp_set_recv_cb(audio_rbudp_recved);
       start_recv_audio_rbudp();
     }
+  }
+
+  if( opts.audio_mcast_send )
+  {
+    memset(&mcast_addr, 0, sizeof(mcast_addr));
+    mcast_addr.sin_family      = AF_INET;
+    mcast_addr.sin_addr.s_addr = get_mcast_addr(tag_id);
+    mcast_addr.sin_port        = htons(MCAST_PORT);
   }
 
   /* udp sending and recving queues */
@@ -250,6 +289,13 @@ void set_option(int opt, int val)
 
     case OPT_AUDIO_SEND_UCAST:
     opts.audio_send_ucast = val;
+
+    case OPT_AUDIO_MCAST_SEND:
+    opts.audio_mcast_send = val;
+    break;
+
+    case OPT_AUDIO_MCAST_RECV:
+    opts.audio_mcast_recv = val;
     break;
   }
 }
@@ -399,6 +445,10 @@ static void send_pack_len(struct pack *p, int len)
   if( opts.audio_send_ucast )
   {
     send_udp(p, len, &ucast_addr);
+  }
+  else if( opts.audio_mcast_send )
+  {
+    send_udp(p, len, &mcast_addr);
   }
   else if( opts.audio_direct_mix || bcast_audio )
   {
@@ -1372,6 +1422,8 @@ int reg(const char *passwd, struct dev_info *info)
     subscription[0] = 1; \
   if( opts.audio_rbudp_recv ) \
     rbudp_set_recv_tag(subscription[0]);  \
+  if( opts.audio_mcast_recv ) \
+    mcast_join_tag(subscription[0]); \
   if( !opts.audio_use_udp )  \
   { \
     /* connect audio sock. this must be done after  \
@@ -1512,6 +1564,11 @@ int sub(int tag)
       rbudp_set_recv_tag(subscription[i]);
   }
 
+  if( opts.audio_mcast_recv )
+  {
+    mcast_join_tag(subscription[i]);
+  }
+
   return 0;
 }
 
@@ -1534,6 +1591,11 @@ int unsub(int tag)
   if( opts.audio_rbudp_recv )
   {
     rbudp_set_recv_tag(0);
+  }
+
+  if( opts.audio_mcast_recv )
+  {
+    mcast_quit_tag(tag);
   }
 
   return 0;

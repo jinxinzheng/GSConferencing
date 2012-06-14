@@ -17,6 +17,9 @@ enum
   OPT_AUDIO_RBUDP_SEND,      /* retransmittive-broadcast audio mode for send */
   OPT_AUDIO_RBUDP_RECV,      /* and receive. */
   OPT_AUDIO_SEND_UCAST,      /* audio is sent to the multi-unicast node. */
+
+  OPT_AUDIO_MCAST_SEND,      /* audio sent or */
+  OPT_AUDIO_MCAST_RECV,      /* recved over multicast. */
 };
 
 /* call this before client_init()! */

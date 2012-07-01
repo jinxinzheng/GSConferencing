@@ -56,3 +56,27 @@ int pcm_silent(const char *buf, int len, int energy_threshold)
 
   return 1;
 }
+
+int pcm_stereo_to_mono(char *buf, int len)
+{
+  short *ps = (short *) buf;
+  int n = len/4;
+  int i;
+  for( i=0 ; i<n ; i++ )
+  {
+    ps[i] = ps[i*2];
+  }
+  return len/2;
+}
+
+int pcm_mono_to_stereo(char *buf, int len)
+{
+  short *ps = (short *) buf;
+  int n = len;
+  int i;
+  for( i=n-2 ; i>=0 ; i-=2 )
+  {
+    ps[i+1] = ps[i] = ps[i/2];
+  }
+  return len*2;
+}

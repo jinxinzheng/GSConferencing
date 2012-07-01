@@ -9,8 +9,10 @@
 #include  <stdlib.h>
 #include  <include/types.h>
 #include  "../config.h"
+#include  "pcm.h"
 
 static int fdr = -1;
+static int rate = 8000;
 
 static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsigned int hz)
 {
@@ -65,13 +67,13 @@ static void open_audio_in()
     int setting, result;
 
     ioctl(fd, SNDCTL_DSP_RESET);
-    setting = 0x00040009;
+    setting = 0x0004000a;
     result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
     if( result )
     {
       perror("ioctl(SNDCTL_DSP_SETFRAGMENT)");
     }
-    set_format(fd, 0x10, 2, 8000);
+    set_format(fd, 0x10, 2, rate);
 
     fdr = fd;
   }
@@ -84,12 +86,14 @@ static void run_record()
   while(1)
   {
     buf = send_audio_start();
-    len = read(fdr, buf, 512);
+    len = read(fdr, buf, 1024);
     if( len<0 )
     {
       perror("read");
       continue;
     }
+
+    len = pcm_stereo_to_mono(buf, len);
     send_audio_end(len);
   }
 }
@@ -104,7 +108,7 @@ int main(int argc, char *const argv[])
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:t:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:t:f:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -114,6 +118,9 @@ int main(int argc, char *const argv[])
         break;
       case 't':
         tag = atoi(optarg);
+        break;
+      case 'f':
+        rate = atoi(optarg);
         break;
     }
   }

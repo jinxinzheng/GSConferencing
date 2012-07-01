@@ -9,8 +9,10 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <time.h>
+#include "pcm.h"
 
 static int fdw = -1;
+static int rate = 8000;
 static int latency_test = 0;
 
 struct latency_data
@@ -37,9 +39,12 @@ int on_event(int event, void *arg1, void *arg2)
       if( fdw > 0 )
       {
         struct audio_data *audio = (struct audio_data *)arg2;
-        int l;
-        l = write(fdw, audio->data, audio->len);
-        if( l<0 )
+        char *buf;
+        int len;
+        buf = audio->data;
+        len = audio->len;
+        len = pcm_mono_to_stereo(buf, len);
+        if( write(fdw, buf, len) < 0 )
           perror("write");
       }
       else if( latency_test )
@@ -137,18 +142,22 @@ static void open_audio_out()
 {
   int fd;
   fd = open("/dev/dsp", O_WRONLY|O_NONBLOCK, 0777);
-  if( fd > 0 )
+  if( fd < 0 )
+  {
+    perror("open dsp");
+  }
+  else
   {
     int setting, result;
 
     ioctl(fd, SNDCTL_DSP_RESET);
-    setting = 0x80009;
+    setting = 0x8000a;
     result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
     if( result )
     {
       perror("ioctl(SNDCTL_DSP_SETFRAGMENT)");
     }
-    set_format(fd, 0x10, 2, 8000);
+    set_format(fd, 0x10, 2, rate);
 
     fdw = fd;
   }
@@ -169,7 +178,7 @@ int main(int argc, char *const argv[])
   int id=0;
 
 
-  while ((opt = getopt(argc, argv, "i:srS:al")) != -1) {
+  while ((opt = getopt(argc, argv, "i:srS:alf:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -191,6 +200,9 @@ int main(int argc, char *const argv[])
       case 'l':
         latency_test = 1;
         s = 1;
+        break;
+      case 'f':
+        rate = atoi(optarg);
         break;
     }
   }

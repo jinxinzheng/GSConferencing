@@ -98,17 +98,24 @@ static void run_record()
   }
 }
 
+enum {
+  MODE_BROADCAST,
+  MODE_UNICAST,
+  MODE_MULTICAST,
+};
+
 int main(int argc, char *const argv[])
 {
   int opt;
   char *srvaddr = "127.0.0.1";
   int id = 0xbca00;
   int tag = 1;
+  int mode = MODE_BROADCAST;
 
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:t:f:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:t:f:bum")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -122,13 +129,27 @@ int main(int argc, char *const argv[])
       case 'f':
         rate = atoi(optarg);
         break;
+      case 'b':
+        mode = MODE_BROADCAST;
+        break;
+      case 'u':
+        mode = MODE_UNICAST;
+        break;
+      case 'm':
+        mode = MODE_MULTICAST;
+        break;
     }
   }
 
   open_audio_in();
 
-  //set_option(OPT_AUDIO_RBUDP_SEND, 1);
-  set_option(OPT_AUDIO_MCAST_SEND, 1);
+  switch ( mode )
+  {
+    case MODE_BROADCAST : set_option(OPT_AUDIO_RBUDP_SEND, 1); break;
+    case MODE_UNICAST :   set_option(OPT_AUDIO_SEND_UCAST, 1); break;
+    case MODE_MULTICAST : set_option(OPT_AUDIO_MCAST_SEND, 1); break;
+  }
+
   /* wrap id and tag */
   client_init(id|tag, DEVTYPE_BCAST_AUDIO, srvaddr, id&0x7fff);
 

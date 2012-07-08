@@ -178,7 +178,7 @@ int main(int argc, char *const argv[])
   int id=0;
 
 
-  while ((opt = getopt(argc, argv, "i:srS:alf:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:srS:alf:bm")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -204,14 +204,18 @@ int main(int argc, char *const argv[])
       case 'f':
         rate = atoi(optarg);
         break;
+      case 'b':
+        set_option(OPT_AUDIO_RBUDP_RECV, 1);
+        break;
+      case 'm':
+        set_option(OPT_AUDIO_MCAST_RECV, 1);
+        break;
     }
   }
 
   if( id==0 )
     id = 3;
 
-  //set_option(OPT_AUDIO_RBUDP_RECV, 1);
-  set_option(OPT_AUDIO_MCAST_RECV, 1);
   client_init(id,id, srvaddr, 20000+id);
 
   set_event_callback(on_event);

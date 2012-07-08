@@ -87,6 +87,8 @@ static char br_addr[32];
 static int bcast_audio=0;
 static int ucast_audio=0;
 
+static int send_repeat = 1;
+
 #define STREQU(a, b) (strcmp((a), (b))==0)
 
 #define CHECKOK(s) if (!STREQU(s,"OK")) return;
@@ -300,6 +302,11 @@ void set_option(int opt, int val)
   }
 }
 
+void set_send_repeat(int val)
+{
+  send_repeat = val;
+}
+
 void set_event_callback(event_cb cb)
 {
   event_handler = cb;
@@ -441,6 +448,7 @@ static void send_pack(struct pack *p)
 
 static void send_pack_len(struct pack *p, int len)
 {
+  int i;
   HTON(p);
   if( opts.audio_send_ucast )
   {
@@ -448,11 +456,13 @@ static void send_pack_len(struct pack *p, int len)
   }
   else if( opts.audio_mcast_send )
   {
-    send_udp(p, len, &mcast_addr);
+    for( i=0 ; i<send_repeat ; i++ )
+      send_udp(p, len, &mcast_addr);
   }
   else if( opts.audio_direct_mix || bcast_audio )
   {
-    broadcast_udp(p, len);
+    for( i=0 ; i<send_repeat ; i++ )
+      broadcast_udp(p, len);
   }
   else if( opts.audio_use_udp )
   {

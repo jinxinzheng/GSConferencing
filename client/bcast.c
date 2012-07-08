@@ -111,11 +111,12 @@ int main(int argc, char *const argv[])
   int id = 0xbca00;
   int tag = 1;
   int mode = MODE_BROADCAST;
+  int repeat = 1;
 
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:t:f:bum")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:t:f:bumc:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -138,6 +139,9 @@ int main(int argc, char *const argv[])
       case 'm':
         mode = MODE_MULTICAST;
         break;
+      case 'c':
+        repeat = atoi(optarg);
+        break;
     }
   }
 
@@ -148,6 +152,11 @@ int main(int argc, char *const argv[])
     case MODE_BROADCAST : set_option(OPT_AUDIO_RBUDP_SEND, 1); break;
     case MODE_UNICAST :   set_option(OPT_AUDIO_SEND_UCAST, 1); break;
     case MODE_MULTICAST : set_option(OPT_AUDIO_MCAST_SEND, 1); break;
+  }
+
+  if( repeat > 1 )
+  {
+    set_send_repeat(repeat);
   }
 
   /* wrap id and tag */

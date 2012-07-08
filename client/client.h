@@ -25,6 +25,8 @@ enum
 /* call this before client_init()! */
 void set_option(int opt, int val);
 
+void set_send_repeat(int val);
+
 /* event callback routine.
  * event: EVENT_*
  * arg1, arg2: event dependent args.

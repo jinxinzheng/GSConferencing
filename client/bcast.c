@@ -128,7 +128,6 @@ int main(int argc, char *const argv[])
   open_audio_in();
 
   //set_option(OPT_AUDIO_RBUDP_SEND, 1);
-  set_option(OPT_AUDIO_SEND_UCAST, 1);
   /* wrap id and tag */
   client_init(id|tag, DEVTYPE_BCAST_AUDIO, srvaddr, id&0x7fff);
 

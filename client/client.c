@@ -1480,7 +1480,8 @@ int sub(int tag)
   if( !subscription[0] )
     i = 0;
   else
-    return 1;
+    //return 1;
+    i = 0;
 
   l = sprintf(buf, "%d sub %d\n", id, tag);
 

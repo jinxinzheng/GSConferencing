@@ -10,6 +10,7 @@
 #include  "../config.h"
 
 static int fdw = -1;
+static int rate = 8000;
 
 int on_event(int event, void *arg1, void *arg2)
 {
@@ -25,6 +26,8 @@ int on_event(int event, void *arg1, void *arg2)
         tag = (int)arg1;
         audio = (struct audio_data *)arg2;
         l = write(fdw, audio->data, audio->len);
+        if( l<0 )
+          perror("write");
       }
       break;
     }
@@ -91,7 +94,7 @@ static void open_audio_out()
     {
       perror("ioctl(SNDCTL_DSP_SETFRAGMENT)");
     }
-    set_format(fd, 0x10, 2, 11025);
+    set_format(fd, 0x10, 2, rate);
 
     fdw = fd;
   }
@@ -106,13 +109,16 @@ int main(int argc, char *const argv[])
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:f:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
         break;
       case 'S':
         srvaddr = optarg;
+        break;
+      case 'f':
+        rate = atoi(optarg);
         break;
     }
   }

@@ -151,7 +151,7 @@ static void open_audio_out()
     int setting, result;
 
     ioctl(fd, SNDCTL_DSP_RESET);
-    setting = 0x8000a;
+    setting = 0x4000a;
     result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
     if( result )
     {

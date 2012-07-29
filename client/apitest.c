@@ -10,10 +10,18 @@
 #include <errno.h>
 #include <time.h>
 #include "pcm.h"
+#include "adpcm.h"
 
 static int fdw = -1;
 static int rate = 8000;
 static int latency_test = 0;
+enum {
+  COMPR_NONE,
+  COMPR_STEREO_TO_MONO,
+  COMPR_ADPCM,
+};
+static int compression;
+static int volume;
 
 struct latency_data
 {
@@ -23,6 +31,10 @@ struct latency_data
 };
 
 #define LATENCY_MAGIC 0x1f1e1d1c
+
+static struct adpcm_state state;
+#define NSAMPLES 512
+static short  sbuf[NSAMPLES];
 
 int on_event(int event, void *arg1, void *arg2)
 {
@@ -43,7 +55,20 @@ int on_event(int event, void *arg1, void *arg2)
         int len;
         buf = audio->data;
         len = audio->len;
-        len = pcm_mono_to_stereo(buf, len);
+        if( compression == COMPR_NONE )
+        {
+          /* do nothing */
+        }
+        else if( compression == COMPR_STEREO_TO_MONO )
+        {
+          len = pcm_mono_to_stereo(buf, len);
+        }
+        else if( compression == COMPR_ADPCM )
+        {
+          adpcm_decoder(buf, sbuf, len, &state);
+          buf = (char *)sbuf;
+          len *= 4;
+        }
         if( write(fdw, buf, len) < 0 )
           perror("write");
       }
@@ -141,6 +166,7 @@ static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsig
 static void open_audio_out()
 {
   int fd;
+  int fd_mixer;
   fd = open("/dev/dsp", O_WRONLY|O_NONBLOCK, 0777);
   if( fd < 0 )
   {
@@ -159,9 +185,30 @@ static void open_audio_out()
     }
     set_format(fd, 0x10, 2, rate);
 
+    if( volume > 0 )
+    {
+      fd_mixer = open("/dev/mixer", O_RDWR, 0777);
+      if( fd_mixer < 0 )
+      {
+        perror("open mixer");
+      }
+      else
+      {
+        result = ioctl(fd_mixer,MIXER_WRITE(SOUND_MIXER_VOLUME),&volume);
+        if( result < 0 )
+          perror("ioctl SOUND_MIXER_VOLUME");
+      }
+    }
+
     fdw = fd;
   }
 }
+
+enum {
+  MODE_BROADCAST,
+  MODE_UNICAST,
+  MODE_MULTICAST,
+};
 
 int main(int argc, char *const argv[])
 {
@@ -177,8 +224,9 @@ int main(int argc, char *const argv[])
 
   int id=0;
 
+  int mode = MODE_BROADCAST;
 
-  while ((opt = getopt(argc, argv, "i:srS:alf:bm")) != -1) {
+  while ((opt = getopt(argc, argv, "i:srS:alf:bme:v:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -205,12 +253,24 @@ int main(int argc, char *const argv[])
         rate = atoi(optarg);
         break;
       case 'b':
-        set_option(OPT_AUDIO_RBUDP_RECV, 1);
+        mode = MODE_BROADCAST;
         break;
       case 'm':
-        set_option(OPT_AUDIO_MCAST_RECV, 1);
+        mode = MODE_MULTICAST;
+        break;
+      case 'e':
+        compression = atoi(optarg);
+        break;
+      case 'v':
+        volume = atoi(optarg);
         break;
     }
+  }
+
+  switch ( mode )
+  {
+    case MODE_BROADCAST : set_option(OPT_AUDIO_RBUDP_RECV, 1); break;
+    case MODE_MULTICAST : set_option(OPT_AUDIO_MCAST_RECV, 1); break;
   }
 
   if( id==0 )

@@ -10,9 +10,20 @@
 #include  <include/types.h>
 #include  "../config.h"
 #include  "pcm.h"
+#include  "adpcm.h"
 
 static int fdr = -1;
 static int rate = 8000;
+enum {
+  COMPR_NONE,
+  COMPR_STEREO_TO_MONO,
+  COMPR_ADPCM,
+};
+static int compression;
+
+static struct adpcm_state state;
+#define FRAMELEN  1024
+static char   abuf[FRAMELEN];
 
 static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsigned int hz)
 {
@@ -86,14 +97,30 @@ static void run_record()
   while(1)
   {
     buf = send_audio_start();
-    len = read(fdr, buf, 1024);
-    if( len<0 )
+    if( compression == COMPR_ADPCM )
     {
-      perror("read");
-      continue;
+      len = read(fdr, abuf, FRAMELEN);
+      if( len<0 )
+      {
+        perror("read");
+        continue;
+      }
+      adpcm_coder((short *)abuf, buf, FRAMELEN, &state);
+      len = FRAMELEN/4;
     }
-
-    len = pcm_stereo_to_mono(buf, len);
+    else
+    {
+      len = read(fdr, buf, FRAMELEN);
+      if( len<0 )
+      {
+        perror("read");
+        continue;
+      }
+      if( compression == COMPR_STEREO_TO_MONO )
+      {
+        len = pcm_stereo_to_mono(buf, len);
+      }
+    }
     send_audio_end(len);
   }
 }
@@ -116,7 +143,7 @@ int main(int argc, char *const argv[])
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:t:f:bumc:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:t:f:bumc:e:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -141,6 +168,9 @@ int main(int argc, char *const argv[])
         break;
       case 'c':
         repeat = atoi(optarg);
+        break;
+      case 'e':
+        compression = atoi(optarg);
         break;
     }
   }

@@ -16,7 +16,6 @@ static int dbl = 0;
 
 void group_setup_discuss(struct group *g, struct db_discuss *s)
 {
-  char buf[1024];
   int l;
   char *p;
   struct db_device *dbd;
@@ -26,9 +25,8 @@ void group_setup_discuss(struct group *g, struct db_discuss *s)
 
   g->discuss.nmembers = 0;
 
-  strcpy(buf, s->members);
   l = 0;
-  IDLIST_FOREACH_p(buf)
+  FOREACH_ID(p, s->members)
   {
     mid = atoi(p);
     g->discuss.memberids[g->discuss.nmembers ++] = mid;

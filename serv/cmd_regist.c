@@ -6,15 +6,13 @@
 
 static void regist_setup(struct group *g, struct db_regist *dr)
 {
-  char *buf, *p;
+  char *p;
   g->regist.nmembers = 0;
-  buf = strdup(dr->members);
-  IDLIST_FOREACH(p, buf)
+  FOREACH_ID(p, dr->members)
   {
     int mid = atoi(p);
     g->regist.memberids[g->regist.nmembers ++] = mid;
   }
-  free(buf);
 }
 
 static void regist_reset_all(struct cmd *cmd, struct group *g)

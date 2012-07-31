@@ -42,16 +42,14 @@ static void vote_results_to_str( char *str, const struct vote *v )
 
 static void prepare_vote(struct group *g, struct db_vote *dv)
 {
-  char buf[CMD_MAX];
   int l;
   char *p;
 
   g->vote.nmembers = 0;
   g->vote.nvoted = 0;
 
-  strcpy(buf, dv->members);
   l = 0;
-  if (strcmp(buf, "all")==0)
+  if (strcmp(dv->members, "all")==0)
   {
     struct device *m;
 
@@ -65,7 +63,7 @@ static void prepare_vote(struct group *g, struct db_vote *dv)
   else
   {
     /* loop through only the specified members */
-    IDLIST_FOREACH_p(buf)
+    FOREACH_ID(p, dv->members)
     {
       int mid = atoi(p);
       add_vote_member(g, mid, l);

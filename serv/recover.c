@@ -87,12 +87,9 @@ static inline void restore_vote(struct device *d)
   }
   else
   {
-    char buf[1024];
     char *p;
 
-    strcpy(buf, dv->members);
-
-    IDLIST_FOREACH_p(buf)
+    FOREACH_ID(p, dv->members)
     {
       if( d->id == atoi(p) )
       {

@@ -134,24 +134,29 @@ static inline void send_to_tag_all(struct cmd *cmd, struct tag *t)
   }
 }
 
+/* char *p must be defined before using this.
+ * idlist is modified during iteration.
+ * it is safe if idlist is p. */
 #define IDLIST_FOREACH(p, idlist) \
   for ( \
     (p) = strtok((idlist), ","); \
     (p); \
     (p) = strtok(NULL, ","))
 
-/* char *p must be defined before using this.
- * idlist is modified during iteration.
- * it is safe if idlist is p. */
-#define IDLIST_FOREACH_p(idlist) \
-  IDLIST_FOREACH(p, idlist)
+/* the 'const' version, not modifying the
+ * list string. */
+#define FOREACH_ID(p, list) \
+  for ( \
+    (p) = (list); \
+    (p)!= (char *)1; \
+    (p) = strchr((p), ',')+1 )
 
 static inline void send_to_idlist(struct cmd *cmd, char *idlist)
 {
   char *p;
   struct device *d;
 
-  IDLIST_FOREACH_p(idlist)
+  FOREACH_ID(p, idlist)
   {
     if( (d = get_device(atoi(p))) )
       send_cmd_to_dev(cmd, d);

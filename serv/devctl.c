@@ -295,6 +295,12 @@ static void do_dev_activate(struct device *d, int a)
 
   dirty_dev_ents_cache(g);
 
+  if( d->db_data )
+  {
+    d->db_data->online = a;
+    //device_save(d);
+  }
+
 end:
   UNLOCK(g->stats_lk);
 }

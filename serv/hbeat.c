@@ -26,13 +26,6 @@ void dev_heartbeat(struct device *d)
 
   if( !d->active )
   {
-    struct db_device *dbd;
-    if( (dbd = d->db_data) )
-    {
-      dbd->online = 1;
-      device_save(d);
-    }
-
     dev_activate(d);
   }
 }
@@ -74,12 +67,6 @@ static void *run_heartbeat_god(void *arg)
         /* time-out has been hit */
         if( d->active )
         {
-          struct db_device *dbd;
-          if( (dbd = d->db_data) )
-          {
-            dbd->online = 0;
-            device_save(d);
-          }
           dev_deactivate(d);
           /* force it release the resources */
           if( d->discuss.open )

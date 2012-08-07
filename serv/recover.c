@@ -131,6 +131,10 @@ static void recover_devs()
     set_dev_from_data(d, dd);
     d->db_data = dd;
 
+    /* at the startup all devices are inactive.
+     * make the db data consistent with it. */
+    d->db_data->online = 0;
+
     dev_register(d);
 
     restore_sub(d);

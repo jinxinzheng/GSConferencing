@@ -11,6 +11,8 @@
 #include  "../config.h"
 #include  "pcm.h"
 #include  "adpcm.h"
+#include  "aac.h"
+#include  <time.h>
 
 static int fdr = -1;
 static int rate = 8000;
@@ -18,6 +20,7 @@ enum {
   COMPR_NONE,
   COMPR_STEREO_TO_MONO,
   COMPR_ADPCM,
+  COMPR_AAC,
 };
 static int compression;
 
@@ -78,7 +81,7 @@ static void open_audio_in()
     int setting, result;
 
     ioctl(fd, SNDCTL_DSP_RESET);
-    setting = 0x0004000a;
+    setting = 0x0008000c;
     result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
     if( result )
     {
@@ -107,6 +110,26 @@ static void run_record()
       }
       adpcm_coder((short *)abuf, buf, FRAMELEN, &state);
       len = FRAMELEN/4;
+    }
+    else if( compression == COMPR_AAC )
+    {
+      char tbuf[4096];
+      len = read(fdr, tbuf, sizeof(tbuf));
+      if( len<0 )
+      {
+        perror("read");
+        continue;
+      }
+      //clock_t s,e;
+      //s = clock();
+      len = aac_encode(buf, 1024, tbuf, len);
+      //e = clock();
+      //printf("clk %d\n", e-s);
+      if( len<0 )
+      {
+        fprintf(stderr, "encode aac failed\n");
+        break;
+      }
     }
     else
     {
@@ -187,6 +210,11 @@ int main(int argc, char *const argv[])
   if( repeat > 1 )
   {
     set_send_repeat(repeat);
+  }
+
+  if( compression == COMPR_AAC )
+  {
+    aacenc_init();
   }
 
   /* wrap id and tag */

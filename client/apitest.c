@@ -11,6 +11,7 @@
 #include <time.h>
 #include "pcm.h"
 #include "adpcm.h"
+#include "aac.h"
 
 static int fdw = -1;
 static int rate = 8000;
@@ -19,6 +20,7 @@ enum {
   COMPR_NONE,
   COMPR_STEREO_TO_MONO,
   COMPR_ADPCM,
+  COMPR_AAC,
 };
 static int compression;
 static int volume;
@@ -34,8 +36,7 @@ struct latency_data
 #define LATENCY_MAGIC 0x1f1e1d1c
 
 static struct adpcm_state state;
-#define NSAMPLES 512
-static short  sbuf[NSAMPLES];
+static short  sbuf[4096];
 
 int on_event(int event, void *arg1, void *arg2)
 {
@@ -70,10 +71,20 @@ int on_event(int event, void *arg1, void *arg2)
           buf = (char *)sbuf;
           len *= 4;
         }
+        else if( compression == COMPR_AAC )
+        {
+          len = aac_decode((char *)sbuf, buf, len);
+          if( len<0 )
+          {
+            fprintf(stderr, "decode aac failed\n");
+            return 0;
+          }
+          buf = (char *)sbuf;
+        }
 
         if( upsample )
         {
-          pcm_resample_8k_32k(sbuf, buf, len/4);
+          pcm_resample_8k_32k(sbuf, (short *)buf, len/4);
           buf = (char *)sbuf;
           len *= 4;
         }
@@ -176,7 +187,7 @@ static void open_audio_out()
 {
   int fd;
   int fd_mixer;
-  fd = open("/dev/dsp", O_WRONLY|O_NONBLOCK, 0777);
+  fd = open("/dev/dsp", O_WRONLY/*|O_NONBLOCK*/, 0777);
   if( fd < 0 )
   {
     perror("open dsp");
@@ -186,7 +197,7 @@ static void open_audio_out()
     int setting, result;
 
     ioctl(fd, SNDCTL_DSP_RESET);
-    setting = 0x4000a;
+    setting = 0x4000c;
     result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
     if( result )
     {
@@ -283,6 +294,11 @@ int main(int argc, char *const argv[])
   {
     case MODE_BROADCAST : set_option(OPT_AUDIO_RBUDP_RECV, 1); break;
     case MODE_MULTICAST : set_option(OPT_AUDIO_MCAST_RECV, 1); break;
+  }
+
+  if( compression == COMPR_AAC )
+  {
+    aacdec_init();
   }
 
   if( id==0 )

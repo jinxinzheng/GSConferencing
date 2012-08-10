@@ -80,3 +80,70 @@ int pcm_mono_to_stereo(char *buf, int len)
   }
   return len*2;
 }
+
+static int prev_sample[2];
+
+/* only implement 2 channels. */
+int pcm_resample_8k_32k(short *dst, const short *src, int samples)
+{
+  int i,j;
+  int s2 = 2*samples;
+  register int dis[2], step[2], prev[2], v[2];
+  prev[0] = prev_sample[0];
+  prev[1] = prev_sample[1];
+  j=0;
+  for( i=0 ; i<s2 ; i+=2 )
+  {
+    /* insert before current sample.
+     * src[i],
+     * dst[j, j+2, j+4, j+6] */
+    dis[0] = src[i] - prev[0];
+    step[0] = dis[0] >> 2;
+    dis[1] = src[i+1] - prev[1];
+    step[1] = dis[1] >> 2;
+
+#if 0
+    dst[j] = prev[0]+step[0];
+    dst[j+2] = dst[j]+step[0];
+    dst[j+4] = dst[j+2]+step[0];
+    dst[j+6] = dst[j+4]+step[0];
+
+    dst[j+1] = prev[1]+step[1];
+    dst[j+3] = dst[j+1]+step[1];
+    dst[j+5] = dst[j+3]+step[1];
+    dst[j+7] = dst[j+5]+step[1];
+#else
+    v[0] = prev[0]+step[0];
+    v[1] = prev[1]+step[1];
+    *(int*) &dst[j] = (v[0]&0xffff) | (v[1]<<16);
+    v[0] += step[0];
+    v[1] += step[1];
+    *(int*) &dst[j+2] = (v[0]&0xffff) | (v[1]<<16);
+    v[0] += step[0];
+    v[1] += step[1];
+    *(int*) &dst[j+4] = (v[0]&0xffff) | (v[1]<<16);
+    v[0] += step[0];
+    v[1] += step[1];
+    *(int*) &dst[j+6] = (v[0]&0xffff) | (v[1]<<16);
+#endif
+    j+=8;
+
+    //prev[0] = src[i];
+    prev[0] += dis[0];
+    //prev[1] = src[i+1];
+    prev[1] += dis[1];
+  }
+  prev_sample[0] = prev[0];
+  prev_sample[1] = prev[1];
+  return 4*samples;
+}
+
+int pcm_resample(short *dst, const short *src, int samples, int from_hz, int to_hz)
+{
+  if( from_hz < to_hz )
+  {
+    return pcm_resample_8k_32k(dst, src, samples);
+  }
+  else
+    return 0;
+}

@@ -22,6 +22,7 @@ enum {
 };
 static int compression;
 static int volume;
+static int upsample;
 
 struct latency_data
 {
@@ -69,6 +70,14 @@ int on_event(int event, void *arg1, void *arg2)
           buf = (char *)sbuf;
           len *= 4;
         }
+
+        if( upsample )
+        {
+          pcm_resample_8k_32k(sbuf, buf, len/4);
+          buf = (char *)sbuf;
+          len *= 4;
+        }
+
         if( write(fdw, buf, len) < 0 )
           perror("write");
       }
@@ -226,7 +235,7 @@ int main(int argc, char *const argv[])
 
   int mode = MODE_BROADCAST;
 
-  while ((opt = getopt(argc, argv, "i:srS:alf:bme:v:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:srS:alf:bme:v:U")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -263,6 +272,9 @@ int main(int argc, char *const argv[])
         break;
       case 'v':
         volume = atoi(optarg);
+        break;
+      case 'U':
+        upsample = 1;
         break;
     }
   }

@@ -79,6 +79,11 @@ int on_event(int event, void *arg1, void *arg2)
             fprintf(stderr, "decode aac failed\n");
             return 0;
           }
+          else if( len==0 )
+          {
+            /* waiting for adts sync */
+            return 0;
+          }
           buf = (char *)sbuf;
         }
 

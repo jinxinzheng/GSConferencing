@@ -70,6 +70,7 @@ static tPVMP4AudioDecoderExternal *pExt;
 static void *pMem;
 static uint8_t *iInputBuf;
 static int dec_sync;
+static int dec_configed;
 
 int aacdec_init()
 {
@@ -112,32 +113,58 @@ static void append_inbuf(const char *inbuf, int len)
 {
   int off = pExt->inputBufferUsedLength;
   int exists = pExt->inputBufferCurrentLength - pExt->inputBufferUsedLength;
-  if( exists > 0 )
+  if( exists <= 0 )
+  {
+    pExt->inputBufferUsedLength = 0;
+    pExt->inputBufferCurrentLength = 0;
+    off = 0;
+    exists = 0;
+  }
+  if( off > 1024 )
   {
     memmove(pExt->pInputBuffer,
         pExt->pInputBuffer+off,
         exists);
+    pExt->inputBufferUsedLength = 0;
+    pExt->inputBufferCurrentLength = exists;
   }
-  memcpy(pExt->pInputBuffer+exists, inbuf, len);
-  pExt->inputBufferUsedLength = 0;
-  pExt->inputBufferCurrentLength = exists+len;
+  memcpy(pExt->pInputBuffer + pExt->inputBufferCurrentLength,
+      inbuf, len);
+  pExt->inputBufferCurrentLength += len;
 }
 
 int aac_decode(char *outbuf, const char *inbuf, int len)
 {
   int Status;
 
-  //pExt->pInputBuffer         = (uint8_t *)inbuf;
-  pExt->pOutputBuffer        = (short *)outbuf;
-  pExt->pOutputBuffer_plus   = (short *)outbuf+4096;
+  /* seek to first adts sync */
+  if( !dec_sync )
+  {
+    uint8_t *inp = (uint8_t *)inbuf;
+    if( (inp[0] == 0xFF) && ((inp[1] & 0xF6) == 0xF0) )
+    {
+      dec_sync = 1;
+    }
+    else
+      return 0;
+  }
 
   append_inbuf(inbuf, len);
+
+  //pExt->pInputBuffer         = (uint8_t *)inbuf;
+  pExt->pOutputBuffer        = (short *)outbuf;
+  pExt->pOutputBuffer_plus   = (short *)(outbuf+4096);
+
   //pExt->inputBufferUsedLength=0;
   //pExt->inputBufferCurrentLength = len;
 
-  if( !dec_sync )
+  if( !dec_configed )
   {
     Status = PVMP4AudioDecoderConfig(pExt, pMem);
+    /*fprintf(stderr, "config %d. used %d, current %d\n",
+        Status,
+        pExt->inputBufferUsedLength,
+        pExt->inputBufferCurrentLength);*/
   }
 
   Status = PVMP4AudioDecodeFrame(pExt, pMem);
@@ -152,14 +179,30 @@ int aac_decode(char *outbuf, const char *inbuf, int len)
                   pExt->inputBufferCurrentLength,
                   pExt->remainderBits,
                   pExt->frameLength);*/
-    if( pExt->frameLength > 0 && !dec_sync )
+    if( pExt->frameLength > 0 && !dec_configed )
     {
-      dec_sync = 1;
+      dec_configed = 1;
     }
   }
   else
   {
     fprintf(stderr, "aac decode error %d\n", Status);
+    fprintf(stderr, "used %d, current %d\n",
+        pExt->inputBufferUsedLength,
+        pExt->inputBufferCurrentLength);
+#if 1
+    if( pExt->inputBufferUsedLength > pExt->inputBufferCurrentLength )
+    {
+      /* this is ridiculous, but does happen..
+       * try to re-init the decoder. */
+      dec_sync = 0;
+      dec_configed = 0;
+      pExt->inputBufferUsedLength=0;
+      pExt->inputBufferCurrentLength = 0;
+      PVMP4AudioDecoderResetBuffer(pMem);
+      PVMP4AudioDecoderInitLibrary(pExt, pMem);
+    }
+#endif
     return -1;
   }
 

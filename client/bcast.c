@@ -16,6 +16,7 @@
 
 static int fdr = -1;
 static int rate = 8000;
+static int buf_ord = 0xc;
 enum {
   COMPR_NONE,
   COMPR_STEREO_TO_MONO,
@@ -81,7 +82,7 @@ static void open_audio_in()
     int setting, result;
 
     ioctl(fd, SNDCTL_DSP_RESET);
-    setting = 0x0008000c;
+    setting = (0x8<<16) | buf_ord;
     result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
     if( result )
     {
@@ -166,7 +167,7 @@ int main(int argc, char *const argv[])
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:t:f:bumc:e:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:t:f:o:bumc:e:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -179,6 +180,9 @@ int main(int argc, char *const argv[])
         break;
       case 'f':
         rate = atoi(optarg);
+        break;
+      case 'o':
+        buf_ord = atoi(optarg);
         break;
       case 'b':
         mode = MODE_BROADCAST;

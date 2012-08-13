@@ -15,6 +15,7 @@
 
 static int fdw = -1;
 static int rate = 8000;
+static int buf_ord = 0xc;
 static int latency_test = 0;
 enum {
   COMPR_NONE,
@@ -202,7 +203,7 @@ static void open_audio_out()
     int setting, result;
 
     ioctl(fd, SNDCTL_DSP_RESET);
-    setting = 0x4000c;
+    setting = (0x4<<16) | buf_ord;
     result = ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &setting);
     if( result )
     {
@@ -251,7 +252,7 @@ int main(int argc, char *const argv[])
 
   int mode = MODE_BROADCAST;
 
-  while ((opt = getopt(argc, argv, "i:srS:alf:bme:v:U")) != -1) {
+  while ((opt = getopt(argc, argv, "i:srS:alf:o:bme:v:U")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -276,6 +277,9 @@ int main(int argc, char *const argv[])
         break;
       case 'f':
         rate = atoi(optarg);
+        break;
+      case 'o':
+        buf_ord = atoi(optarg);
         break;
       case 'b':
         mode = MODE_BROADCAST;

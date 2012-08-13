@@ -12,17 +12,12 @@
 #include "pcm.h"
 #include "adpcm.h"
 #include "aac.h"
+#include "cast.h"
 
 static int fdw = -1;
 static int rate = 8000;
 static int buf_ord = 0xc;
 static int latency_test = 0;
-enum {
-  COMPR_NONE,
-  COMPR_STEREO_TO_MONO,
-  COMPR_ADPCM,
-  COMPR_AAC,
-};
 static int compression;
 static int volume;
 static int upsample;
@@ -229,12 +224,6 @@ static void open_audio_out()
     fdw = fd;
   }
 }
-
-enum {
-  MODE_BROADCAST,
-  MODE_UNICAST,
-  MODE_MULTICAST,
-};
 
 int main(int argc, char *const argv[])
 {

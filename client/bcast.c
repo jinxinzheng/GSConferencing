@@ -13,21 +13,12 @@
 #include  "adpcm.h"
 #include  "aac.h"
 #include  <time.h>
+#include  "cast.h"
 
 static int fdr = -1;
 static int rate = 8000;
 static int buf_ord = 0xc;
-enum {
-  COMPR_NONE,
-  COMPR_STEREO_TO_MONO,
-  COMPR_ADPCM,
-  COMPR_AAC,
-};
-static int compression;
-
-static struct adpcm_state state;
-#define FRAMELEN  1024
-static char   abuf[FRAMELEN];
+static int frame_len;
 
 static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsigned int hz)
 {
@@ -100,60 +91,16 @@ static void run_record()
   int len;
   while(1)
   {
-    buf = send_audio_start();
-    if( compression == COMPR_ADPCM )
+    buf = get_cast_buffer();
+    len = read(fdr, buf, frame_len);
+    if( len<0 )
     {
-      len = read(fdr, abuf, FRAMELEN);
-      if( len<0 )
-      {
-        perror("read");
-        continue;
-      }
-      adpcm_coder((short *)abuf, buf, FRAMELEN, &state);
-      len = FRAMELEN/4;
+      perror("read");
+      continue;
     }
-    else if( compression == COMPR_AAC )
-    {
-      char tbuf[4096];
-      len = read(fdr, tbuf, sizeof(tbuf));
-      if( len<0 )
-      {
-        perror("read");
-        continue;
-      }
-      //clock_t s,e;
-      //s = clock();
-      len = aac_encode(buf, 1024, tbuf, len);
-      //e = clock();
-      //printf("clk %d\n", e-s);
-      if( len<0 )
-      {
-        fprintf(stderr, "encode aac failed\n");
-        break;
-      }
-    }
-    else
-    {
-      len = read(fdr, buf, FRAMELEN);
-      if( len<0 )
-      {
-        perror("read");
-        continue;
-      }
-      if( compression == COMPR_STEREO_TO_MONO )
-      {
-        len = pcm_stereo_to_mono(buf, len);
-      }
-    }
-    send_audio_end(len);
+    cast_filled(len);
   }
 }
-
-enum {
-  MODE_BROADCAST,
-  MODE_UNICAST,
-  MODE_MULTICAST,
-};
 
 int main(int argc, char *const argv[])
 {
@@ -163,6 +110,7 @@ int main(int argc, char *const argv[])
   int tag = 1;
   int mode = MODE_BROADCAST;
   int repeat = 1;
+  int compression = COMPR_NONE;
 
   /* the id and server address don't really matter,
    * as we don't register to the server. */
@@ -204,22 +152,14 @@ int main(int argc, char *const argv[])
 
   open_audio_in();
 
-  switch ( mode )
-  {
-    case MODE_BROADCAST : set_option(OPT_AUDIO_RBUDP_SEND, 1); break;
-    case MODE_UNICAST :   set_option(OPT_AUDIO_SEND_UCAST, 1); break;
-    case MODE_MULTICAST : set_option(OPT_AUDIO_MCAST_SEND, 1); break;
-  }
+  set_cast_mode(mode);
 
   if( repeat > 1 )
   {
     set_send_repeat(repeat);
   }
 
-  if( compression == COMPR_AAC )
-  {
-    aacenc_init();
-  }
+  frame_len = set_compression(compression);
 
   /* wrap id and tag */
   client_init(id|tag, DEVTYPE_BCAST_AUDIO, srvaddr, id&0x7fff);

@@ -41,7 +41,7 @@ cyctld: cyctld.o ../common/ping.o inifile.o
 
 netplay: netplay.o $(libclient)
 
-bcast: bcast.o $(libclient) $(aac_libs)
+bcast: bcast.o cast.o $(libclient) $(aac_libs)
 
 ucast: ucast.o $(libclient) ../sha/sha128.o
 

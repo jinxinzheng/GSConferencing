@@ -213,6 +213,10 @@ enum {
 
   /* arg1: char *, new client version. */
   EVENT_UPGRADE,
+
+  /* internal events. */
+  EVENT_TYPE2_CMD = 0x20000,
+  EVENT_AUDIO_RAW = 0x20001,
 };
 
 

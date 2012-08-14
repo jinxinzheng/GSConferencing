@@ -765,7 +765,7 @@ static void audio_recved(struct pack *buf, int len)
     if( qitem->tag == tag_id )
     {
       /* let me access the whole pack. */
-      event_handler(0x20001, buf, (void *)pack_size(buf));
+      event_handler(EVENT_AUDIO_RAW, buf, (void *)pack_size(buf));
     }
     return;
   }
@@ -1142,7 +1142,7 @@ static void video_recved(struct pack *pack, int len)
     int _e;  \
     if( buf[0] == 2 ) { \
       /* 'type 2' cmd */  \
-      event_handler(0x20000, buf, (void *)l); \
+      event_handler(EVENT_TYPE2_CMD, buf, (void *)l); \
       return 0; \
     } \
     buf[l] = 0; \
@@ -2341,7 +2341,7 @@ static void __handle_cmd(char *buf, int l)
 
   if( buf[0] == 2 ) /* 'type 2' cmd */
   {
-    event_handler(0x20000, buf, (void *)l);
+    event_handler(EVENT_TYPE2_CMD, buf, (void *)l);
     return;
   }
 

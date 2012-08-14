@@ -133,7 +133,7 @@ static int on_event(int event, void *arg1, void *arg2)
 {
   switch ( event )
   {
-    case 0x20000 :  /* 'type 2' cmd */
+    case EVENT_TYPE2_CMD :
     {
       struct type2_cmd *cmd = (struct type2_cmd *) arg1;
       int len = (int) arg2;
@@ -145,7 +145,7 @@ static int on_event(int event, void *arg1, void *arg2)
       return handle_type2_cmd(cmd);
     }
 
-    case 0x20001 :  /* audio pack */
+    case EVENT_AUDIO_RAW :
     {
       struct pack *p = (struct pack *) arg1;
       int len = (int) arg2;

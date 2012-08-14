@@ -37,7 +37,7 @@ void adpcm_coder(short indata[], char outdata[], int len, adpcm_state_t *state)
     int valpred;		/* Predicted output value */
     int vpdiff;			/* Current change to valpred */
     int index;			/* Current step change index */
-    int outputbuffer;		/* place to keep previous 4-bit value */
+    int outputbuffer=0;		/* place to keep previous 4-bit value */
     int bufferstep;		/* toggle between outputbuffer/output */
 
     outp = (signed char *)outdata;
@@ -137,7 +137,7 @@ void adpcm_decoder(char indata[], short outdata[], int len, adpcm_state_t *state
     int valpred;		/* Predicted value */
     int vpdiff;			/* Current change to valpred */
     int index;			/* Current step change index */
-    int inputbuffer;		/* place to keep next 4-bit value */
+    int inputbuffer=0;		/* place to keep next 4-bit value */
     int bufferstep;		/* toggle between inputbuffer/input */
 
     outp = outdata;

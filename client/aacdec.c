@@ -18,7 +18,6 @@ static int dec_configed;
 int aacdec_init()
 {
   int memreq;
-  int Status;
 
   pExt = malloc(sizeof(tPVMP4AudioDecoderExternal));
 

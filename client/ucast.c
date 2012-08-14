@@ -78,7 +78,7 @@ static int handle_type2_cmd(struct type2_cmd *cmd)
       UCAST_LOG("%d %s %d\n", args->id, args->sub?"sub to":"unsub", args->tag);
       if( args->sub )
       {
-        e = find_by_id(subs_hash, args->id);
+        e = find_by_id(subs_hash, (int)args->id);
         if( e )
           e->sub = 1;
         else
@@ -86,7 +86,7 @@ static int handle_type2_cmd(struct type2_cmd *cmd)
       }
       else
       {
-        e = find_by_id(subs_hash, args->id);
+        e = find_by_id(subs_hash, (int)args->id);
         if( e )
           e->sub = 0;
       }

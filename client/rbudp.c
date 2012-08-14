@@ -13,7 +13,7 @@
 #if 0
 # define RBUDP_DBG(a...)   fprintf(stderr, "rbudp: " a)
 #else
-# define RBUDP_DBG(a...)
+# define RBUDP_DBG(a...)  do{ }while(0)
 #endif
 
 struct rbudp_packet

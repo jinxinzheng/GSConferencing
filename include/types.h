@@ -15,6 +15,7 @@ enum {
   DEVTYPE_NETPLAY = 222,
   DEVTYPE_BCAST_AUDIO,
   DEVTYPE_UCAST_AUDIO,
+  DEVTYPE_MIX_CAST,
 };
 
 /* user register modes */

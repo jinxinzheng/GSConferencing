@@ -7,11 +7,16 @@
 #include  <errno.h>
 #include  <string.h>
 #include  <stdlib.h>
+#include  <arpa/inet.h>
 #include  <include/pack.h>
+#include  "net.h"
 #include  "../config.h"
 
 static int fdw = -1;
 static int rate = 8000;
+static struct sockaddr_in dest_addr;
+
+static int forward_audio_pack(struct pack *p, int len);
 
 int on_event(int event, void *arg1, void *arg2)
 {
@@ -29,9 +34,26 @@ int on_event(int event, void *arg1, void *arg2)
         if( l<0 )
           perror("write");
       }
+      if( dest_addr.sin_family )
+      {
+        forward_audio_pack(p, len);
+      }
       break;
     }
   }
+  return 0;
+}
+
+static int forward_audio_pack(struct pack *p, int len)
+{
+  static uint32_t seq;
+
+  /* re-mangle the pack header */
+  p->seq = ++seq;
+  P_HTON(p);
+
+  send_udp(p, len, &dest_addr);
+
   return 0;
 }
 
@@ -109,7 +131,7 @@ int main(int argc, char *const argv[])
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:f:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:f:d:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -119,6 +141,11 @@ int main(int argc, char *const argv[])
         break;
       case 'f':
         rate = atoi(optarg);
+        break;
+      case 'd':
+        dest_addr.sin_family      = AF_INET;
+        dest_addr.sin_addr.s_addr = inet_addr(optarg);
+        dest_addr.sin_port        = htons(MIX_CAST_PORT);
         break;
     }
   }

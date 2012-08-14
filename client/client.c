@@ -87,6 +87,7 @@ static char br_addr[32];
 
 static int bcast_audio=0;
 static int ucast_audio=0;
+static int mix_cast = 0;
 
 static int send_repeat = 1;
 
@@ -166,13 +167,17 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   {
     ucast_audio = 1;
   }
+  else if( type==DEVTYPE_MIX_CAST )
+  {
+    mix_cast = 1;
+  }
 
-  if( netplay || ucast_audio )
+  if( netplay || ucast_audio || mix_cast )
     recv_br = 0;
   else
     recv_br = 1;
 
-  if( ucast_audio )
+  if( ucast_audio || mix_cast )
     recv_file = 0;
   else
     recv_file = 1;
@@ -185,9 +190,7 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   if( !bcast_audio )
   {
     int flag = 0;
-    if( netplay )
-      flag = 0;
-    else
+    if( recv_br )
       flag |= F_UDP_RECV_BROADCAST;
     if( opts.audio_mcast_recv )
       flag |= F_UDP_RECV_MULTICAST;
@@ -764,7 +767,8 @@ static void audio_recved(struct pack *buf, int len)
 {
   struct pack *qitem = buf;
 
-  if( ucast_audio )
+  /* check for special modes first. */
+  if( ucast_audio || mix_cast )
   {
     /* for the ucast, the tag is not my sub but my tag. */
     if( qitem->tag == tag_id )

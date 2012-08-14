@@ -15,8 +15,11 @@ static struct pack_queue {
   uint32_t recent_seqs[RECENT_SIZE];
   int recent_pos;
   struct cfifo fifo;
-} queues[QUEUE_NUM];
+}
+queues[QUEUE_NUM];
 static int dev_count;
+static int auto_close_max;
+static int fast_fwd;
 
 void mix_audio_init()
 {
@@ -25,9 +28,14 @@ void mix_audio_init()
   {
     struct pack_queue *q = &queues[i];
     q->dev_id = 0;
-    cfifo_init(&q->fifo, 5, 10); /* 32 * 1K */
+    cfifo_init(&q->fifo, 5, 11); /* 32 * 2K */
   }
   dev_count = 0;
+}
+
+void mix_audio_auto_close(int max_packs)
+{
+  auto_close_max = max_packs;
 }
 
 static int get_queue_index(int dev_id, int new)
@@ -188,6 +196,14 @@ int put_mix_audio(struct pack *pack)
     in = cfifo_get_in(&q->fifo);
     memcpy(in, pack, PACK_LEN(pack));
     cfifo_in(&q->fifo);
+
+    if( auto_close_max>0 &&
+        cfifo_len(&q->fifo) >= auto_close_max )
+    {
+      cleanup_queues();
+      /* put us in fast-forward state. */
+      fast_fwd = 1;
+    }
     return 1;
   }
 }
@@ -199,7 +215,7 @@ struct pack *get_mix_audio()
   int samples;
   struct pack *pack0;
   int c;
-  if( dev_count<2 )
+  if( dev_count==0 )
   {
     return NULL;
   }
@@ -209,7 +225,13 @@ struct pack *get_mix_audio()
     struct pack_queue *q = &queues[i];
     if( q->dev_id!=0 )
       if( cfifo_empty(&q->fifo) )
+      {
+        /* fast-forward draws to end when any
+         * queue is drained. */
+        if( fast_fwd )
+          fast_fwd = 0;
         return NULL;
+      }
   }
   c = 0;
   pack0 = NULL;
@@ -221,9 +243,12 @@ struct pack *get_mix_audio()
     {
       continue;
     }
-    if( cfifo_len(&q->fifo) > 4 )
+    /* in fast-forward state, we do not flush
+     * queues but mix all the waiting packs. */
+    if( !fast_fwd )
     {
-      flush_queue(q);
+      if( cfifo_len(&q->fifo) > 4 )
+        flush_queue(q);
     }
     out = (struct pack *)cfifo_get_out(&q->fifo);
     cfifo__out(&q->fifo);
@@ -232,9 +257,10 @@ struct pack *get_mix_audio()
     pcms[c++] = (short *)out->data;
   }
   if( c==0 )
-  {
     return NULL;
-  }
+  else if( c==1 )
+    return pack0;
+
   samples = pack0->datalen / 2;
   pcm_mix(pcms, c, samples);
   /* it's safe to return the out'ed

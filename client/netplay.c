@@ -7,6 +7,7 @@
 #include  <errno.h>
 #include  <string.h>
 #include  <stdlib.h>
+#include  <include/pack.h>
 #include  "../config.h"
 
 static int fdw = -1;
@@ -16,16 +17,15 @@ int on_event(int event, void *arg1, void *arg2)
 {
   switch ( event )
   {
-    case EVENT_AUDIO :
+    case EVENT_AUDIO_RAW :
     {
+      /* we have access to the full audio pack
+       * since we have demanded it. */
+      struct pack *p = (struct pack *) arg1;
+      int len = (int) arg2;
       if( fdw > 0 )
       {
-        int tag;
-        struct audio_data *audio;
-        int l;
-        tag = (int)arg1;
-        audio = (struct audio_data *)arg2;
-        l = write(fdw, audio->data, audio->len);
+        int l = write(fdw, p->data, p->datalen);
         if( l<0 )
           perror("write");
       }
@@ -124,6 +124,8 @@ int main(int argc, char *const argv[])
   }
 
   open_audio_out();
+
+  set_option(OPT_ACCESS_RAW_AUDIO_PACK, 1);
 
   client_init(id, 222, srvaddr, AUDIO_PORT);
 

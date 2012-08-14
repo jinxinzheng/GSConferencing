@@ -68,6 +68,7 @@ static struct {
   int audio_send_ucast;
   int audio_mcast_send;
   int audio_mcast_recv;
+  int access_raw_audio_pack;
 }
 opts = {
   .audio_use_udp = 1,
@@ -298,6 +299,10 @@ void set_option(int opt, int val)
 
     case OPT_AUDIO_MCAST_RECV:
     opts.audio_mcast_recv = val;
+    break;
+
+    case OPT_ACCESS_RAW_AUDIO_PACK:
+    opts.access_raw_audio_pack = val;
     break;
   }
 }
@@ -929,11 +934,18 @@ static void write_audio(struct pack *p)
   /* generate event */
   if (p->type == PACKET_AUDIO)
   {
-    struct audio_data ad = { p->data, p->datalen };
-
-    event_handler(EVENT_AUDIO,
-        (void*)(int)p->tag,
-        &ad);
+    if( opts.access_raw_audio_pack )
+    {
+      event_handler(EVENT_AUDIO_RAW,
+          p, (void *)pack_size(p));
+    }
+    else
+    {
+      struct audio_data ad = { p->data, p->datalen };
+      event_handler(EVENT_AUDIO,
+          (void*)(int)p->tag,
+          &ad);
+    }
   }
 }
 

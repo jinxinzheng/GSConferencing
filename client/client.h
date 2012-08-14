@@ -20,6 +20,8 @@ enum
 
   OPT_AUDIO_MCAST_SEND,      /* audio sent or */
   OPT_AUDIO_MCAST_RECV,      /* recved over multicast. */
+
+  OPT_ACCESS_RAW_AUDIO_PACK,
 };
 
 /* call this before client_init()! */

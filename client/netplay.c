@@ -127,9 +127,9 @@ int main(int argc, char *const argv[])
 
   set_option(OPT_ACCESS_RAW_AUDIO_PACK, 1);
 
-  client_init(id, 222, srvaddr, AUDIO_PORT);
-
   set_event_callback(on_event);
+
+  client_init(id, 222, srvaddr, AUDIO_PORT);
 
   while(1) sleep(10000);
 

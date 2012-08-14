@@ -302,9 +302,9 @@ int main(int argc, char *const argv[])
   if( id==0 )
     id = 3;
 
-  client_init(id,id, srvaddr, 20000+id);
-
   set_event_callback(on_event);
+
+  client_init(id,id, srvaddr, 20000+id);
 
   start_try_reg("*&;&&?&'=;:&>;:$=<)?;#$)>=;#)',&");
   sleep(1);

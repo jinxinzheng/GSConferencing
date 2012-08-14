@@ -187,12 +187,11 @@ int main(int argc, char *const argv[])
 
   init_audio_sock();
 
+  set_event_callback(on_event);
+
   id |= tag;
   port |= tag;
-
   client_init(id, type, srvaddr, port);
-
-  set_event_callback(on_event);
 
   s = (unsigned int)id ^ type;
   cksum(&s, sizeof s, pass);

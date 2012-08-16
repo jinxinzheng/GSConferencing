@@ -143,7 +143,6 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   listenPort = localPort;
 
   memset(&net_mixer_addr, 0, sizeof(net_mixer_addr));
-  memset(&ucast_addr, 0, sizeof(ucast_addr));
 
   /* the special netplay mode,
    * only a few functions are enabled. */
@@ -197,9 +196,9 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
     start_recv_udp(listenPort, udp_recved, flag);
   }
 
-  if( opts.audio_send_ucast )
+  if( opts.audio_send_ucast && ucast_addr.sin_family==0 )
   {
-    /* setup fixed ucast address. */
+    /* setup default ucast address. */
     ucast_addr.sin_family      = AF_INET;
     ucast_addr.sin_addr.s_addr = inet_addr("192.168.1.82");
     ucast_addr.sin_port        = htons(0x8200|tag_id);
@@ -313,6 +312,29 @@ void set_option(int opt, int val)
 void set_send_repeat(int val)
 {
   send_repeat = val;
+}
+
+static void parse_sockaddr_in(struct sockaddr_in *addr, const char *str)
+{
+  char tmp[256];
+  char *a, *p;
+  strcpy(tmp, str);
+  a = tmp;
+  p = strchr(tmp, ':');
+  if(p) *(p++) = 0;
+  addr->sin_family      = AF_INET;
+  addr->sin_addr.s_addr = inet_addr(a);
+  addr->sin_port        = p? htons(atoi(p)) : 0;
+}
+
+void set_ucast_dest(const char *dest)
+{
+  parse_sockaddr_in(&ucast_addr, dest);
+  if( ucast_addr.sin_port == 0 )
+  {
+    /* default send to the netplay's port. */
+    ucast_addr.sin_port = htons(AUDIO_PORT);
+  }
 }
 
 void set_event_callback(event_cb cb)

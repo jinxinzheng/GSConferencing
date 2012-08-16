@@ -111,11 +111,12 @@ int main(int argc, char *const argv[])
   int mode = MODE_BROADCAST;
   int repeat = 1;
   int compression = COMPR_NONE;
+  const char *dest = NULL;
 
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:t:f:o:bumc:e:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:t:f:o:bumc:e:d:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -147,6 +148,9 @@ int main(int argc, char *const argv[])
       case 'e':
         compression = atoi(optarg);
         break;
+      case 'd':
+        dest = optarg;
+        break;
     }
   }
 
@@ -160,6 +164,14 @@ int main(int argc, char *const argv[])
   }
 
   frame_len = set_compression(compression);
+  /* use overriden frame length rather than default value.
+   * requires the user set the -o buf_ord appropriately. */
+  frame_len = 1<<buf_ord;
+
+  if( dest )
+  {
+    set_ucast_dest(dest);
+  }
 
   /* wrap id and tag */
   client_init(id|tag, DEVTYPE_BCAST_AUDIO, srvaddr, id&0x7fff);

@@ -29,6 +29,8 @@ void set_option(int opt, int val);
 
 void set_send_repeat(int val);
 
+void set_ucast_dest(const char *dest);
+
 /* event callback routine.
  * event: EVENT_*
  * arg1, arg2: event dependent args.

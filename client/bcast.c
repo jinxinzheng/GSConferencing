@@ -120,6 +120,11 @@ int main(int argc, char *const argv[])
     switch (opt) {
       case 'i':
         id = atoi(optarg);
+        if( (id&255) != 0 )
+        {
+          /* the lowest byte is reserved for the tag id. */
+          id <<= 8;
+        }
         break;
       case 'S':
         srvaddr = optarg;

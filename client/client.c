@@ -169,6 +169,7 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   else if( type==DEVTYPE_MIX_CAST )
   {
     mix_cast = 1;
+    tag_id = dev_id & 0xff;
   }
 
   if( netplay || ucast_audio || mix_cast )
@@ -182,7 +183,7 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
     recv_file = 1;
 
   /* listen cmds */
-  if( !(netplay||bcast_audio) )
+  if( !(netplay||bcast_audio ||mix_cast) )
     start_recv_tcp(listenPort, handle_cmd, recv_file);
 
   /* listen udp - audio, video and other */
@@ -443,7 +444,7 @@ int send_audio_end(int len)
   if( len <= 0 )
     return -1;
 
-  if( !mic_open && !bcast_audio )
+  if( !(mic_open || bcast_audio || mix_cast) )
     return -2;
 
   if( opts.audio_rbudp_send )

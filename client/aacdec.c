@@ -93,6 +93,12 @@ int aac_decode(char *outbuf, const char *inbuf, int len)
 
   append_inbuf(inbuf, len);
 
+  /* needed for some stream encoded on neon. */
+  if( pExt->inputBufferCurrentLength - pExt->inputBufferUsedLength < 256 )
+  {
+    return 0;
+  }
+
   //pExt->pInputBuffer         = (uint8_t *)inbuf;
   pExt->pOutputBuffer        = (short *)outbuf;
   pExt->pOutputBuffer_plus   = (short *)(outbuf+4096);

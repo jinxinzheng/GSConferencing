@@ -7,10 +7,14 @@
 #include  <include/pack.h>
 #include  <config.h>
 #include  "mix.h"
+#include  "net.h"
+#include  <arpa/inet.h>
 
 static int frame_len;
 static char *frame_buf;
 static int curr_len = 0;
+static struct sockaddr_in copy_dests[100];
+static int ncopy;
 
 static void cast_audio(const void *buf, int len)
 {
@@ -57,10 +61,41 @@ static int on_event(int event, void *arg1, void *arg2)
       struct pack *p = (struct pack *) arg1;
       int len = (int) arg2;
       mix_audio_pack(p, len);
+      if( ncopy>0 )
+      {
+        int i;
+        P_HTON(p);
+        for( i=0 ; i<ncopy ; i++ )
+        {
+          send_udp(p, len, &copy_dests[i]);
+        }
+      }
       break;
     }
   }
   return 0;
+}
+
+static void parse_copy_dests(const char *str)
+{
+  char tmp[512], *p;
+  int i, sp, ep;
+  strcpy(tmp, str);
+  for( p=strtok(tmp, ",") ; p ; p=strtok(NULL, ",") )
+  {
+    sp = atoi(p);
+    if( (p = strchr(p, '-')) )
+      ep = atoi(++p);
+    else
+      ep = sp;
+    for( i=sp ; i<=ep ; i++ )
+    {
+      copy_dests[ncopy].sin_family      = AF_INET;
+      copy_dests[ncopy].sin_addr.s_addr = inet_addr("127.0.0.1");
+      copy_dests[ncopy].sin_port        = htons(i);
+      ncopy++;
+    }
+  }
 }
 
 int main(int argc, char *const argv[])
@@ -69,11 +104,12 @@ int main(int argc, char *const argv[])
   char *srvaddr = "127.0.0.1";
   int id = 0x5ca00;
   int type = DEVTYPE_MIX_CAST;
+  int port = MIX_CAST_PORT;
   int tag = 1;
   int mode = MODE_BROADCAST;
   int compression = COMPR_NONE;
 
-  while ((opt = getopt(argc, argv, "S:t:m:e:")) != -1) {
+  while ((opt = getopt(argc, argv, "S:t:m:e:T:p:")) != -1) {
     switch (opt) {
       case 'S':
         srvaddr = optarg;
@@ -92,6 +128,12 @@ int main(int argc, char *const argv[])
       case 'e':
         compression = atoi(optarg);
         break;
+      case 'T':
+        parse_copy_dests(optarg);
+        break;
+      case 'p':
+        port = atoi(optarg);
+        break;
     }
   }
 
@@ -106,7 +148,7 @@ int main(int argc, char *const argv[])
 
   /* wrap id and tag */
   id |= tag;
-  client_init(id, type, srvaddr, MIX_CAST_PORT);
+  client_init(id, type, srvaddr, port);
 
   while(1)
     sleep(1<<20);

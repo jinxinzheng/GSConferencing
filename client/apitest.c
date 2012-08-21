@@ -241,18 +241,10 @@ int main(int argc, char *const argv[])
 
   int mode = MODE_BROADCAST;
 
-  while ((opt = getopt(argc, argv, "i:srS:alf:o:bme:v:U")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:af:o:bme:v:UT:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
-        break;
-      case 's':
-        s=1;
-        if(id==0) id = 1001;
-        break;
-      case 'r':
-        r=1;
-        if(id==0) id = 2001;
         break;
       case 'S':
         srvaddr = optarg;
@@ -260,9 +252,6 @@ int main(int argc, char *const argv[])
       case 'a':
         audiotest = 1;
         break;
-      case 'l':
-        latency_test = 1;
-        s = 1;
         break;
       case 'f':
         rate = atoi(optarg);
@@ -284,6 +273,22 @@ int main(int argc, char *const argv[])
         break;
       case 'U':
         upsample = 1;
+        break;
+      case 'T':
+        switch(optarg[0]) {
+          case 's':
+            s=1;
+            if(id==0) id = 1001;
+            break;
+          case 'r':
+            r=1;
+            if(id==0) id = 2001;
+            break;
+          case 'l':
+            latency_test = 1;
+            s = 1;
+            break;
+        }
         break;
     }
   }

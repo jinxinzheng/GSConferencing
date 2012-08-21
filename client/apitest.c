@@ -232,6 +232,7 @@ int main(int argc, char *const argv[])
   char *srvaddr = "127.0.0.1";
 
   int audiotest = 0;
+  int sub_tag=1;
 
   char buf[10240];
   int i=0;
@@ -241,7 +242,7 @@ int main(int argc, char *const argv[])
 
   int mode = MODE_BROADCAST;
 
-  while ((opt = getopt(argc, argv, "i:S:af:o:bme:v:UT:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:as:f:o:bme:v:UT:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -252,6 +253,8 @@ int main(int argc, char *const argv[])
       case 'a':
         audiotest = 1;
         break;
+      case 's':
+        sub_tag = atoi(optarg);
         break;
       case 'f':
         rate = atoi(optarg);
@@ -316,8 +319,7 @@ int main(int argc, char *const argv[])
 
   if( audiotest )
   {
-    unsub(1);
-    sub(1);
+    sub(sub_tag);
     open_audio_out();
     while(1) sleep(10000);
     return 0;

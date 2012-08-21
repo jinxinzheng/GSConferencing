@@ -143,9 +143,10 @@ int main(int argc, char *const argv[])
         rate = atoi(optarg);
         break;
       case 'd':
-        dest_addr.sin_family      = AF_INET;
-        dest_addr.sin_addr.s_addr = inet_addr(optarg);
-        dest_addr.sin_port        = htons(MIX_CAST_PORT);
+        parse_sockaddr_in(&dest_addr, optarg);
+        /* default send to the xcast's port if not set. */
+        if( dest_addr.sin_port == 0 )
+          dest_addr.sin_port = htons(MIX_CAST_PORT);
         break;
     }
   }

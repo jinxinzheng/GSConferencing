@@ -5,6 +5,8 @@
 
 void get_broadcast_addr(char *addr);
 
+void parse_sockaddr_in(struct sockaddr_in *addr, const char *str);
+
 int broadcast_udp(void *buf, int len);
 
 int send_udp(void *buf, size_t len, const struct sockaddr_in *addr);

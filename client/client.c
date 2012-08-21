@@ -315,19 +315,6 @@ void set_send_repeat(int val)
   send_repeat = val;
 }
 
-static void parse_sockaddr_in(struct sockaddr_in *addr, const char *str)
-{
-  char tmp[256];
-  char *a, *p;
-  strcpy(tmp, str);
-  a = tmp;
-  p = strchr(tmp, ':');
-  if(p) *(p++) = 0;
-  addr->sin_family      = AF_INET;
-  addr->sin_addr.s_addr = inet_addr(a);
-  addr->sin_port        = p? htons(atoi(p)) : 0;
-}
-
 void set_ucast_dest(const char *dest)
 {
   parse_sockaddr_in(&ucast_addr, dest);

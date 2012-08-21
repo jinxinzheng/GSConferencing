@@ -52,6 +52,19 @@ void get_broadcast_addr(char *addr)
   freeifaddrs(ifa);
 }
 
+void parse_sockaddr_in(struct sockaddr_in *addr, const char *str)
+{
+  char tmp[256];
+  char *a, *p;
+  strcpy(tmp, str);
+  a = tmp;
+  p = strchr(tmp, ':');
+  if(p) *(p++) = 0;
+  addr->sin_family      = AF_INET;
+  addr->sin_addr.s_addr = inet_addr(a);
+  addr->sin_port        = p? htons(atoi(p)) : 0;
+}
+
 int broadcast_udp(void *buf, int len)
 {
   static int sock = -1;

@@ -15,6 +15,7 @@
 #include "cast.h"
 
 static int fdw = -1;
+static int nonblock = 0;
 static int rate = 8000;
 static int buf_ord = 0xc;
 static int latency_test = 0;
@@ -188,7 +189,12 @@ static void open_audio_out()
 {
   int fd;
   int fd_mixer;
-  fd = open("/dev/dsp", O_WRONLY/*|O_NONBLOCK*/, 0777);
+  int flags = O_WRONLY;
+  if( nonblock )
+  {
+    flags |= O_NONBLOCK;
+  }
+  fd = open("/dev/dsp", flags, 0777);
   if( fd < 0 )
   {
     perror("open dsp");
@@ -242,7 +248,7 @@ int main(int argc, char *const argv[])
 
   int mode = MODE_BROADCAST;
 
-  while ((opt = getopt(argc, argv, "i:S:as:f:o:bme:v:UT:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:as:nf:o:bme:v:UT:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -255,6 +261,9 @@ int main(int argc, char *const argv[])
         break;
       case 's':
         sub_tag = atoi(optarg);
+        break;
+      case 'n':
+        nonblock = 1;
         break;
       case 'f':
         rate = atoi(optarg);

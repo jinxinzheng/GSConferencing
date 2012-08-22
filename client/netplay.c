@@ -13,6 +13,7 @@
 #include  "../config.h"
 
 static int fdw = -1;
+static int nonblock = 0;
 static int rate = 8000;
 static struct sockaddr_in dest_addr;
 
@@ -104,8 +105,17 @@ static int set_format(unsigned int fd, unsigned int bits, unsigned int chn,unsig
 static void open_audio_out()
 {
   int fd;
-  fd = open("/dev/dsp", O_WRONLY, 0777);
-  if( fd > 0 )
+  int flags = O_WRONLY;
+  if( nonblock )
+  {
+    flags |= O_NONBLOCK;
+  }
+  fd = open("/dev/dsp", flags, 0777);
+  if( fd < 0 )
+  {
+    perror("open dsp");
+  }
+  else
   {
     int setting, result;
 
@@ -131,13 +141,16 @@ int main(int argc, char *const argv[])
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:f:d:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:nf:d:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
         break;
       case 'S':
         srvaddr = optarg;
+        break;
+      case 'n':
+        nonblock = 1;
         break;
       case 'f':
         rate = atoi(optarg);

@@ -90,6 +90,8 @@ static int cmd_regist(struct cmd *cmd)
 
     REP_OK(cmd);
 
+    send_cmd_to_dev_id(cmd, 1);
+
     brcast_cmd_to_multi(cmd, g->regist.memberids, g->regist.nmembers);
   }
 

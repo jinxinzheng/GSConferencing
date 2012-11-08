@@ -88,7 +88,7 @@ struct tag *tag_create(int gid, int tid)
   {
     set_mixer(t, soft_mixer);
 
-    t->discuss.mode = DISCMODE_FIFO;
+    t->discuss.mode = DISCMODE_AUTO;
     t->discuss.maxuser = 1;
   }
 

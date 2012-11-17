@@ -19,7 +19,6 @@ static int nonblock = 0;
 static int rate = 8000;
 static int buf_ord = 0xc;
 static int latency_test = 0;
-static int compression;
 static int volume;
 static int upsample;
 
@@ -51,24 +50,25 @@ int on_event(int event, void *arg1, void *arg2)
       {
         struct audio_data *audio = (struct audio_data *)arg2;
         char *buf;
-        int len;
+        int type, len;
+        type = audio->type;
         buf = audio->data;
         len = audio->len;
-        if( compression == COMPR_NONE )
+        if( type == ATYPE_RAW )
         {
           /* do nothing */
         }
-        else if( compression == COMPR_STEREO_TO_MONO )
+        else if( type == ATYPE_MONO )
         {
           len = pcm_mono_to_stereo(buf, len);
         }
-        else if( compression == COMPR_ADPCM )
+        else if( type == ATYPE_ADPCM )
         {
           adpcm_decoder(buf, sbuf, len, &state);
           buf = (char *)sbuf;
           len *= 4;
         }
-        else if( compression == COMPR_AAC )
+        else if( type == ATYPE_AAC )
         {
           len = aac_decode((char *)sbuf, buf, len);
           if( len<0 )
@@ -248,7 +248,7 @@ int main(int argc, char *const argv[])
 
   int mode = MODE_BROADCAST;
 
-  while ((opt = getopt(argc, argv, "i:S:as:nf:o:bme:v:UT:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:as:nf:o:bmv:UT:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -276,9 +276,6 @@ int main(int argc, char *const argv[])
         break;
       case 'm':
         mode = MODE_MULTICAST;
-        break;
-      case 'e':
-        compression = atoi(optarg);
         break;
       case 'v':
         volume = atoi(optarg);
@@ -311,10 +308,7 @@ int main(int argc, char *const argv[])
     case MODE_MULTICAST : set_option(OPT_AUDIO_MCAST_RECV, 1); break;
   }
 
-  if( compression == COMPR_AAC )
-  {
-    aacdec_init();
-  }
+  aacdec_init();
 
   if( id==0 )
     id = 3;

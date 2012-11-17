@@ -6,7 +6,8 @@
 /* for client side */
 struct pack
 {
-  uint32_t id;
+  uint32_t id; /* the highest byte of id may carry
+                  some extra info, e.g. audio type. */
   uint32_t seq;
   uint8_t type;
   uint8_t tag;

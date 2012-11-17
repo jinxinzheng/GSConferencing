@@ -165,7 +165,8 @@ static int is_recved(int index, uint32_t seq)
 
 int put_mix_audio(struct pack *pack)
 {
-  int i = create_queue_index(pack->id);
+  int id = pack->id & 0xffffff;
+  int i = create_queue_index(id);
   struct pack_queue *q;
   if( i<0 )
   {

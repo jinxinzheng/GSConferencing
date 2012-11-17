@@ -89,8 +89,16 @@ struct tag_info
   char name[32];
 };
 
+enum {
+  ATYPE_RAW,
+  ATYPE_MONO,
+  ATYPE_ADPCM,
+  ATYPE_AAC,
+};
+
 struct audio_data
 {
+  int type;
   void *data;
   int len;
 };
@@ -257,6 +265,9 @@ int unsub(int tag);
 int switch_tag(int tag);
 
 /* data casting */
+
+/* pass ATYPE_* */
+void set_send_audio_type(int type);
 
 /* fill audio in the buffer returned by send_audio_start(),
  * then call send_audio_end(). */

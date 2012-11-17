@@ -26,6 +26,7 @@ void set_cast_mode(int mode)
 int set_compression(int compr)
 {
   compression = compr;
+  set_send_audio_type(compr);
   if( compression == COMPR_AAC )
   {
     aacenc_init();

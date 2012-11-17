@@ -22,7 +22,7 @@ struct rbudp_packet
   uint8_t type;
   uint16_t seq;
   uint16_t len;
-  uint16_t pad;
+  uint16_t extra;
   char data[1];
 }
 __attribute__((packed));
@@ -148,7 +148,7 @@ static void *run_retransmit(void *arg)
   }
 }
 
-int rbudp_broadcast(int tag, const void *buf, int len)
+int rbudp_broadcast(int tag, const void *buf, int len, int extra)
 {
   struct rbudp_packet *p;
   if( ++seq==0 )
@@ -159,6 +159,7 @@ int rbudp_broadcast(int tag, const void *buf, int len)
   p->type = RBUDP_PACKET;
   p->seq = seq;
   p->len = len;
+  p->extra = extra;
   memcpy(p->data, buf, len);
   //if( sendto_locked(p, &br_addr) < 0 )
   if( sendto(snd_sock, p, PACK_SIZE(p), 0, (struct sockaddr *)&br_addr, sizeof(br_addr)) < 0 )
@@ -335,7 +336,7 @@ int rbudp_run_recv()
 
     do {
       /* commit a pack */
-      recv_cb(rcv_tag, next->data, next->len);
+      recv_cb(rcv_tag, next->data, next->len, next->extra);
       expect_seq = next->seq+1;
 
       /* queue any waiting packs. */

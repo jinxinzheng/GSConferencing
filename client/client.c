@@ -107,7 +107,7 @@ static struct cfifo udp_rcv_fifo;
 static void *run_heartbeat(void *arg);
 
 static void start_recv_audio_rbudp();
-static void audio_rbudp_recved(int tag, void *buf, int len);
+static void audio_rbudp_recved(int tag, void *buf, int len, int extra);
 
 #ifdef USE_SEND_QUEUE
 static void *run_snd_audio(void *arg);
@@ -370,9 +370,10 @@ static void *run_heartbeat(void *arg)
   return NULL;
 }
 
-static void audio_rbudp_recved(int tag, void *buf, int len)
+static void audio_rbudp_recved(int tag, void *buf, int len, int extra)
 {
-  struct audio_data ad = { buf, len };
+  int type = extra;
+  struct audio_data ad = { type, buf, len };
   event_handler(EVENT_AUDIO,
       (void*)tag,
       &ad);
@@ -416,7 +417,14 @@ static void do_close_mic()
 static void send_pack(struct pack *p);
 static void send_pack_len(struct pack *p, int len);
 
+static int audio_type, id_and_atype;
 static struct pack *audio_current;
+
+void set_send_audio_type(int type)
+{
+  audio_type = type;
+  id_and_atype = id | (type<<24);
+}
 
 void *send_audio_start()
 {
@@ -436,12 +444,12 @@ int send_audio_end(int len)
 
   if( opts.audio_rbudp_send )
   {
-    rbudp_broadcast(tag_id, audio_current->data, len);
+    rbudp_broadcast(tag_id, audio_current->data, len, audio_type);
     return 0;
   }
 
   audio_current->type = PACKET_AUDIO;
-  audio_current->id = (uint32_t)id;
+  audio_current->id = (uint32_t)id_and_atype;
   audio_current->seq = ++qseq;
   audio_current->tag = tag_id;
   audio_current->datalen = (uint16_t)len;
@@ -885,7 +893,7 @@ static void audio_mic_op(struct pack *p)
   }
   else
   {
-    mix_audio_close(p->id);
+    mix_audio_close(p->id & 0xffffff);
   }
 }
 
@@ -955,7 +963,9 @@ static void write_audio(struct pack *p)
     }
     else
     {
-      struct audio_data ad = { p->data, p->datalen };
+      int type = (p->id >> 24) & 255;
+      struct audio_data ad = {
+        type, p->data, p->datalen };
       event_handler(EVENT_AUDIO,
           (void*)(int)p->tag,
           &ad);

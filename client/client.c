@@ -144,6 +144,13 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
 
   memset(&net_mixer_addr, 0, sizeof(net_mixer_addr));
 
+  if( type==DEVTYPE_NONE )
+  {
+    /* enable none of the services. but it still can
+     * send test cmd over tcp. */
+    return;
+  }
+
   /* the special netplay mode,
    * only a few functions are enabled. */
   if( type==DEVTYPE_NETPLAY )

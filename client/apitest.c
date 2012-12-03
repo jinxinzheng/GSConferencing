@@ -248,7 +248,7 @@ int main(int argc, char *const argv[])
 
   int mode = MODE_BROADCAST;
 
-  while ((opt = getopt(argc, argv, "i:S:as:nf:o:bmv:UT:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:as:nf:o:m:v:UT:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -271,11 +271,13 @@ int main(int argc, char *const argv[])
       case 'o':
         buf_ord = atoi(optarg);
         break;
-      case 'b':
-        mode = MODE_BROADCAST;
-        break;
       case 'm':
-        mode = MODE_MULTICAST;
+        switch ( optarg[0] )
+        {
+          case 'b' : mode = MODE_BROADCAST; break;
+          case 'u' : mode = MODE_UNICAST; break;
+          case 'm' : mode = MODE_MULTICAST; break;
+        }
         break;
       case 'v':
         volume = atoi(optarg);
@@ -305,6 +307,7 @@ int main(int argc, char *const argv[])
   switch ( mode )
   {
     case MODE_BROADCAST : set_option(OPT_AUDIO_RBUDP_RECV, 1); break;
+    case MODE_UNICAST :   set_option(OPT_AUDIO_SEND_UCAST, 1); break;
     case MODE_MULTICAST : set_option(OPT_AUDIO_MCAST_RECV, 1); break;
   }
 

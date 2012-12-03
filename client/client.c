@@ -91,6 +91,8 @@ static int mix_cast = 0;
 
 static int send_repeat = 1;
 
+static int audio_type, id_and_atype;
+
 #define STREQU(a, b) (strcmp((a), (b))==0)
 
 #define CHECKOK(s) if (!STREQU(s,"OK")) return;
@@ -270,6 +272,8 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
   {
     mix_audio_init();
   }
+
+  id_and_atype = id | (audio_type<<24);
 }
 
 void set_option(int opt, int val)
@@ -424,7 +428,6 @@ static void do_close_mic()
 static void send_pack(struct pack *p);
 static void send_pack_len(struct pack *p, int len);
 
-static int audio_type, id_and_atype;
 static struct pack *audio_current;
 
 void set_send_audio_type(int type)

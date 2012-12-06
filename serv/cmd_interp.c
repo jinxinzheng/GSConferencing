@@ -2,6 +2,45 @@
 #include "include/types.h"
 #include "interp.h"
 
+void apply_interp_mode(struct tag *t, struct device *d)
+{
+  switch ( t->interp.mode )
+  {
+    case INTERP_NO :
+    {
+      interp_del_rep(t);
+      break;
+    }
+
+    case INTERP_OR :
+    {
+      int gid = d->group->id;
+      int tuid = TAGUID(gid, 1);
+      struct tag *rep = get_tag(tuid);
+
+      interp_set_rep_tag(t, rep);
+      break;
+    }
+
+    case INTERP_RE :
+    {
+      /* dup the current subscription. */
+      struct tag *rep;
+      rep = d->subscription[0];
+      if( !rep )
+        rep = d->subscription[1];
+      if( rep )
+      {
+        interp_set_rep_tag(t, rep);
+      }
+      break;
+    }
+
+    default :
+      break;
+  }
+}
+
 static int cmd_interp(struct cmd *cmd)
 {
   char *subcmd;
@@ -25,43 +64,9 @@ static int cmd_interp(struct cmd *cmd)
     NEXT_ARG(p);
     mode = atoi(p);
 
-    switch ( mode )
-    {
-      case INTERP_NO :
-      {
-        interp_del_rep(t);
-      }
-      break;
-
-      case INTERP_OR :
-      {
-        int gid = d->group->id;
-        int tuid = TAGUID(gid, 1);
-        struct tag *rep = get_tag(tuid);
-
-        interp_set_rep_tag(t, rep);
-      }
-      break;
-
-      case INTERP_RE :
-      {
-        /* dup the current subscription. */
-        struct tag *rep;
-        rep = d->subscription[0];
-        if( !rep )
-          rep = d->subscription[1];
-        if( rep )
-        {
-          interp_set_rep_tag(t, rep);
-        }
-      }
-      break;
-
-      default :
-      break;
-    }
-
     t->interp.mode = mode;
+
+    apply_interp_mode(t, d);
 
     REP_OK(cmd);
   }

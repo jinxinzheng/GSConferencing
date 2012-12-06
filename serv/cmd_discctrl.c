@@ -10,6 +10,7 @@
 #include <include/lock.h>
 #include "brcmd.h"
 #include "incbuf.h"
+#include "interp.h"
 
 static struct db_discuss *db[1024];
 static int dbl = 0;
@@ -235,19 +236,12 @@ static int cmd_discctrl(struct cmd *cmd)
         /* restore the open state. */
         tag_add_outstanding(tag, d);
         ptc_push(d);
-
-        /* return the info for the net mixer if present */
-        if( d->mixer.info )
-          REP_ADD(cmd, d->mixer.info);
-        REP_END(cmd);
-        return 0;
       }
       else
       {
         /* if it's already closed. just return ok. */
-        REP_END(cmd);
-        return 0;
       }
+      goto post;
     }
 
     if( open )
@@ -320,6 +314,25 @@ openit:
 
       /* remove it from the pantilt list */
       ptc_remove(d);
+    }
+
+post:
+    if( d->type == DEVTYPE_INTERP )
+    {
+      if( tag->interp.mode > 0 )
+      {
+        /* interp is replicate mode */
+        if( open )
+        {
+          /* exit replicate */
+          interp_del_rep(tag);
+        }
+        else
+        {
+          /* enter replicate */
+          apply_interp_mode(tag, d);
+        }
+      }
     }
 
     /* return the info for the (net) mixer if present */

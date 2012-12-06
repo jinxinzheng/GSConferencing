@@ -16,8 +16,17 @@ __attribute__((packed));
 
 enum {
   T2CMD_NONE,
+  T2CMD_INTERP_REP,
+
+  T2CMD_OTHER = 64,
   T2CMD_SUBS_LIST,
   T2CMD_SUB,
+};
+
+struct t2cmd_interp_rep
+{
+  uint8_t tag;
+  uint8_t rep;
 };
 
 struct t2cmd_subs_list

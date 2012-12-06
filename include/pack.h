@@ -41,10 +41,6 @@ struct pack_ucmd
   union {
     uint8_t data[6];
     struct {
-      uint8_t tag;
-      uint8_t rep;
-    } interp;
-    struct {
       uint16_t seq;
       uint8_t mode;
       uint8_t tag;
@@ -59,8 +55,7 @@ struct pack_ucmd
 __attribute__((packed));
 
 enum {
-  /* interpreter has set or reset replicate tag */
-  UCMD_INTERP_REP_TAG,
+  UCMD_NONE,
 
   /* normal cmd that is suitable for broadcast.
      the original cmd is stored in data[],

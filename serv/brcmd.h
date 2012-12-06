@@ -2,6 +2,10 @@
 #define  __BRCMD_H__
 
 
+#include "cmd_handler.h"
+
+void brcast_data_to_all(void *data, int len);
+
 void brcast_cmd_to_all(struct cmd *cmd);
 void *brcast_cmd_to_all_loop(struct cmd *cmd);
 

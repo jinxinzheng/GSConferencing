@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include "cmd/cmd.h"
+#include "cmd/t2cmd.h"
 #include "include/queue.h"
 #include "include/pack.h"
 #include "include/cfifo.h"
@@ -2308,6 +2309,8 @@ enum
 };
 
 static void __handle_cmd(char *buf, int l);
+static int handle_type2_cmd(struct type2_cmd *t2c, int len);
+static void handle_interp_rep_cmd(int tag, int rep);
 
 /* handle recved cmd and generate appropriate events to the client */
 static void handle_cmd(int sock, int type, char *buf, int l)
@@ -2387,7 +2390,7 @@ static void __handle_cmd(char *buf, int l)
 
   if( buf[0] == 2 ) /* 'type 2' cmd */
   {
-    event_handler(EVENT_TYPE2_CMD, buf, (void *)l);
+    handle_type2_cmd((struct type2_cmd *)buf, l);
     return;
   }
 
@@ -2619,6 +2622,48 @@ static void __handle_cmd(char *buf, int l)
   }
 }
 
+static int handle_type2_cmd(struct type2_cmd *t2c, int len)
+{
+  /* sanity checks */
+  if( t2c->type != 2 )
+    return -1;
+  if( len != T2CMD_SIZE(t2c) )
+    return -1;
+
+  switch ( t2c->cmd )
+  {
+    case T2CMD_INTERP_REP :
+    {
+      struct t2cmd_interp_rep *data = (struct t2cmd_interp_rep *) t2c->data;
+      handle_interp_rep_cmd(data->tag, data->rep);
+      break;
+    }
+
+    default :
+      event_handler(EVENT_TYPE2_CMD, t2c, (void *)len);
+      break;
+  }
+  return 0;
+}
+
+static void handle_interp_rep_cmd(int tag, int rep)
+{
+  if( subscription[0]==tag )
+    replicate[0] = rep;
+  else if( subscription[1]==tag )
+    replicate[1] = rep;
+  else
+    return;
+
+  if( opts.audio_rbudp_recv )
+  {
+    if( rep )
+      rbudp_set_recv_tag(rep);
+    else
+      rbudp_set_recv_tag(tag);
+  }
+}
+
 static int is_ucmd_recved(uint32_t seq)
 {
   static uint32_t ucmd_seqs[8] = {0};
@@ -2668,28 +2713,6 @@ static void handle_ucmd(struct pack_ucmd *ucmd)
 {
   switch( ucmd->cmd )
   {
-    case UCMD_INTERP_REP_TAG :
-    {
-      /* note: the server may send this multiple times. */
-      int tag = ucmd->u.interp.tag;
-      int rep = ucmd->u.interp.rep;
-      if( subscription[0]==tag )
-        replicate[0] = rep;
-      else if( subscription[1]==tag )
-        replicate[1] = rep;
-      else
-        break;
-
-      if( opts.audio_rbudp_recv )
-      {
-        if( rep )
-          rbudp_set_recv_tag(rep);
-        else
-          rbudp_set_recv_tag(tag);
-      }
-    }
-    break;
-
     case UCMD_BRCAST_CMD :
     {
       handle_brcast_cmd(ucmd);

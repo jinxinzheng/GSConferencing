@@ -27,26 +27,33 @@ static void *async_brcast_loop(const void *buf, int len);
 #define BRCAST_UCMD(ucmd) \
   async_brcast(ucmd, UCMD_SIZE(ucmd))
 
-static void make_brcmd_all(struct pack_ucmd *ucmd, struct cmd *cmd)
+static void __make_brcmd_all(struct pack_ucmd *ucmd, void *data, int len)
 {
   ucmd->type = PACKET_UCMD;
   ucmd->cmd = UCMD_BRCAST_CMD;
   ucmd->u.brcast_cmd.seq = ++ seq;
   ucmd->u.brcast_cmd.mode = BRCMD_MODE_ALL;
-  ucmd->datalen = cmd->rl+1;
-  memcpy(ucmd->data, cmd->rep, cmd->rl+1);  /* include the ending \0 */
+  ucmd->datalen = len;
+  memcpy(ucmd->data, data, len);
+}
+
+void brcast_data_to_all(void *data, int len)
+{
+  char buf[CMD_MAX+100];
+  struct pack_ucmd *ucmd = (struct pack_ucmd *) buf;
+  INIT_SOCK();
+  __make_brcmd_all(ucmd, data, len);
+  BRCAST_UCMD(ucmd);
+}
+
+static void make_brcmd_all(struct pack_ucmd *ucmd, struct cmd *cmd)
+{
+  __make_brcmd_all(ucmd, cmd->rep, cmd->rl+1);  /* include the ending \0 */
 }
 
 void brcast_cmd_to_all(struct cmd *cmd)
 {
-  char buf[CMD_MAX+100];
-  struct pack_ucmd *ucmd = (struct pack_ucmd *) buf;
-
-  INIT_SOCK();
-
-  make_brcmd_all(ucmd, cmd);
-
-  BRCAST_UCMD(ucmd);
+  brcast_data_to_all(cmd->rep, cmd->rl+1);
 }
 
 void *brcast_cmd_to_all_loop(struct cmd *cmd)

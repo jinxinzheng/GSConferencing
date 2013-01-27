@@ -197,6 +197,8 @@ static int cmd_votectrl(struct cmd *cmd)
     v->cn_options = dv->options_count;
     v->n_members = 0;
 
+    g->vote.v = v;
+
     /* set the vote object on the master device
      * but do not add it to the vote list */
     d->vote.v = v;
@@ -289,13 +291,24 @@ static int cmd_votectrl(struct cmd *cmd)
     if (!p)
       return 1;
 
-    if( !d->vote.v )
-      /* bug or corrupt of network packet */
-      return 1;
-
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, g->vote.expect);
     REP_ADD_NUM(cmd, g->vote.nvoted);
+    if( d->id == 0 ) do
+    {
+      struct vote *v;
+      struct device *m;
+      v = g->vote.v;
+      if( !v )
+        break;
+      buf[0] = 0;
+      l = 0;
+      list_for_each_entry(m, &v->device_head, vote.l)
+      {
+        LIST_ADD_FMT(buf, l, "%d=%d", m->id, m->vote.choice);
+      }
+      REP_ADD_STR(cmd, buf, l);
+    } while(0);
     REP_END(cmd);
   }
   else if (strcmp(scmd, "showresult") == 0)
@@ -372,6 +385,7 @@ static int cmd_votectrl(struct cmd *cmd)
     }
 
     d->vote.v = NULL;
+    g->vote.v = NULL;
 
     free(v);
 

@@ -48,6 +48,8 @@ struct group {
     int expect;
     int arrive;
     int arrive_ids[1024];
+    char *arrive_idstr;
+    int arrive_idstr_len;
   } regist;
 
   struct {

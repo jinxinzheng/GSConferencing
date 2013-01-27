@@ -78,6 +78,11 @@ static int cmd_regist(struct cmd *cmd)
     g->regist.expect = dr->expect;
     g->regist.arrive = 0;
 
+    if( !g->regist.arrive_idstr )
+      g->regist.arrive_idstr = malloc(16*1024);
+    g->regist.arrive_idstr[0] = 0;
+    g->regist.arrive_idstr_len = 0;
+
     g->db_data->regist_expect = g->regist.expect;
     g->db_data->regist_arrive = g->regist.arrive;
 
@@ -97,7 +102,6 @@ static int cmd_regist(struct cmd *cmd)
 
   SUBCMD("stop")
   {
-    char *arrive_list;
     if( !g->db_data->regist_start )
     {
       return ERR_OTHER;
@@ -110,23 +114,20 @@ static int cmd_regist(struct cmd *cmd)
     REP_END(cmd);
     brcast_cmd_to_all(cmd);
 
-    arrive_list = malloc(16*g->regist.arrive);
-    ARRAY_TO_NUMLIST(arrive_list, g->regist.arrive_ids, g->regist.arrive);
-
     /* reply long version. */
     cmd->rl --; //cancel REP_END
-    REP_ADD(cmd, arrive_list);
+    REP_ADD(cmd, g->regist.arrive_idstr);
     REP_END(cmd);
 
     send_cmd_to_dev_id(cmd, 1);
-
-    free(arrive_list);
 
     regist_reset_all(cmd, g);
 
     g->regist.nmembers = 0;
     g->regist.expect = 0;
     g->regist.arrive = 0;
+
+    g->regist.arrive_idstr_len = 0;
 
     g->db_data->regist_expect = g->regist.expect;
     g->db_data->regist_arrive = g->regist.arrive;
@@ -143,6 +144,10 @@ static int cmd_regist(struct cmd *cmd)
     REP_ADD(cmd, "OK");
     REP_ADD_NUM(cmd, g->regist.expect);
     REP_ADD_NUM(cmd, g->regist.arrive);
+    if( d->id == 0 )
+    {
+      REP_ADD(cmd, g->regist.arrive_idstr);
+    }
     REP_END(cmd);
   }
 
@@ -201,6 +206,8 @@ static int cmd_regist(struct cmd *cmd)
     }
 
     g->regist.arrive_ids[g->regist.arrive ++] = d->id;
+
+    LIST_ADD_NUM(g->regist.arrive_idstr, g->regist.arrive_idstr_len, d->id);
 
     g->db_data->regist_arrive = g->regist.arrive;
     //group_save(g);

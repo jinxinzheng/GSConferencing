@@ -4,7 +4,9 @@
 #include "devctl.h"
 #include "cast.h"
 #include <include/util.h>
+#include <include/types.h>
 #include <cmd/t2cmd.h>
+#include "interp.h"
 
 static int cmd_sub(struct cmd *cmd)
 {
@@ -70,6 +72,23 @@ static int cmd_sub(struct cmd *cmd)
       args->sub = !unsub;
       args->tag = tid;
       device_cmd(t->ucast, (char *)c, T2CMD_SIZE(c));
+    }
+
+    /* check for interp dev in RE mode. */
+    if( d->type == DEVTYPE_INTERP &&
+        d->tag->interp.mode == INTERP_RE )
+    {
+      if( !d->discuss.open )
+      {
+        if( unsub )
+        {
+          interp_del_rep(d->tag);
+        }
+        else
+        {
+          apply_interp_mode(d->tag, d);
+        }
+      }
     }
 
     device_save(d);

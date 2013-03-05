@@ -70,6 +70,7 @@ static struct {
   int audio_mcast_send;
   int audio_mcast_recv;
   int access_raw_audio_pack;
+  int audio_slave_send;
 }
 opts = {
   .audio_use_udp = 1,
@@ -319,6 +320,10 @@ void set_option(int opt, int val)
     case OPT_ACCESS_RAW_AUDIO_PACK:
     opts.access_raw_audio_pack = val;
     break;
+
+    case OPT_AUDIO_SLAVE_SEND:
+    opts.audio_slave_send = val;
+    break;
   }
 }
 
@@ -437,8 +442,15 @@ void set_send_audio_type(int type)
   id_and_atype = id | (type<<24);
 }
 
+static int master_seq;
+
 void *send_audio_start()
 {
+  if( opts.audio_slave_send )
+  {
+    master_seq = wait_master_heart();
+  }
+
   audio_current = (struct pack *)cfifo_get_in(&udp_snd_fifo);
   return audio_current->data;
 }
@@ -461,7 +473,11 @@ int send_audio_end(int len)
 
   audio_current->type = PACKET_AUDIO;
   audio_current->id = (uint32_t)id_and_atype;
-  audio_current->seq = ++qseq;
+  if( opts.audio_slave_send )
+    /* obey the master's seq in master-slave mode. */
+    audio_current->seq = master_seq;
+  else
+    audio_current->seq = ++qseq;
   audio_current->tag = tag_id;
   audio_current->datalen = (uint16_t)len;
 
@@ -487,7 +503,7 @@ static void send_pack_len(struct pack *p, int len)
 {
   int i;
   HTON(p);
-  if( opts.audio_send_ucast )
+  if( opts.audio_send_ucast || opts.audio_slave_send )
   {
     send_udp(p, len, &ucast_addr);
   }

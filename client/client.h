@@ -22,6 +22,8 @@ enum
   OPT_AUDIO_MCAST_RECV,      /* recved over multicast. */
 
   OPT_ACCESS_RAW_AUDIO_PACK,
+
+  OPT_AUDIO_SLAVE_SEND,      /* send audio in master-slave mode. */
 };
 
 /* call this before client_init()! */

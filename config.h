@@ -9,6 +9,7 @@
 #define MIX_CAST_PORT     7675
 #define AUDIO_RBUDP_PORT  7680
 #define MCAST_PORT        7690
+#define MASTER_HEART_PORT   7699
 
 #define UDP_SOCK_BUFSIZE  (320*240*3)
 

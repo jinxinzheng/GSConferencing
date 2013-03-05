@@ -17,6 +17,8 @@ struct pack
 }
 __attribute__((packed));
 
+#define PACK_HEAD_LEN  (offsetof(struct pack, data))
+
 /* for server side */
 typedef struct pack pack_data;
 
@@ -31,6 +33,7 @@ enum {
   PACKET_VIDEO,
   PACKET_UCMD,
   PACKET_MIC_OP, /* for direct audio mix notify mic open/close */
+  PACKET_MASTER_HEART, /* for master-slave mode audio */
 };
 
 /* cmd sent in udp packet.

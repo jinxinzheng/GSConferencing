@@ -19,12 +19,12 @@ endif
 aacenc_lib = vo-aacenc/lib/libvo-aacenc.a
 aacdec_lib = opencore-aacdec/lib/libaacdec.a
 
-all: $(test_client) $(libclient) apitest cyctld netplay bcast ucast xcast servguard
+all: $(test_client) $(libclient) apitest cyctld netplay bcast ucast xcast servguard master_heart
 
 $(test_client): test_client.o net.o ../common/thread.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-$(libclient): client.o net.o mix.o pcm.o adpcm.o rbudp.o aacenc.o aacdec.o ../common/thread.o ../.version.o
+$(libclient): client.o net.o mix.o pcm.o adpcm.o rbudp.o aacenc.o aacdec.o slave.o ../common/thread.o ../.version.o
 	$(AR) -rcv $@ $^
 
 libclient.so: client.o net.o
@@ -49,6 +49,8 @@ xcast: xcast.o cast.o $(libclient) $(aacenc_lib)
 ucast: ucast.o $(libclient) ../sha/sha128.o
 
 servguard: servguard.o $(libclient)
+
+master_heart: master_heart.o
 
 clean:
 	rm -rf *.o .depend $(test_client) apitest $(libclient) libclient.so cyctld

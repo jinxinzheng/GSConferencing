@@ -108,8 +108,9 @@ int main(int argc, char *const argv[])
   int tag = 1;
   int mode = MODE_BROADCAST;
   int compression = COMPR_NONE;
+  int fl = 0;
 
-  while ((opt = getopt(argc, argv, "S:t:m:e:T:p:")) != -1) {
+  while ((opt = getopt(argc, argv, "S:t:m:e:l:T:p:")) != -1) {
     switch (opt) {
       case 'S':
         srvaddr = optarg;
@@ -128,6 +129,9 @@ int main(int argc, char *const argv[])
       case 'e':
         compression = atoi(optarg);
         break;
+      case 'l':
+        fl = atoi(optarg);
+        break;
       case 'T':
         parse_copy_dests(optarg);
         break;
@@ -140,6 +144,12 @@ int main(int argc, char *const argv[])
   set_cast_mode(mode);
 
   frame_len = set_compression(compression);
+
+  /* check user override frame length */
+  if( fl > 0 )
+  {
+    frame_len = fl;
+  }
 
   mix_audio_init();
   mix_audio_auto_close(12);

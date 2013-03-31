@@ -1595,6 +1595,7 @@ int get_tags(struct tag_info tags[], int *count)
 int sub(int tag)
 {
   BASICS;
+  int rep, oldrep;
 
   if( subscription[0] == tag ||
       subscription[1] == tag )
@@ -1617,7 +1618,8 @@ int sub(int tag)
   /* check if we have any rep-ed tag */
   {
     int j = FIND_OK(c);
-    int rep = atoi(c.args[++j]);
+    rep = atoi(c.args[++j]);
+    oldrep = replicate[i];
     if( rep>0 )
     {
       replicate[i] = rep;
@@ -1639,7 +1641,19 @@ int sub(int tag)
 
   if( opts.audio_mcast_recv )
   {
-    mcast_join_tag(subscription[i]);
+    if( rep )
+    {
+      mcast_quit_tag(tag);
+      if(oldrep)
+        mcast_quit_tag(oldrep);
+      mcast_join_tag(rep);
+    }
+    else
+    {
+      if(oldrep)
+        mcast_quit_tag(oldrep);
+      mcast_join_tag(tag);
+    }
   }
 
   return 0;
@@ -1648,6 +1662,7 @@ int sub(int tag)
 int unsub(int tag)
 {
   BASICS;
+  int oldrep;
 
   if( subscription[0] == tag )
     i = 0;
@@ -1658,6 +1673,7 @@ int unsub(int tag)
 
   SEND_CMD();
 
+  oldrep = replicate[i];
   subscription[i] = 0;
   replicate[i] = 0;
 
@@ -1669,6 +1685,8 @@ int unsub(int tag)
   if( opts.audio_mcast_recv )
   {
     mcast_quit_tag(tag);
+    if( oldrep )
+      mcast_quit_tag(oldrep);
   }
 
   return 0;
@@ -2664,10 +2682,17 @@ static int handle_type2_cmd(struct type2_cmd *t2c, int len)
 
 static void handle_interp_rep_cmd(int tag, int rep)
 {
+  int oldrep;
   if( subscription[0]==tag )
+  {
+    oldrep = replicate[0];
     replicate[0] = rep;
+  }
   else if( subscription[1]==tag )
+  {
+    oldrep = replicate[1];
     replicate[1] = rep;
+  }
   else
     return;
 
@@ -2677,6 +2702,23 @@ static void handle_interp_rep_cmd(int tag, int rep)
       rbudp_set_recv_tag(rep);
     else
       rbudp_set_recv_tag(tag);
+  }
+
+  if( opts.audio_mcast_recv )
+  {
+    if( rep )
+    {
+      mcast_quit_tag(tag);
+      if(oldrep)
+        mcast_quit_tag(oldrep);
+      mcast_join_tag(rep);
+    }
+    else
+    {
+      if(oldrep)
+        mcast_quit_tag(oldrep);
+      mcast_join_tag(tag);
+    }
   }
 }
 

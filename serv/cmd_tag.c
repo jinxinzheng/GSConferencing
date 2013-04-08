@@ -64,6 +64,13 @@ static int cmd_switch_tag(struct cmd *cmd)
 
   tag_check_ucast(t, d);
 
+  if( d->type == DEVTYPE_INTERP &&
+     (d->tag->interp.mode == INTERP_OR ||
+      d->tag->interp.mode == INTERP_RE) )
+  {
+    apply_interp_mode(d->tag, d);
+  }
+
   /* update db */
   {
     struct db_device *dbd;

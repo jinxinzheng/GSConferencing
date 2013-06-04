@@ -259,7 +259,8 @@ static void *serv_manage(void *arg)
       if( strcmp(cmd,"discctrl")==0 ||
           strcmp(cmd,"votectrl")==0 ||
           strcmp(cmd,"regist")==0   ||
-          strcmp(cmd,"ptc")==0
+          strcmp(cmd,"ptc")==0 ||
+          strcmp(cmd,"sysconfig")==0
         )
       {
         /* pass it to the normal cmd handler. */

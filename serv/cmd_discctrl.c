@@ -262,14 +262,20 @@ static int cmd_discctrl(struct cmd *cmd)
         struct device *k, *kick = NULL;
         int opened = tag->discuss.openuser;
 
-        /* chair users should not occupy our site */
         list_for_each_entry(k, &tag->discuss.open_list, discuss.l)
         {
           if( k->type == DEVTYPE_CHAIR )
           {
+            /* chair users should not occupy our site */
             -- opened;
             if( opened < tag->discuss.maxuser )
               goto openit;
+          }
+          else if( !k->active )
+          {
+            /* we can directly kick a dead dev */
+            kick = k;
+            break;
           }
           else
           {
@@ -279,14 +285,14 @@ static int cmd_discctrl(struct cmd *cmd)
           }
         }
 
-        if( d->tag->discuss.mode == DISCMODE_FIFO )
+        if( !kick )
         {
-          if( !kick )
-          {
-            /* can't find one to kick */
-            return ERR_REJECTED;
-          }
+          /* can't find one to kick */
+          return ERR_REJECTED;
+        }
 
+        if( !kick->active || d->tag->discuss.mode == DISCMODE_FIFO )
+        {
           /* kick one out */
           del_open(tag, kick);
           ptc_remove(kick);

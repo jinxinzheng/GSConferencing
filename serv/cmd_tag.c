@@ -4,6 +4,7 @@
 #include  <include/types.h>
 #include  <include/util.h>
 #include  <cmd/t2cmd.h>
+#include  "interp.h"
 
 static int cmd_get_tags(struct cmd *cmd)
 {
@@ -52,6 +53,14 @@ static int cmd_switch_tag(struct cmd *cmd)
     return 0;
   }
 
+  if( d->type == DEVTYPE_INTERP )
+  {
+    /* if the interp dev is about to quit the tag,
+     * notify all devs to stop receiving the tag. */
+    d->tag->interp.mode = INTERP_NO;
+    apply_interp_mode(d->tag, d);
+  }
+
   gid = d->group->id;
 
   t = request_tag(gid, tid);
@@ -64,9 +73,7 @@ static int cmd_switch_tag(struct cmd *cmd)
 
   tag_check_ucast(t, d);
 
-  if( d->type == DEVTYPE_INTERP &&
-     (d->tag->interp.mode == INTERP_OR ||
-      d->tag->interp.mode == INTERP_RE) )
+  if( d->type == DEVTYPE_INTERP )
   {
     apply_interp_mode(d->tag, d);
   }

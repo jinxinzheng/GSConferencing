@@ -31,10 +31,13 @@ serv: common
 client: common
 	$(MAKE) -C $@ ARCH=$(CLIENT_ARCH)
 
+wan:
+	$(MAKE) -C $@
+
 tar:
 	git archive -o daya.tar --prefix daya/ HEAD
 
 .version.c:
 	./gen_version.sh
 
-.PHONY: .version.c $(SUBDIRS)
+.PHONY: .version.c $(SUBDIRS) wan

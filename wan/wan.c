@@ -6,6 +6,7 @@
 int local_port;
 char push_ip[256];
 int push_port;
+int verbose;
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
     );
     return 0;
   }
-  while ((opt = getopt(argc, argv, "l:s:c:P")) != -1) {
+  while ((opt = getopt(argc, argv, "l:s:c:vP")) != -1) {
     switch (opt) {
       case 'l':
       {
@@ -43,6 +44,11 @@ int main(int argc, char *argv[])
         char addrs[2000];
         strcpy(addrs, optarg);
         set_dec_cast_addrs(addrs);
+        break;
+      }
+      case 'v':
+      {
+        verbose = 1;
         break;
       }
       case 'P':

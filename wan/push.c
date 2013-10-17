@@ -3,6 +3,7 @@
 #include  <lock.h>
 #include  "opt.h"
 #include  "com.h"
+#include  "log.h"
 
 void recv_on_sock(int sock)
 {
@@ -22,12 +23,14 @@ void recv_on_sock(int sock)
     {
       case CMD_CONNECT:
         //nothing
+        LOG("recvd connect cmd\n");
         break;
       case CMD_AUDIO:
       {
+        int datalen = p->len - ((char *)&p->u.audio.data - (char *)&p->u.audio);
+        LOG("recvd audio %d of %d\n", datalen, p->u.audio.tag);
         recv_audio(p->u.audio.tag, p->u.audio.type,
-            p->u.audio.seq, p->u.audio.data,
-            p->len - ((char *)&p->u.audio.data - (char *)&p->u.audio));
+            p->u.audio.seq, p->u.audio.data, datalen);
         break;
       }
     }

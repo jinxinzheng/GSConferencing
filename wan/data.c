@@ -8,9 +8,10 @@
 #include  "com.h"
 #include  "aac.h"
 #include  "../config.h"
+#include  "log.h"
 
 struct audio {
-  struct list_head *queue_node;
+  struct list_head queue_node;
   int type;
   int len;
   char data[1];
@@ -64,20 +65,29 @@ void set_dec_cast_addrs(char *addrs)
 
 static void cast_audio(int tag, char *data, int len)
 {
-  char buf[4096];
-  struct pack *pack;
   struct audio_dec_thread *ctx = &audio_dec_threads[tag];
-  pack = (struct pack *)buf;
-  pack->type = PACKET_AUDIO;
-  pack->id = 0;
-  pack->seq = ctx->seq++;
-  pack->tag = tag;
-  pack->datalen = len;
-  memcpy(pack->data, data, len);
-  P_HTON(pack);
+  char buf[4096];
+  struct pack *pack = (struct pack *)buf;
+  int sent = 0;
+  if( ctx->cast_addr.sin_port == 0 )
+  {
+    return;
+  }
+  while( sent < len )
+  {
+    int l = len-sent<1024? len-sent:1024;
+    pack->type = PACKET_AUDIO;
+    pack->id = 0;
+    pack->seq = ctx->seq++;
+    pack->tag = tag;
+    pack->datalen = l;
+    memcpy(pack->data, &data[sent], l);
+    P_HTON(pack);
 
-  sendto(ctx->cast_sock, pack, PACK_HEAD_LEN + len, 0,
-      (struct sockaddr *)&ctx->cast_addr, sizeof(ctx->cast_addr));
+    sendto(ctx->cast_sock, pack, PACK_HEAD_LEN + l, 0,
+        (struct sockaddr *)&ctx->cast_addr, sizeof(ctx->cast_addr));
+    sent += l;
+  }
 }
 
 static void *run_dec_audio(void *arg)
@@ -126,7 +136,7 @@ void recv_audio(int tag, int type, int seq, char *data, int len)
   a->type = type;
   a->len = len;
   memcpy(a->data, data, len);
-  blocking_enque(&ctx->queue, a->queue_node);
+  blocking_enque(&ctx->queue, &a->queue_node);
 }
 
 
@@ -139,8 +149,10 @@ static void enc_push_audio(int tag, char *buf, int len)
       audio, sizeof(audio), buf, len);
   if( outlen > 0 )
   {
-    send_audio(tag, audio, outlen);
+    send_audio(tag, AUDIO_AAC, audio, outlen);
   }
+  else
+    LOG("encode audio failed\n");
 }
 
 static void *run_enc_audio(void *arg)
@@ -184,7 +196,7 @@ static void process_audio(int tag, char *data, int len)
   a->type = AUDIO_RAW;
   a->len = len;
   memcpy(a->data, data, len);
-  blocking_enque(&ctx->queue, a->queue_node);
+  blocking_enque(&ctx->queue, &a->queue_node);
 }
 
 static void *run_collect_data(void *arg)
@@ -205,6 +217,7 @@ static void *run_collect_data(void *arg)
     P_NTOH(pack);
     if( pack->type == PACKET_AUDIO )
     {
+      LOG("collect audio of tag %d len %d\n", pack->tag, pack->datalen);
       process_audio(pack->tag, pack->data, pack->datalen);
     }
   }

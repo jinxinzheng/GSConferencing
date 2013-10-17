@@ -12,6 +12,7 @@
 #include <util.h>
 #include <lock.h>
 #include "com.h"
+#include "log.h"
 
 int open_udp_sock(int port)
 {
@@ -65,6 +66,7 @@ int recv_data(int sock, void *buf, int size)
   }
   len = recvfrom(sock, buf, size, 0,
       (struct sockaddr *)&src_addr, &addrlen);
+  LOG("data %d from remote %s:%d\n", len, inet_ntoa(src_addr.sin_addr), ntohs(src_addr.sin_port));
   // if the remote has first connected to us or the remote address changed.
   if( push_addr.sin_addr.s_addr != src_addr.sin_addr.s_addr ||
       push_addr.sin_port != src_addr.sin_port )
@@ -105,15 +107,16 @@ int connect_push()
 int send_audio(int tag, int type, void *data, int len)
 {
   static uint16_t seq;
-  struct com_pack p = {
-    .ver = 0,
-    .cmd = CMD_AUDIO,
-  };
-  p.u.audio.tag = tag;
-  p.u.audio.type = type;
-  p.u.audio.seq = seq++;
-  memcpy(p.u.audio.data, data, len);
-  p.len = len + ((char *)&p.u.audio.data - (char *)&p.u.audio);
-  send_pack(&p);
+  char buf[4096];
+  struct com_pack *pp = (struct com_pack *)buf;
+  LOG("send audio %d of %d\n", len, tag);
+  pp->ver = 0;
+  pp->cmd = CMD_AUDIO;
+  pp->u.audio.tag = tag;
+  pp->u.audio.type = type;
+  pp->u.audio.seq = seq++;
+  memcpy(pp->u.audio.data, data, len);
+  pp->len = len + ((char *)&pp->u.audio.data - (char *)&pp->u.audio);
+  send_pack(pp);
   return 1;
 }

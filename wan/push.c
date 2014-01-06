@@ -12,6 +12,11 @@ void recv_on_sock(int sock)
   while(1)
   {
     len = recv_data(sock, buf, sizeof(buf));
+    if( len <= 0 )
+    {
+      // connection close
+      return;
+    }
     struct com_pack *p = (struct com_pack *)buf;
     //sanity check
     if( p->ver != 0 )
@@ -41,10 +46,17 @@ extern int push_sock;
 
 static void *run_push(void *arg)
 {
-  push_sock = open_udp_sock(local_port);
+  if (tcp)
+    push_sock = open_tcp_sock(local_port);
+  else
+    push_sock = open_udp_sock(local_port);
+
   set_push_addr(push_ip, push_port);
 
-  connect_push();
+  if( !connect_push() )
+  {
+    exit(-1);
+  }
 
   recv_on_sock(push_sock);
 }
@@ -61,8 +73,27 @@ void run_listen()
 {
   if( local_port && !push_port )
   {
-    int sock;
-    sock = open_udp_sock(local_port);
-    recv_on_sock(sock);
+    int sock, conn_sock;
+    if (tcp)
+    {
+      sock = open_tcp_sock(local_port);
+      listen_sock(sock);
+      while (1)
+      {
+        if( (conn_sock = accept(sock)) < 0 )
+        {
+          continue;
+        }
+        push_sock = conn_sock;
+        recv_on_sock(conn_sock);
+        close(conn_sock);
+      }
+    }
+    else
+    {
+      sock = open_udp_sock(local_port);
+      push_sock = sock;
+      recv_on_sock(sock);
+    }
   }
 }

@@ -1,6 +1,6 @@
-HOST=arm-linux
-SERVER_ARCH=armv6
-CLIENT_ARCH=armv4t
+#HOST=arm-linux
+#SERVER_ARCH=armv6
+#CLIENT_ARCH=armv4t
 
 ifdef HOST
 CC:=$(HOST)-gcc

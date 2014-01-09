@@ -34,6 +34,7 @@ int on_event(int event, void *arg1, void *arg2)
        * since we have demanded it. */
       struct pack *p = (struct pack *) arg1;
       int len = (int) arg2;
+      printf("audio raw %d\n", p->datalen);
       buf_count ++;
       if( buf_count < hold )
       {
@@ -195,14 +196,14 @@ int main(int argc, char *const argv[])
     }
   }
 
-  open_audio_out();
+  //open_audio_out();
 
   set_option(OPT_ACCESS_RAW_AUDIO_PACK, 1);
 
   set_event_callback(on_event);
 
   id |= (tag<<16); //wrap tag and id
-  client_init(id, DEVTYPE_NETPLAY, srvaddr, AUDIO_PORT);
+  client_init(id, DEVTYPE_NETPLAY, srvaddr, /*AUDIO_PORT*/7777);
 
   while(1) sleep(10000);
 

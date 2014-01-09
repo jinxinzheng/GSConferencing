@@ -93,6 +93,7 @@ static void run_record()
   {
     buf = get_cast_buffer();
     len = read(fdr, buf, frame_len);
+    printf("read %d\n", len);
     if( len<0 )
     {
       perror("read");

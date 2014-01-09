@@ -1,4 +1,4 @@
-#CC:=arm-linux-gcc
+CC:=gcc -m32
 CFLAGS += -I..
 LDFLAGS := -lpthread -lrt
 
@@ -16,8 +16,8 @@ test_client := test-client
 libclient := libclient.a
 endif
 
-aacenc_lib = vo-aacenc/lib/libvo-aacenc.a
-aacdec_lib = opencore-aacdec/lib/libaacdec.a
+aacenc_lib = vo-aacenc/x86/libvo-aacenc.a
+aacdec_lib = opencore-aacdec/x86/libaacdec.a
 
 all: $(test_client) $(libclient) apitest cyctld netplay bcast ucast xcast servguard master_heart
 

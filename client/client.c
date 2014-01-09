@@ -159,9 +159,11 @@ void client_init(int dev_id, int type, const char *servIP, int localPort)
    * only a few functions are enabled. */
   if( type==DEVTYPE_NETPLAY )
   {
+    int tag;
     netplay = 1;
-    /* only listen to tag 1 */
-    subscription[0] = 1;
+    tag = (dev_id >> 16) & 0xff;
+    /* pre-sub to tag */
+    subscription[0] = tag;
   }
 
   /* broadcast audio mode,

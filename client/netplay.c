@@ -9,6 +9,7 @@
 #include  <stdlib.h>
 #include  <arpa/inet.h>
 #include  <include/pack.h>
+#include  <include/types.h>
 #include  "net.h"
 #include  "../config.h"
 
@@ -137,11 +138,12 @@ int main(int argc, char *const argv[])
   int opt;
   char *srvaddr = "127.0.0.1";
   int id = 11;
+  int tag = 1;
 
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:nf:d:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:nf:t:d:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -154,6 +156,9 @@ int main(int argc, char *const argv[])
         break;
       case 'f':
         rate = atoi(optarg);
+        break;
+      case 't':
+        tag = atoi(optarg);
         break;
       case 'd':
         parse_sockaddr_in(&dest_addr, optarg);
@@ -170,7 +175,8 @@ int main(int argc, char *const argv[])
 
   set_event_callback(on_event);
 
-  client_init(id, 222, srvaddr, AUDIO_PORT);
+  id |= (tag<<16); //wrap tag and id
+  client_init(id, DEVTYPE_NETPLAY, srvaddr, AUDIO_PORT);
 
   while(1) sleep(10000);
 

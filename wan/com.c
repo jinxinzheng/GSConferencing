@@ -93,6 +93,7 @@ int accept_sock(int sock)
 }
 
 int push_sock;
+int connected;
 static struct sockaddr_in push_addr;
 static pthread_mutex_t send_lk = PTHREAD_MUTEX_INITIALIZER;
 
@@ -111,7 +112,10 @@ static int recv_data_size(int sock, char *buf, int size)
   {
     int l = recv(sock, buf+len, size-len, 0);
     if( l <= 0 )
+    {
+      LOG("connection close\n");
       return -1;
+    }
     len += l;
   }
   return len;
@@ -153,9 +157,9 @@ int recv_data(int sock, char *buf, int size)
 int send_data(void *buf, int len)
 {
   if( !push_sock )
-  {
     return 0;
-  }
+  if( tcp && !connected )
+    return 0;
   LOCK(send_lk);
   if( tcp )
   {
@@ -192,6 +196,8 @@ int connect_push()
       perror("connect()");
       return 0;
     }
+    connected = 1;
+    LOG("connected\n");
   }
   send_pack(&p);
   return 1;

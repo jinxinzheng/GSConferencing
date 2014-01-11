@@ -43,22 +43,35 @@ void recv_on_sock(int sock)
 }
 
 extern int push_sock;
+extern int connected;
 
+// client side
 static void *run_push(void *arg)
 {
-  if (tcp)
-    push_sock = open_tcp_sock(local_port);
-  else
-    push_sock = open_udp_sock(local_port);
-
   set_push_addr(push_ip, push_port);
 
-  if( !connect_push() )
+  if (tcp)
   {
-    exit(-1);
-  }
+    while(1)
+    {
+      push_sock = open_tcp_sock(local_port);
+      while( !connect_push() )
+      {
+        sleep(3);
+      }
 
-  recv_on_sock(push_sock);
+      recv_on_sock(push_sock);
+
+      connected = 0;
+      close(push_sock);
+      push_sock = 0;
+    }
+  }
+  else
+  {
+    push_sock = open_udp_sock(local_port);
+    recv_on_sock(push_sock);
+  }
 }
 
 void start_push()
@@ -69,6 +82,7 @@ void start_push()
   }
 }
 
+// server side
 void run_listen()
 {
   if( local_port && !push_port )
@@ -80,13 +94,18 @@ void run_listen()
       listen_sock(sock);
       while (1)
       {
-        if( (conn_sock = accept(sock)) < 0 )
+        if( (conn_sock = accept_sock(sock)) < 0 )
         {
           continue;
         }
         push_sock = conn_sock;
+        connected = 1;
+
         recv_on_sock(conn_sock);
+
+        connected = 0;
         close(conn_sock);
+        push_sock = 0;
       }
     }
     else

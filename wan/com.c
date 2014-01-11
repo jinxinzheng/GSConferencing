@@ -111,9 +111,15 @@ static int recv_data_size(int sock, char *buf, int size)
   while( len < size )
   {
     int l = recv(sock, buf+len, size-len, 0);
-    if( l <= 0 )
+    if( l == 0 )
     {
-      LOG("connection close\n");
+      LOG("connection shutdown\n");
+      return -1;
+    }
+    if( l < 0 )
+    {
+      perror("recv()");
+      LOG("connection closed error\n");
       return -1;
     }
     len += l;

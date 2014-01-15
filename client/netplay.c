@@ -16,7 +16,11 @@
 static int fdw = -1;
 static int nonblock = 0;
 static int rate = 8000;
+static int hold = 8;
 static struct sockaddr_in dest_addr;
+static char *hold_buffer;
+static int hold_buf_len;
+static int buf_count;
 
 static int forward_audio_pack(struct pack *p, int len);
 
@@ -30,6 +34,25 @@ int on_event(int event, void *arg1, void *arg2)
        * since we have demanded it. */
       struct pack *p = (struct pack *) arg1;
       int len = (int) arg2;
+      buf_count ++;
+      if( buf_count < hold )
+      {
+        if( !hold_buffer )
+        {
+          hold_buffer = (char *)malloc(p->datalen * hold * 2);
+        }
+        memcpy(&hold_buffer[hold_buf_len], p->data, p->datalen);
+        hold_buf_len += p->datalen;
+        break;
+      }
+      else if( buf_count == hold )
+      {
+        if( fdw > 0 )
+        {
+          if( write(fdw, hold_buffer, hold_buf_len) < 0 )
+            perror("write");
+        }
+      }
       if( fdw > 0 )
       {
         int l = write(fdw, p->data, p->datalen);
@@ -143,7 +166,7 @@ int main(int argc, char *const argv[])
   /* the id and server address don't really matter,
    * as we don't register to the server. */
 
-  while ((opt = getopt(argc, argv, "i:S:nf:t:d:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:S:nf:t:h:d:")) != -1) {
     switch (opt) {
       case 'i':
         id = atoi(optarg);
@@ -159,6 +182,9 @@ int main(int argc, char *const argv[])
         break;
       case 't':
         tag = atoi(optarg);
+        break;
+      case 'h':
+        hold = atoi(optarg);
         break;
       case 'd':
         parse_sockaddr_in(&dest_addr, optarg);
